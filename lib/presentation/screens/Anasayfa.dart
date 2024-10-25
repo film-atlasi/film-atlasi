@@ -9,7 +9,8 @@ class Anasayfa extends StatefulWidget {
   _AnasayfaState createState() => _AnasayfaState();
 }
 
-class _AnasayfaState extends State<Anasayfa> with SingleTickerProviderStateMixin {
+class _AnasayfaState extends State<Anasayfa>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -53,6 +54,8 @@ class _AnasayfaState extends State<Anasayfa> with SingleTickerProviderStateMixin
       body: buildTabBarView(),
     );
   }
+
+  
 
   AppBar buildAppBar(TextTheme _textTheme, List<Widget> actions) {
     return AppBar(
