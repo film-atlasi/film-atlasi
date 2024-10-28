@@ -1,23 +1,38 @@
+import 'package:film_atlasi/data/models/Film.dart';
 import 'package:film_atlasi/data/models/FilmPost.dart';
+import 'package:film_atlasi/data/models/User.dart';
 import 'package:film_atlasi/presentation/screens/filmekle.dart';
 import 'package:film_atlasi/presentation/widgets/FilmPostCard.dart';
 import 'package:flutter/material.dart';
 
 class FilmSeedPage extends StatelessWidget {
   FilmSeedPage({super.key});
+  final Film film = Film();
 
-  final List<FilmPost> filmPosts = [
+  late List<FilmPost> filmPosts = [
     FilmPost(
-      username: 'celal',
-      filmName: 'Inception',
-      filmPosterUrl: "",
+      user: new User(
+          name: "celal",
+          surname: "dinc",
+          username: "celaldnc",
+          profilePhotoUrl: "null",
+          job: "software"),
+      film: film,
+      title: "güzel film",
+      content: "valla",
       likes: 150,
       comments: 24,
     ),
     FilmPost(
-      username: 'user2',
-      filmName: 'The Matrix',
-      filmPosterUrl: "",
+      user: new User(
+          name: "celal",
+          surname: "dinc",
+          username: "celaldnc",
+          profilePhotoUrl: "null",
+          job: "software"),
+      title: "güzel film",
+      content: "valla",
+      film: film,
       likes: 320,
       comments: 45,
     ),

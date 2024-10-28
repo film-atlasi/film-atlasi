@@ -1,5 +1,6 @@
 import 'package:film_atlasi/presentation/screens/Anasayfa.dart';
 import 'package:film_atlasi/presentation/screens/DiscoverPage.dart';
+import 'package:film_atlasi/presentation/screens/Profile.dart';
 import 'package:film_atlasi/provider/PageIndexProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +13,7 @@ class FilmAtlasiApp extends StatefulWidget {
 }
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
-  final List<Widget> _pages = const [Anasayfa(), DiscoverPage()];
+  final List<Widget> _pages = const [Anasayfa(), DiscoverPage(), ProfileScreen()];
 
   @override
   Widget build(BuildContext context) {

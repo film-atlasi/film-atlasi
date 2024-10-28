@@ -17,8 +17,8 @@ class FilmPostCard extends StatelessWidget {
             leading: const CircleAvatar(
               backgroundColor: Colors.grey, // Görsel yerine gri daire
             ),
-            title: Text(filmPost.username),
-            subtitle: Text(filmPost.filmName),
+            title: Text(filmPost.user.username!),
+            subtitle: Text(filmPost.film.title.toString()),
             trailing: const Icon(Icons.more_vert),
           ),
           // Film postunun başlığı ve kullanıcı bilgileri
@@ -29,8 +29,8 @@ class FilmPostCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.favorite_border),
-                    SizedBox(width: 8),
+                    const Icon(Icons.favorite_border),
+                    const SizedBox(width: 8),
                     Text('${filmPost.likes} begeni'),
                     // Beğeni sayısı
                   ],
