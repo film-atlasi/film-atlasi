@@ -1,7 +1,7 @@
 // ignore: file_names
-import 'package:film_atlasi/data/models/Film.dart';
-import 'package:film_atlasi/data/models/User.dart';
-import 'package:film_atlasi/utils/helpers.dart';
+import 'package:film_atlasi/features/user/models/User.dart';
+import 'package:film_atlasi/features/movie/models/Movie.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,22 +15,22 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
-  final Film finalFilm = Film(
-      poster:
-          "https://m.media-amazon.com/images/M/MV5BMTk5MzU1MDMwMF5BMl5BanBnXkFtZTcwNjczODMzMw@@._V1_SX300.jpg");
+
+  final Movie movie = Movie(id: 1, title: "title", posterPath: "posterPath", overview: "overview", voteAverage: 9.0);
+
   late User user = User(
       name: "Sidar",
       surname: "Adıgüzel",
       username: "sidaradiguzel",
       birthDate: DateTime(2001, 12, 25),
       job: "Software Engineer",
-      currentlyWatchingFilm: finalFilm,
       books: 6,
       following: 2,
       followers: 2,
       reviews: 0,
       quotes: 0,
       messages: 0,
+      currentlyWatchingMovie: movie,
       profilePhotoUrl:
           "https://m.media-amazon.com/images/M/MV5BM2MwZjI2YjYtNGZmMS00MGMxLWE0MzMtZTdhMjA3NzA0N2M3XkEyXkFqcGc@._V1_SX300.jpg");
 
@@ -121,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       SizedBox(
                           width: 80,
                           child: Image.network(
-                              user.currentlyWatchingFilm!.poster.toString(),
+                              user.currentlyWatchingMovie!.posterPath.toString(),
                               fit: BoxFit.fitWidth,
                               errorBuilder: (context, error, stackTrace) =>
                                   const Icon(

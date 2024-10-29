@@ -1,10 +1,11 @@
-import 'package:film_atlasi/data/models/FilmPost.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:flutter/material.dart';
 
-class FilmPostCard extends StatelessWidget {
-  final FilmPost filmPost;
+class MoviePostCard extends StatelessWidget {
+  final MoviePost moviePost;
 
-  FilmPostCard({required this.filmPost});
+  MoviePostCard({required this.moviePost});
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +18,8 @@ class FilmPostCard extends StatelessWidget {
             leading: const CircleAvatar(
               backgroundColor: Colors.grey, // Görsel yerine gri daire
             ),
-            title: Text(filmPost.user.username!),
-            subtitle: Text(filmPost.film.title.toString()),
+            title: Text(moviePost.user.username!),
+            subtitle: Text(moviePost.movie.title.toString()),
             trailing: const Icon(Icons.more_vert),
           ),
           // Film postunun başlığı ve kullanıcı bilgileri
@@ -30,16 +31,16 @@ class FilmPostCard extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(Icons.favorite_border),
-                    const SizedBox(width: 8),
-                    Text('${filmPost.likes} begeni'),
+                    AddHorizontalSpace(context, 0.01),
+                    Text('${moviePost.likes} begeni'),
                     // Beğeni sayısı
                   ],
                 ),
                 Row(
                   children: [
                     Icon(Icons.comment),
-                    SizedBox(width: 8),
-                    Text('${filmPost.comments} yorum'),
+                    AddHorizontalSpace(context, 0.01),
+                    Text('${moviePost.comments} yorum'),
                     // Yorum sayısı
                   ],
                 ),

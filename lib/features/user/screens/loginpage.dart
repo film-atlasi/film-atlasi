@@ -1,4 +1,4 @@
-import 'package:film_atlasi/utils/helpers.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:flutter/material.dart';
 
 class Loginpage extends StatefulWidget {

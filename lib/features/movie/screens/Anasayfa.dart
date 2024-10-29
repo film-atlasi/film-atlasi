@@ -1,6 +1,6 @@
-import 'package:film_atlasi/presentation/screens/FilmSeed.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
 import 'package:flutter/material.dart';
-import 'package:film_atlasi/constants/AppConstants.dart';
 
 class Anasayfa extends StatefulWidget {
   const Anasayfa({Key? key}) : super(key: key);

@@ -1,4 +1,4 @@
-import 'package:film_atlasi/constants/AppConstants.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
 
 class AppTheme {

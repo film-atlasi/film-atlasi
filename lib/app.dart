@@ -1,7 +1,8 @@
-import 'package:film_atlasi/presentation/screens/Anasayfa.dart';
-import 'package:film_atlasi/presentation/screens/DiscoverPage.dart';
-import 'package:film_atlasi/presentation/screens/Profile.dart';
-import 'package:film_atlasi/provider/PageIndexProvider.dart';
+import 'package:film_atlasi/core/provider/PageIndexProvider.dart';
+import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
+import 'package:film_atlasi/features/movie/screens/DiscoverPage.dart';
+import 'package:film_atlasi/features/user/screens/Profile.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,7 +14,7 @@ class FilmAtlasiApp extends StatefulWidget {
 }
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
-  final List<Widget> _pages = const [Anasayfa(), DiscoverPage(), ProfileScreen()];
+  final List<Widget> _pages = const [Anasayfa(), DiscoverPage(), ProfileScreen(), FilmEkleWidget()];
 
   @override
   Widget build(BuildContext context) {

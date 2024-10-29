@@ -1,6 +1,6 @@
-import 'package:film_atlasi/constants/AppConstants.dart';
-import 'package:film_atlasi/constants/AppTheme.dart';
-import 'package:film_atlasi/provider/PageIndexProvider.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/core/constants/AppTheme.dart';
+import 'package:film_atlasi/core/provider/PageIndexProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

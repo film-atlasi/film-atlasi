@@ -1,5 +1,5 @@
 import 'package:film_atlasi/app.dart';
-import 'package:film_atlasi/presentation/screens/loginpage.dart';
+import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:flutter/material.dart';
 
 class AppConstants {
