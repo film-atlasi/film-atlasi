@@ -14,11 +14,18 @@ class FilmAtlasiApp extends StatefulWidget {
 }
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
-  final List<Widget> _pages = const [Anasayfa(), DiscoverPage(), ProfileScreen(), FilmEkleWidget()];
+  int pageIndex = 0;
+  final List<Widget> _pages = const [
+    Anasayfa(),
+    DiscoverPage(),
+    ProfileScreen(),
+    FilmEkleWidget(),
+    DiscoverPage()
+  ];
+
 
   @override
   Widget build(BuildContext context) {
-    final pageIndex = Provider.of<PageIndexProvider>(context).menuIndex;
     return Scaffold(
       body: _pages[pageIndex],
       bottomNavigationBar: buildBottomBar(context, pageIndex),
@@ -35,8 +42,9 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
       showUnselectedLabels: false, // Seçilmemiş item etiketlerini gizle
       currentIndex: currentIndex, // Seçili olan öğeyi belirler
       onTap: (value) {
-        Provider.of<PageIndexProvider>(context, listen: false).menuIndex =
-            value;
+        setState(() {
+          pageIndex = value;
+        });
       },
       items: const [
         BottomNavigationBarItem(

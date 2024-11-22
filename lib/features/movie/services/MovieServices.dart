@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http; 
+import 'package:http/http.dart' as http;
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 
 class MovieService {
@@ -7,12 +7,12 @@ class MovieService {
   final String baseUrl = 'https://api.themoviedb.org/3';
 
   Future<List<Movie>> searchMovies(String query) async {
-
     final response = await http.get(Uri.parse(
         '$baseUrl/search/movie?api_key=$apiKey&query=$query&language=tr-TR'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      print(data);
       return (data['results'] as List)
           .map((movie) => Movie.fromJson(movie))
           .toList();

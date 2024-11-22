@@ -1,4 +1,5 @@
 import 'package:film_atlasi/app.dart';
+import 'package:film_atlasi/features/user/screens/SignUpPage.dart';
 import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,7 @@ class AppConstants {
   static Map<String, WidgetBuilder> get routes => {
         '/': (context) => const Loginpage(),
         '/anasayfa': (context) => const FilmAtlasiApp(),
+        '/kaydol': (context) => SignUpPage()
       };
 
   static Color get black => Colors.black;

@@ -6,7 +6,7 @@ class AppTheme {
         brightness: Brightness.dark,
         primaryColor: Colors.black,
         hintColor: Colors.white,
-        scaffoldBackgroundColor: Colors.grey[850],
+        scaffoldBackgroundColor: Colors.black,
         textTheme: const TextTheme(
           bodyLarge: TextStyle(color: Colors.white),
           bodyMedium: TextStyle(color: Colors.white70),
@@ -33,6 +33,5 @@ class AppTheme {
           ),
         ),
         appBarTheme: AppBarTheme(backgroundColor: AppConstants.black),
-        
       );
 }

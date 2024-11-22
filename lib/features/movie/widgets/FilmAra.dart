@@ -52,12 +52,14 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
           if (_isLoading)
             const CircularProgressIndicator()
           else
-            buildSearchResults(),
+            buildSearchResults()
         ],
       ),
     );
   }
 
+
+//filn arama butonu
   Padding buildSearchTextField() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -77,7 +79,7 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
             onPressed: () => _searchMovies(_searchController.text),
           ),
         ),
-        onSubmitted: _searchMovies,
+        onChanged: _searchMovies,
       ),
     );
   }
