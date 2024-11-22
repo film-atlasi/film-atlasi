@@ -12,7 +12,7 @@ class AppConstants {
   static String get AppName => "Film Atlası";
 
   static Map<String, WidgetBuilder> get routes => {
-        '/': (context) => const Loginpage(),
+        '/giris': (context) => const Loginpage(),
         '/anasayfa': (context) => const FilmAtlasiApp(),
         '/kaydol': (context) => SignUpPage()
       };

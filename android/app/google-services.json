@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "529002028061",
+    "firebase_url": "https://film-atlasi-default-rtdb.firebaseio.com",
+    "project_id": "film-atlasi",
+    "storage_bucket": "film-atlasi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:529002028061:android:c60500ec1a9a5f690dfaf4",
+        "android_client_info": {
+          "package_name": "com.filmatlasi.film_atlasi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArWQUrCTwPjGNnzh39MHGcJvsUDm2t9s8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
