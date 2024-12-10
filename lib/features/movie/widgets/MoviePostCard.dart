@@ -9,45 +9,46 @@ class MoviePostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var children = [
+      ListTile(
+        leading: const CircleAvatar(
+          backgroundColor: Colors.grey, // Görsel yerine gri daire
+        ),
+        title: Text(moviePost.user.username!),
+        subtitle: Text(moviePost.movie.title.toString()),
+        trailing: const Icon(Icons.more_vert),
+      ),
+      // Film postunun başlığı ve kullanıcı bilgileri
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.favorite_border),
+                AddHorizontalSpace(context, 0.01),
+                Text('${moviePost.likes} begeni'),
+                // Beğeni sayısı
+              ],
+            ),
+            Row(
+              children: [
+                Icon(Icons.comment),
+                AddHorizontalSpace(context, 0.01),
+                Text('${moviePost.comments} yorum'),
+                // Yorum sayısı
+              ],
+            ),
+          ],
+        ),
+      ),
+    ];
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Colors.grey, // Görsel yerine gri daire
-            ),
-            title: Text(moviePost.user.username!),
-            subtitle: Text(moviePost.movie.title.toString()),
-            trailing: const Icon(Icons.more_vert),
-          ),
-          // Film postunun başlığı ve kullanıcı bilgileri
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.favorite_border),
-                    AddHorizontalSpace(context, 0.01),
-                    Text('${moviePost.likes} begeni'),
-                    // Beğeni sayısı
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.comment),
-                    AddHorizontalSpace(context, 0.01),
-                    Text('${moviePost.comments} yorum'),
-                    // Yorum sayısı
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+        children: children,
       ),
     );
   }
