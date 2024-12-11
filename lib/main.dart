@@ -7,7 +7,11 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print('Hata: $e');
+  }
 
   runApp(MultiProvider(
     providers: [ChangeNotifierProvider(create: (_) => PageIndexProvider())],
