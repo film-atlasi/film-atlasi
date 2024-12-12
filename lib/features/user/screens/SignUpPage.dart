@@ -1,6 +1,7 @@
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore için gerekli
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -17,9 +18,11 @@ class _SignUpPageState extends State<SignUpPage> {
   late String userJob;
   late int age;
   late String password;
-  final GlobalKey<FormState> formkey =
-      GlobalKey<FormState>(); //form key oluşturuldu
+
+  final GlobalKey<FormState> formkey = GlobalKey<FormState>(); //form key oluşturuldu
+      
   final firebaseAuth = FirebaseAuth.instance;
+  final firebaseFirestore = FirebaseFirestore.instance;//kullanıcı verileri için firestore oluşturuldu
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -75,6 +78,8 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                   ),
+
+
                   AddVerticalSpace(context, 0.1),
                   Text(
                     'Film Atlası\'na Hoşgeldiniz',
@@ -84,6 +89,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       fontWeight: FontWeight.normal,
                     ),
                   ),
+
                   AddVerticalSpace(context, 0.02),
                   TextFormField(
                     style: TextStyle(color: Colors.white),
@@ -120,6 +126,23 @@ class _SignUpPageState extends State<SignUpPage> {
                     },
                     obscureText: true,
                   ),
+
+                   AddVerticalSpace(context, 0.02),
+                  TextFormField(
+                    style: TextStyle(color: Colors.white),
+                    controller: _firstNameController,
+                    decoration: InputDecoration(labelText: 'isim soyisim'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'isim soyisim giriniz';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      userName = value!;
+                    }
+                  ),
+
                   AddVerticalSpace(context, 0.02),
                   TextFormField(
                     style: TextStyle(color: Colors.white),
@@ -127,7 +150,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     decoration: InputDecoration(labelText: 'Kullanıcı adı'),
                     validator: (value) {
                       if (value!.isEmpty) {
-                        return 'Bilgileri eksiksiz girininz';
+                        return 'kullanıcı adı giriniz';
                       }
                       return null;
                     },
@@ -135,12 +158,54 @@ class _SignUpPageState extends State<SignUpPage> {
                       userName = value!;
                     },
                   ),
-                  AddVerticalSpace(context, 0.01),
-                  _buildTextField('isim', _firstNameController),
-                  AddVerticalSpace(context, 0.01),
-                  _buildTextField('Şehir', _cityController),
-                  AddVerticalSpace(context, 0.01),
-                  _buildTextField('Yaş', _ageController),
+
+                  AddVerticalSpace(context, 0.02),
+                  TextFormField(
+                    style: TextStyle(color: Colors.white),
+                    controller: _cityController,
+                    decoration: InputDecoration(labelText: 'şehir'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'şehir giriniz';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      userName = value!;
+                    }
+                  ),
+
+                  AddVerticalSpace(context, 0.02),
+                  TextFormField(
+                    style: TextStyle(color: Colors.white),
+                    controller: _jobController,
+                    decoration: InputDecoration(labelText: 'meslek'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'meslek giriniz';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      userName = value!;
+                    }
+                  ),
+
+                  AddVerticalSpace(context, 0.02),
+                  TextFormField(
+                    style: TextStyle(color: Colors.white),
+                    controller: _ageController,
+                    decoration: InputDecoration(labelText: 'yaş'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'yaş giriniz';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      userName = value!;
+                    }
+                  ),
                   AddVerticalSpace(context, 0.01),
                   MouseRegion(
                     onEnter: (_) {
@@ -163,6 +228,24 @@ class _SignUpPageState extends State<SignUpPage> {
                             var userResult = await firebaseAuth
                                 .createUserWithEmailAndPassword(
                                     email: email, password: password);
+
+                                 // Kullanıcı bilgilerini Firestore'a kaydet
+                                     await firebaseFirestore
+                                      .collection('users')
+                                      .doc(userResult.user!.uid)
+                                      .set({
+                           'email': email,
+                           'userName': _userNameController.text,
+                           'firstName': _firstNameController.text,
+                           'city': _cityController.text,
+                            'job': _jobController.text,
+                           'age': int.parse(_ageController.text),
+                              'createdAt': FieldValue.serverTimestamp(),
+                               });
+
+                                print("User data saved to Firestore successfully");   
+
+
                             print(userResult.user!.uid);
                             Navigator.push(
                               context,

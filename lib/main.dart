@@ -13,6 +13,7 @@ Future<void> main() async {
     await Firebase.initializeApp(options: firebaseConfig);
   } catch (e) {
     print('Hata: $e');
+    return;
   }
 
   runApp(MultiProvider(
