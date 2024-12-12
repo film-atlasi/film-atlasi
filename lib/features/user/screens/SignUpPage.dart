@@ -11,6 +11,11 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   late String email;
+  late String userName;
+  late String name;
+  late String surName;
+  late String userJob;
+  late int age;
   late String password;
   final GlobalKey<FormState> formkey =
       GlobalKey<FormState>(); //form key oluşturuldu
@@ -22,6 +27,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _jobController = TextEditingController();
   bool _isHovering = false;
 
   @override
@@ -114,8 +120,21 @@ class _SignUpPageState extends State<SignUpPage> {
                     },
                     obscureText: true,
                   ),
-                  AddVerticalSpace(context, 0.01),
-                  _buildTextField('kullanıcı adi', _userNameController),
+                  AddVerticalSpace(context, 0.02),
+                  TextFormField(
+                    style: TextStyle(color: Colors.white),
+                    controller: _userNameController,
+                    decoration: InputDecoration(labelText: 'Kullanıcı adı'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Bilgileri eksiksiz girininz';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      userName = value!;
+                    },
+                  ),
                   AddVerticalSpace(context, 0.01),
                   _buildTextField('isim', _firstNameController),
                   AddVerticalSpace(context, 0.01),

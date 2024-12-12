@@ -1,3 +1,4 @@
+import 'package:film_atlasi/app.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
 import 'package:film_atlasi/features/movie/widgets/Button1.dart';
@@ -120,7 +121,7 @@ class _LoginpageState extends State<Loginpage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => Anasayfa()),
+                                        builder: (context) => FilmAtlasiApp()),
                                   );
                                 } catch (e) {
                                   print('Hata oluştu: $e');
