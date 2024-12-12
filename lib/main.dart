@@ -1,16 +1,19 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/constants/AppTheme.dart';
 import 'package:film_atlasi/core/provider/PageIndexProvider.dart';
+import 'package:film_atlasi/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  const firebaseConfig = DefaultFirebaseOptions.web;
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(options: firebaseConfig);
   } catch (e) {
     print('Hata: $e');
+    return;
   }
 
   runApp(MultiProvider(
