@@ -1,6 +1,8 @@
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/user/screens/loginpage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -8,13 +10,34 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  late String email;
+  late String password;
+  final GlobalKey<FormState> formkey =
+      GlobalKey<FormState>(); //form key oluşturuldu
+  final firebaseAuth = FirebaseAuth.instance;
+
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
-  bool _isHovering = false; // Butona fare ile üzerine gelindi mi kontrolü
+  bool _isHovering = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFirebase();
+  }
+
+  Future<void> _initializeFirebase() async {
+    try {
+      await Firebase.initializeApp();
+      print('Firebase initialized successfully in SignUpPage');
+    } catch (e) {
+      print('Error initializing Firebase in SignUpPage: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,110 +51,138 @@ class _SignUpPageState extends State<SignUpPage> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AddVerticalSpace(context, 0.01),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage('assets/images/logo.png'),
-                          fit: BoxFit.fitHeight),
+            //form a alındı
+            child: Form(
+              key: formkey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AddVerticalSpace(context, 0.01),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/images/logo.png'),
+                            fit: BoxFit.fitHeight),
+                      ),
                     ),
                   ),
-                ), // Logo boyutunu ayarlayın
-
-                AddVerticalSpace(context, 0.1),
-
-                // Hoşgeldiniz mesajı
-                Text(
-                  'Film Atlası\'na Hoşgeldiniz',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20, // Yazı boyutunu küçültüyoruz
-                    fontWeight: FontWeight.bold, // Kalın yazı stili
+                  AddVerticalSpace(context, 0.1),
+                  Text(
+                    'Film Atlası\'na Hoşgeldiniz',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
-                ),
-                AddVerticalSpace(
-                    context, 0.02), // Mesaj ile input alanları arasında boşluk
-
-                // Kullanıcı Adı TextField
-                _buildTextField('Kullanıcı Adı', _usernameController),
-
-                AddVerticalSpace(context, 0.01),
-
-                // Şifre TextField
-                _buildTextField('Şifre', _passwordController,
-                    obscureText: true),
-
-                AddVerticalSpace(context, 0.01),
-
-                // İsim TextField
-                _buildTextField('İsim', _firstNameController),
-
-                AddVerticalSpace(context, 0.01),
-
-                // Soyisim TextField
-                _buildTextField('Soyisim', _lastNameController),
-
-                AddVerticalSpace(context, 0.01),
-
-                // Şehir TextField
-                _buildTextField('Şehir', _cityController),
-
-                AddVerticalSpace(context, 0.01),
-
-                // Yaş TextField
-                _buildTextField('Yaş', _ageController),
-
-                AddVerticalSpace(context, 0.01),
-
-                // Kayıt Ol Butonu
-                MouseRegion(
-                  onEnter: (_) {
-                    setState(() {
-                      _isHovering = true;
-                    });
-                  },
-                  onExit: (_) {
-                    setState(() {
-                      _isHovering = false;
-                    });
-                  },
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Loginpage()),
-                      );
+                  AddVerticalSpace(context, 0.02),
+                  TextFormField(
+                    style: TextStyle(color: Colors.white),
+                    controller: _emailController,
+                    decoration: InputDecoration(labelText: 'Email'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Bilgileri eksiksiz girininz';
+                      }
+                      return null;
                     },
-                    child: Text(
-                      'Kaydol',
-                      style: TextStyle(
-                        color: _isHovering
-                            ? const Color.fromARGB(255, 0, 0, 0)
-                            : const Color.fromARGB(255, 255, 255, 255),
+                    onSaved: (value) {
+                      email = value!;
+                    },
+                  ),
+                  AddVerticalSpace(context, 0.01),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(labelText: 'Password'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Bilgileri eksiksiz girininiz';
+                      }
+                      if (value.length < 6) {
+                        return 'too short';
+                      }
+                      if (value.length > 15) {
+                        return 'too long';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      password = value!;
+                    },
+                    obscureText: true,
+                  ),
+                  AddVerticalSpace(context, 0.01),
+                  _buildTextField('kullanıcı adi', _userNameController),
+                  AddVerticalSpace(context, 0.01),
+                  _buildTextField('isim', _firstNameController),
+                  AddVerticalSpace(context, 0.01),
+                  _buildTextField('Şehir', _cityController),
+                  AddVerticalSpace(context, 0.01),
+                  _buildTextField('Yaş', _ageController),
+                  AddVerticalSpace(context, 0.01),
+                  MouseRegion(
+                    onEnter: (_) {
+                      setState(() {
+                        _isHovering = true;
+                      });
+                    },
+                    onExit: (_) {
+                      setState(() {
+                        _isHovering = false;
+                      });
+                    },
+
+                    //mail dogrrulama işlemi
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (formkey.currentState!.validate()) {
+                          formkey.currentState!.save();
+                          try {
+                            var userResult = await firebaseAuth
+                                .createUserWithEmailAndPassword(
+                                    email: email, password: password);
+                            print(userResult.user!.uid);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Loginpage()),
+                            );
+                          } catch (e) {
+                            print('Error: $e');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Registration failed: $e'),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: Text(
+                        'Kaydol',
+                        style: TextStyle(
+                          color: _isHovering
+                              ? const Color.fromARGB(255, 0, 0, 0)
+                              : const Color.fromARGB(255, 255, 255, 255),
+                        ),
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isHovering
-                          ? const Color.fromARGB(255, 255, 255, 255)
-                          : const Color.fromARGB(255, 0, 0, 0),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 100, vertical: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                            color: Colors.transparent), // Kenarları kaldırdım
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isHovering
+                            ? const Color.fromARGB(255, 255, 255, 255)
+                            : const Color.fromARGB(255, 0, 0, 0),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(color: Colors.transparent),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -139,28 +190,22 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  // TextField oluşturmak için bir fonksiyon
   Widget _buildTextField(String hintText, TextEditingController controller,
       {bool obscureText = false}) {
     return Container(
-      width: double.infinity, // Genişliği tam yap
+      width: double.infinity,
       child: TextField(
         controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(
-              color: Colors.white,
-              fontSize: 12), // Yazı boyutunu buradan ayarlayın
-          border: UnderlineInputBorder(), // Düz çizgi
+          hintStyle: TextStyle(color: Colors.white, fontSize: 12),
+          border: UnderlineInputBorder(),
           focusedBorder: UnderlineInputBorder(
-            borderSide:
-                BorderSide(color: Colors.white), // Seçildiğinde beyaz çizgi
+            borderSide: BorderSide(color: Colors.white),
           ),
         ),
-        style: TextStyle(
-            color: Colors.white,
-            fontSize: 12), // Kullanıcının yazdığı yazı boyutu
+        style: TextStyle(color: Colors.white, fontSize: 12),
       ),
     );
   }

@@ -27,6 +27,7 @@ class Myapp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         darkTheme: AppTheme.darkTheme,
+        theme: AppTheme.darkTheme,
         initialRoute: '/giris',
         routes: AppConstants.routes);
   }

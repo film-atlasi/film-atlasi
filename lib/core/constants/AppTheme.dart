@@ -22,6 +22,7 @@ class AppTheme {
           surface: Colors.grey[800]!,
           onSurface: Colors.white,
         ),
+        
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color.fromARGB(255, 211, 214, 215),
