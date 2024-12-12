@@ -1,4 +1,8 @@
+import 'package:film_atlasi/app.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
 import 'package:film_atlasi/features/movie/widgets/Button1.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Loginpage extends StatefulWidget {
@@ -9,6 +13,15 @@ class Loginpage extends StatefulWidget {
 }
 
 class _LoginpageState extends State<Loginpage> {
+  late String email;
+  late String password;
+  final formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final GlobalKey<FormState> formkey =
+      GlobalKey<FormState>(); //form key oluşturuldu
+  final firebaseAuth = FirebaseAuth.instance;
+
   bool _obscurePassword = true; // Şifreyi gizlemek için kullanılan değişken
   bool _isHovering = false; // Butona fare ile üzerine gelindi mi kontrolü
 
@@ -36,116 +49,131 @@ class _LoginpageState extends State<Loginpage> {
               SizedBox(height: 100),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    // Kullanıcı Adı TextField
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Kullanıcı Adı',
-                        hintStyle: TextStyle(color: Colors.white),
-                        prefixIcon: Icon(
-                          Icons.person,
-                          color: Colors.white,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(
-                              color: const Color.fromARGB(255, 255, 255, 255)),
-                        ),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    children: [
+                      // Kullanıcı Adı TextField
+                      AddVerticalSpace(context, 0.02),
+                      TextFormField(
+                        style: TextStyle(color: Colors.white),
+                        controller: _emailController,
+                        decoration: InputDecoration(labelText: 'Email'),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Bilgileri eksiksiz girininz';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          email = value!;
+                        },
                       ),
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    SizedBox(height: 20),
+                      AddVerticalSpace(context, 0.01),
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(labelText: 'Password'),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Bilgileri eksiksiz girininiz';
+                          }
+                          if (value.length < 6) {
+                            return 'too short';
+                          }
+                          if (value.length > 15) {
+                            return 'too long';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          password = value!;
+                        },
+                        obscureText: true,
+                      ),
+                      SizedBox(height: 20),
 
-                    // Şifre TextField
-                    TextField(
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        hintText: 'Şifre',
-                        hintStyle: TextStyle(color: Colors.white),
-                        prefixIcon: Icon(
-                          Icons.lock,
-                          color: Colors.white,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
+                      // Giriş Yap Butonu
+                      MouseRegion(
+                          onEnter: (_) {
                             setState(() {
-                              _obscurePassword = !_obscurePassword;
+                              _isHovering =
+                                  true; // Fare butonun üzerine geldiğinde
                             });
                           },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(
-                              color: const Color.fromARGB(255, 255, 255, 255)),
-                        ),
-                      ),
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    SizedBox(height: 20),
-
-                    // Giriş Yap Butonu
-                    MouseRegion(
-                        onEnter: (_) {
-                          setState(() {
-                            _isHovering =
-                                true; // Fare butonun üzerine geldiğinde
-                          });
-                        },
-                        onExit: (_) {
-                          setState(() {
-                            _isHovering = false; // Fare butondan ayrıldığında
-                          });
-                        },
-                        child: Button1(_isHovering, context)),
-
-                    // Kaydol kısmı
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top:
-                              20), // Metni biraz daha aşağıya çekmek için boşluk ekledik
-                      child: Column(
-                        children: [
-                          Text(
-                            'Hesabınız yok mu ?',
-                            style: TextStyle(
-                                color: Colors.white), // Yazı rengi beyaz
-                          ),
-                          SizedBox(
-                              height:
-                                  8), // Hesabınız yok mu? ve Kaydol arasında boşluk ekledik
-                          GestureDetector(
-                            onTap: () {
-                              // Kaydol sayfasına yönlendirme işlemi
-                              Navigator.pushReplacementNamed(
-                                  context, '/kaydol');
+                          onExit: (_) {
+                            setState(() {
+                              _isHovering = false; // Fare butondan ayrıldığında
+                            });
+                          },
+                          child: TextButton(
+                            onPressed: () async {
+                              if (formKey.currentState != null &&
+                                  formKey.currentState!.validate()) {
+                                formKey.currentState!.save();
+                                try {
+                                  final userResult = await firebaseAuth
+                                      .signInWithEmailAndPassword(
+                                    email: email,
+                                    password: password,
+                                  );
+                                  print(
+                                      'Giriş başarılı: ${userResult.user!.email}');
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => FilmAtlasiApp()),
+                                  );
+                                } catch (e) {
+                                  print('Hata oluştu: $e');
+                                }
+                              } else {
+                                print(
+                                    "Form doğrulama başarısız veya form initialize edilmedi.");
+                              }
                             },
                             child: Text(
-                              '@kaydol',
+                              'Giriş Yap',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          )),
+
+                      // Kaydol kısmı
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top:
+                                20), // Metni biraz daha aşağıya çekmek için boşluk ekledik
+                        child: Column(
+                          children: [
+                            Text(
+                              'Hesabınız yok mu ?',
                               style: TextStyle(
-                                color:
-                                    Colors.blue, // Kaydol yazısının rengi mavi
-                                fontWeight: FontWeight.bold, // Kalın yazı stili
-                                fontSize: 14, // Yazı boyutu küçültüldü
+                                  color: Colors.white), // Yazı rengi beyaz
+                            ),
+                            SizedBox(
+                                height:
+                                    8), // Hesabınız yok mu? ve Kaydol arasında boşluk ekledik
+                            GestureDetector(
+                              onTap: () {
+                                // Kaydol sayfasına yönlendirme işlemi
+                                Navigator.pushReplacementNamed(
+                                    context, '/kaydol');
+                              },
+                              child: Text(
+                                '@kaydol',
+                                style: TextStyle(
+                                  color: Colors
+                                      .blue, // Kaydol yazısının rengi mavi
+                                  fontWeight:
+                                      FontWeight.bold, // Kalın yazı stili
+                                  fontSize: 14, // Yazı boyutu küçültüldü
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

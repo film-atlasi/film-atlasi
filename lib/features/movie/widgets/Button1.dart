@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-ElevatedButton Button1(bool _isHovering, BuildContext context) =>
+ElevatedButton Button1(bool _isHovering, BuildContext context, Function cb) =>
     ElevatedButton(
-      onPressed: () {
-        Navigator.pushReplacementNamed(context, '/anasayfa');
+      onPressed: () async {
+       await cb();
       },
       child: Text(
         'Giriş Yap',
