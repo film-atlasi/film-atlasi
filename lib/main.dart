@@ -8,12 +8,13 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  const firebaseConfig = DefaultFirebaseOptions.web;
   try {
-    await Firebase.initializeApp(options: firebaseConfig);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print("Firebase initialized successfully.");
   } catch (e) {
-    print('Hata: $e');
-    return;
+    print("Hata: $e");
   }
 
   runApp(MultiProvider(
