@@ -1,6 +1,6 @@
 import 'package:film_atlasi/core/utils/helpers.dart';
-import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:flutter/material.dart';
+import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 
 class DiscoverPage extends StatelessWidget {
   const DiscoverPage({super.key});
@@ -38,216 +38,46 @@ class DiscoverPage extends StatelessWidget {
   }
 }
 
-class HorizontalCardList extends StatefulWidget {
-  @override
-  _HorizontalCardListState createState() => _HorizontalCardListState();
-}
-
-class _HorizontalCardListState extends State<HorizontalCardList> {
-  final List<String> mostReadImages = [];
-  final List<String> recentlyWatchedImages = [];
-  final List<String> actionmovies = [];
-
-  final movieService = MovieService();
-
-  @override
-  void initState() {
-    super.initState();
-    fetchMostReadMovies();
-    fetchRecentlyWatchedMovies();
-  }
-
-  void fetchMostReadMovies() async {
-    final movies = await movieService.searchMovies('Batman');
-    setState(() {
-      mostReadImages.clear();
-      mostReadImages.addAll(
-        movies
-            .where((movie) => movie.posterPath.isNotEmpty)
-            .map(
-                (movie) => 'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-            .toList(),
-      );
-    });
-  }
-
-  void fetchRecentlyWatchedMovies() async {
-    final movies = await movieService.searchMovies('Spiderman');
-    setState(() {
-      recentlyWatchedImages.clear();
-      recentlyWatchedImages.addAll(
-        movies
-            .where((movie) => movie.posterPath.isNotEmpty)
-            .map(
-                (movie) => 'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-            .toList(),
-      );
-    });
-  }
-
-  void fetchActionMovies() async {
-    final movies = await movieService.searchMovies('Action');
-    setState(() {
-      actionmovies.clear();
-      actionmovies.addAll(
-        movies
-            .where((movie) => movie.posterPath.isNotEmpty)
-            .map(
-                (movie) => 'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-            .toList(),
-      );
-    });
-  }
-
+class HorizontalCardList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: screenHeight * 0.01,
-            ),
-            child: Text(
-              "En Çok Okunanlar",
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.start,
-            ),
+    return Column(
+      children: [
+        Expanded(
+          flex: 1,
+          child: Text("en çok okunanlar", textAlign: TextAlign.start ,),
+        ),
+        Expanded(
+          flex: 10,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal, // Yatay kaydırma yönü
+            itemCount: 10, // Kart sayısı
+            itemBuilder: (context, index) {
+              return Container(
+                width:
+                    MediaQuery.of(context).size.width * 0.7, // Kart genişliği
+                height: 200,
+                margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.book, size: 50, color: Colors.white),
+                    AddVerticalSpace(context, 0.01),
+                    Text(
+                      "Kart $index",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-          SizedBox(height: screenHeight * 0.01),
-          SizedBox(
-            height: screenHeight * 0.25,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: mostReadImages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: screenWidth * 0.7,
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Image.network(
-                    mostReadImages[index],
-                    fit: BoxFit.cover,
-                    width: screenWidth * 0.6,
-                    height: screenHeight * 0.15,
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: screenHeight * 0.02,
-            ),
-            child: Text(
-              "Son İzlenen Filmler",
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.start,
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          SizedBox(
-            height: screenHeight * 0.25,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: recentlyWatchedImages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: screenWidth * 0.7,
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Image.network(
-                    recentlyWatchedImages[index],
-                    fit: BoxFit.cover,
-                    width: screenWidth * 0.6,
-                    height: screenHeight * 0.15,
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: screenHeight * 0.02,
-            ),
-            child: Text(
-              "Aksiyon",
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.start,
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          SizedBox(
-            height: screenHeight * 0.25,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: recentlyWatchedImages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: screenWidth * 0.7,
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Image.network(
-                    recentlyWatchedImages[index],
-                    fit: BoxFit.cover,
-                    width: screenWidth * 0.6,
-                    height: screenHeight * 0.15,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
