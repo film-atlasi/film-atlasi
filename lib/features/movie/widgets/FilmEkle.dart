@@ -32,7 +32,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
     ),
     const Icon(Icons.track_changes, color: Colors.white),
     const Text(
-      'Okuma Hedefi',
+      'İzleme Hedefi',
       style: TextStyle(color: Colors.white),
     ),
   ];

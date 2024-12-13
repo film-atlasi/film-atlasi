@@ -18,11 +18,10 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   final List<Widget> _pages = const [
     Anasayfa(),
     DiscoverPage(),
-    ProfileScreen(),
     FilmEkleWidget(),
-    DiscoverPage()
+    //DiscoverPage(),
+    ProfileScreen()
   ];
-
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +54,10 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
           icon: Icon(Icons.explore), // Keşfet ikonu
           label: 'Keşfet',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.search), // Arama ikonu
-          label: 'Keşfet',
-        ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.search), // Arama ikonu
+        //   label: 'Keşfet',
+        // ),
         BottomNavigationBarItem(
           icon: Icon(Icons.message), // Mesaj ikonu
           label: 'Mesajlar',
