@@ -1,33 +1,34 @@
+
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
 import 'package:flutter/material.dart';
 
 class Anasayfa extends StatefulWidget {
-  const Anasayfa({Key? key}) : super(key: key);
+  const Anasayfa({super.key});
 
   @override
-  _AnasayfaState createState() => _AnasayfaState();
+  AnasayfaState createState() => AnasayfaState();
 }
 
-class _AnasayfaState extends State<Anasayfa>
+class AnasayfaState extends State<Anasayfa>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final TextTheme _textTheme = Theme.of(context).textTheme;
+    final TextTheme textTheme = Theme.of(context).textTheme;
     List<Widget> actions = [
       IconButton(
         icon: const Icon(Icons.search, color: Colors.white), // Arama ikonu
@@ -41,31 +42,62 @@ class _AnasayfaState extends State<Anasayfa>
           // Bildirim butonu fonksiyonu
         },
       ),
-      IconButton(
-        icon: const Icon(Icons.menu, color: Colors.white), // Menü ikonu
-        onPressed: () {
-          // Menü butonu fonksiyonu
-        },
-      ),
     ];
-
     return Scaffold(
-      appBar: buildAppBar(_textTheme, actions),
+      appBar: buildAppBar(textTheme, actions),
       body: buildTabBarView(),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menü',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Ayarlar'),
+              onTap: () {
+                // Ayarlar için işlem
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.lock),
+              title: Text('Gizlilik'),
+              onTap: () {
+                // Gizlilik için işlem
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.palette),
+              title: Text('Tema'),
+              onTap: () {
+                // Tema için işlem
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  
-
-  AppBar buildAppBar(TextTheme _textTheme, List<Widget> actions) {
+  AppBar buildAppBar(TextTheme textTheme, List<Widget> actions) {
     return AppBar(
       title: Text(
         AppConstants.AppName.toUpperCase(),
-        style: _textTheme.headlineSmall?.copyWith(color: AppConstants.red),
+        style: textTheme.headlineSmall?.copyWith(color: AppConstants.red),
       ),
       actions: actions,
       bottom: TabBar(
-        controller: _tabController,
+        controller: tabController,
         tabs: const [
           Tab(text: 'Akış'),
           Tab(text: 'Takipler'),
@@ -77,7 +109,7 @@ class _AnasayfaState extends State<Anasayfa>
 
   Widget buildTabBarView() {
     return TabBarView(
-      controller: _tabController,
+      controller: tabController,
       children: [
         FilmSeedPage(),
         Center(child: Text('Takipler İçeriği')),

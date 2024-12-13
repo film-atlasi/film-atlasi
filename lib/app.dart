@@ -18,9 +18,10 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   final List<Widget> _pages = const [
     Anasayfa(),
     DiscoverPage(),
-    ProfileScreen(),
     FilmEkleWidget(),
-    DiscoverPage()
+    DiscoverPage(),
+    ProfileScreen()
+
   ];
 
 
