@@ -7,26 +7,24 @@ class DiscoverPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Keşfet'),
-        backgroundColor: Colors.black,
-      ),
-      body: HorizontalCardList(),
+      body: NetflixStyleHome(),
+      backgroundColor: Colors.black,
     );
   }
 }
 
-class HorizontalCardList extends StatefulWidget {
+class NetflixStyleHome extends StatefulWidget {
   @override
-  _HorizontalCardListState createState() => _HorizontalCardListState();
+  _NetflixStyleHomeState createState() => _NetflixStyleHomeState();
 }
 
-class _HorizontalCardListState extends State<HorizontalCardList> {
+class _NetflixStyleHomeState extends State<NetflixStyleHome> {
   final List<String> mostReadImages = [];
   final List<String> recentlyWatchedImages = [];
   final List<String> actionMovies = [];
   final movieService = MovieService();
   bool isLoading = true;
+  String? featuredMovieImage;
 
   @override
   void initState() {
@@ -41,10 +39,14 @@ class _HorizontalCardListState extends State<HorizontalCardList> {
     if (mounted) {
       setState(() {
         isLoading = false;
+        if (mostReadImages.isNotEmpty) {
+          featuredMovieImage = mostReadImages[0];
+        }
       });
     }
   }
 
+  // Existing fetch methods remain the same
   Future<void> fetchMostReadMovies() async {
     try {
       final movies = await movieService.searchMovies('Batman');
@@ -56,7 +58,7 @@ class _HorizontalCardListState extends State<HorizontalCardList> {
                 .where((movie) =>
                     movie.posterPath != null && movie.posterPath.isNotEmpty)
                 .map((movie) =>
-                    'https://image.tmdb.org/t/p/w500${movie.posterPath}')
+                    'https://image.tmdb.org/t/p/original${movie.posterPath}')
                 .toList(),
           );
         });
@@ -110,91 +112,269 @@ class _HorizontalCardListState extends State<HorizontalCardList> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
     if (isLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+        child: CircularProgressIndicator(color: Colors.red),
       );
     }
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildSectionTitle(context, "En Çok Okunanlar"),
-          buildHorizontalList(context, mostReadImages),
-          buildSectionTitle(context, "Son İzlenen Filmler"),
-          buildHorizontalList(context, recentlyWatchedImages),
-          buildSectionTitle(context, "Aksiyon"),
-          buildHorizontalList(context, actionMovies),
-        ],
-      ),
-    );
-  }
-
-  Widget buildSectionTitle(BuildContext context, String title) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: screenWidth * 0.05,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  Widget buildHorizontalList(BuildContext context, List<String> images) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    if (images.isEmpty) {
-      return SizedBox(
-        height: screenHeight * 0.25,
-        child: const Center(
-          child: Text(
-            "Henüz içerik yok",
-            style: TextStyle(color: Colors.white),
+    return CustomScrollView(
+      slivers: [
+        // Featured Movie Section with Integrated AppBar
+        SliverToBoxAdapter(
+          child: FeaturedMovieHeader(
+            imageUrl: featuredMovieImage,
           ),
         ),
-      );
-    }
 
-    return SizedBox(
-      height: screenHeight * 0.25,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: images.length,
-        itemBuilder: (context, index) {
-          return Container(
-            width: screenWidth * 0.6,
-            margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(12.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
+        // Content Sections
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Column(
+              children: [
+                ContentSection(
+                  title: "En Çok İzlenenler",
+                  movies: mostReadImages,
+                ),
+                ContentSection(
+                  title: "Son İzlenen Filmler",
+                  movies: recentlyWatchedImages,
+                ),
+                ContentSection(
+                  title: "Aksiyon",
+                  movies: actionMovies,
                 ),
               ],
             ),
-            child: Image.network(
-              images[index],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class FeaturedMovieHeader extends StatelessWidget {
+  final String? imageUrl;
+
+  const FeaturedMovieHeader({Key? key, this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Featured Movie Image
+        Container(
+          height: MediaQuery.of(context).size.height * 0.5,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage(
+                  'https://api.themoviedb.org/3/movie/603692/images?language=en-US&include_image_language=en,null'),
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.broken_image, color: Colors.white);
-              },
             ),
-          );
-        },
+          ),
+          foregroundDecoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.3),
+                Colors.black.withOpacity(0.5),
+                Colors.black.withOpacity(0.8),
+                Colors.black,
+              ],
+            ),
+          ),
+        ),
+
+        // Custom AppBar
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Film Atlası",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.white),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Movie Info Overlay
+        Positioned(
+          bottom: 40,
+          left: 16,
+          right: 16,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Featured Movie Title",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  _buildInfoChip("2024"),
+                  SizedBox(width: 8),
+                  _buildInfoChip("Action"),
+                  SizedBox(width: 8),
+                  _buildInfoChip("HD"),
+                ],
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    onPressed: () {},
+                    icon: Icon(Icons.play_arrow),
+                    label: Text("Oynat"),
+                  ),
+                  SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[800]?.withOpacity(0.8),
+                      foregroundColor: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    onPressed: () {},
+                    icon: Icon(Icons.info_outline),
+                    label: Text("Daha Fazla Bilgi"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoChip(String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[800]?.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(4),
       ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+        ),
+      ),
+    );
+  }
+}
+
+class ContentSection extends StatelessWidget {
+  final String title;
+  final List<String> movies;
+
+  const ContentSection({
+    Key? key,
+    required this.title,
+    required this.movies,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: movies.length,
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            itemBuilder: (context, index) {
+              return Container(
+                width: 130,
+                margin: EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey[900],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    Image.network(
+                      movies[index],
+                      fit: BoxFit.cover,
+                      height: double.infinity,
+                      width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child:
+                              Icon(Icons.broken_image, color: Colors.white54),
+                        );
+                      },
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.8),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                        padding: EdgeInsets.all(8),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
