@@ -19,8 +19,11 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
     Anasayfa(),
     DiscoverPage(),
     ProfileScreen(),
+<<<<<<< Updated upstream
     FilmEkleWidget(),
     DiscoverPage()
+=======
+>>>>>>> Stashed changes
   ];
 
 
