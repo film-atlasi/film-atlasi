@@ -16,6 +16,7 @@ class AnasayfaState extends State<Anasayfa>
   @override
   void initState() {
     super.initState();
+    // Sekme sayısına uygun olarak length: 3 olarak tanımlandı
     tabController = TabController(length: 3, vsync: this);
   }
 
@@ -28,92 +29,99 @@ class AnasayfaState extends State<Anasayfa>
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    List<Widget> actions = [
-      IconButton(
-        icon: const Icon(Icons.search, color: Colors.white), // Arama ikonu
-        onPressed: () {
-          // Arama butonu fonksiyonu
-        },
-      ),
-      IconButton(
-        icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-        onPressed: () {
-          // Bildirim butonu fonksiyonu
-        },
-      ),
-    ];
+
     return Scaffold(
-      appBar: buildAppBar(textTheme, actions),
+      appBar: buildAppBar(textTheme),
       body: buildTabBarView(),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 110, 5, 5),
-              ),
-              child: Text(
-                'Menü',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Ayarlar'),
-              onTap: () {
-                // Ayarlar için işlem
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.lock),
-              title: Text('Gizlilik'),
-              onTap: () {
-                // Gizlilik için işlem
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.palette),
-              title: Text('Tema'),
-              onTap: () {
-                // Tema için işlem
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: buildDrawer(),
     );
   }
 
-  AppBar buildAppBar(TextTheme textTheme, List<Widget> actions) {
+  /// AppBar Yapısı
+  AppBar buildAppBar(TextTheme textTheme) {
     return AppBar(
       title: Text(
         AppConstants.AppName.toUpperCase(),
         style: textTheme.headlineSmall?.copyWith(color: AppConstants.red),
       ),
-      actions: actions,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search, color: Colors.white),
+          onPressed: () {
+            // Arama işlemi
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+          onPressed: () {
+            // Bildirim işlemi
+          },
+        ),
+      ],
       bottom: TabBar(
         controller: tabController,
         tabs: const [
           Tab(text: 'Akış'),
           Tab(text: 'Takipler'),
-          //Tab(text: 'Popüler'),
+          Tab(text: 'Popüler'),
         ],
       ),
     );
   }
 
+  /// TabBarView Yapısı
   Widget buildTabBarView() {
     return TabBarView(
       controller: tabController,
       children: [
-        FilmSeedPage(),
-        Center(child: Text('Takipler İçeriği')),
-        Center(child: Text('Popüler İçeriği')),
+        FilmSeedPage(), // Birinci sayfa
+        const Center(child: Text('Takipler İçeriği')), // İkinci sayfa
+        const Center(child: Text('Popüler İçeriği')), // Üçüncü sayfa
       ],
+    );
+  }
+
+  /// Drawer Menüsü
+  Widget buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 110, 5, 5),
+            ),
+            child: Text(
+              'Menü',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Ayarlar'),
+            onTap: () {
+              // Ayarlar işlemi
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock),
+            title: const Text('Gizlilik'),
+            onTap: () {
+              // Gizlilik işlemi
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.palette),
+            title: const Text('Tema'),
+            onTap: () {
+              // Tema işlemi
+            },
+          ),
+        ],
+      ),
     );
   }
 }
