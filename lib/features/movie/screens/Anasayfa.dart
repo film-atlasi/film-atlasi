@@ -51,7 +51,7 @@ class AnasayfaState extends State<Anasayfa>
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: const Color.fromARGB(255, 110, 5, 5),
               ),
               child: Text(
                 'Menü',
@@ -100,7 +100,7 @@ class AnasayfaState extends State<Anasayfa>
         tabs: const [
           Tab(text: 'Akış'),
           Tab(text: 'Takipler'),
-          Tab(text: 'Popüler'),
+          //Tab(text: 'Popüler'),
         ],
       ),
     );

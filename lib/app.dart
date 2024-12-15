@@ -33,7 +33,7 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
     return BottomNavigationBar(
       backgroundColor: Colors.black, // Arka plan siyah
       selectedItemColor:
-          const Color.fromARGB(255, 52, 1, 1), // Seçilen ikon rengi
+          const Color.fromARGB(255, 110, 5, 5), // Seçilen ikon rengi
       unselectedItemColor: Colors.grey, // Seçilmemiş ikon rengi
       showSelectedLabels: false, // Seçilen item etiketlerini gizle
       showUnselectedLabels: false, // Seçilmemiş item etiketlerini gizle
