@@ -11,10 +11,10 @@ class MoviePostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var children = [
       ListTile(
-        leading: const CircleAvatar(
-          backgroundColor: Colors.grey, // Görsel yerine gri daire
+        leading: CircleAvatar(
+          backgroundColor: Colors.grey, 
         ),
-        title: Text(moviePost.user.username!),
+        title: Text(moviePost.user.firstName.toString()),
         subtitle: Text(moviePost.movie.title.toString()),
         trailing: const Icon(Icons.more_vert),
       ),
