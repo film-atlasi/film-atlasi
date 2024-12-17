@@ -17,7 +17,7 @@ class Movie {
     return Movie(
       id: json['id'].toString(),
       title: json['title'],
-      posterPath: json['poster_path'] ?? '',
+      posterPath: json['posterPath'] ?? json["poster_path"],
       overview: json['overview'] ?? '',
       voteAverage: (json['vote_average'] ?? 0).toDouble(),
     );
@@ -26,7 +26,7 @@ class Movie {
     return {
       'id': id,
       'title': title,
-      'poster_path': posterPath,
+      'posterPath': posterPath,
       'overview': overview,
       'vote_average': voteAverage,
     };
@@ -36,7 +36,7 @@ class Movie {
     return Movie(
       id: map['id'],
       title: map['title'],
-      posterPath: map['poster_path'] ?? '',
+      posterPath: map['posterPath'] ?? map['poster_path'],
       overview: map['overview'] ?? '',
       voteAverage: (map['vote_average'] ?? 0).toDouble(),
     );
@@ -46,7 +46,7 @@ class Movie {
     return {
       'id': id,
       'title': title,
-      'poster_path': posterPath,
+      'posterPath': posterPath,
       'overview': overview,
       'vote_average': voteAverage,
     };

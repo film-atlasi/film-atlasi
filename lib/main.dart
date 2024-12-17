@@ -32,7 +32,7 @@ class Myapp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         darkTheme: AppTheme.darkTheme,
         theme: AppTheme.darkTheme,
-        initialRoute: '/anasayfa',
+        initialRoute: '/giris',
         routes: AppConstants.routes);
   }
 }
