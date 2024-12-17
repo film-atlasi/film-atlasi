@@ -7,20 +7,19 @@ class DiscoverPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NetflixStyleHome(),
-      backgroundColor: Colors.black,
+      body: Kesfet(),
     );
   }
 }
 
-class NetflixStyleHome extends StatefulWidget {
+class Kesfet extends StatefulWidget {
   @override
-  _NetflixStyleHomeState createState() => _NetflixStyleHomeState();
+  _Kesfet createState() => _Kesfet();
 }
 
-class _NetflixStyleHomeState extends State<NetflixStyleHome> {
-  final List<String> mostReadImages = [];
-  final List<String> recentlyWatchedImages = [];
+class _Kesfet extends State<Kesfet> {
+  final List<String> bilimKurgu = [];
+  final List<String> trendFilmler = [];
   final List<String> actionMovies = [];
   final movieService = MovieService();
   bool isLoading = true;
@@ -39,8 +38,8 @@ class _NetflixStyleHomeState extends State<NetflixStyleHome> {
     if (mounted) {
       setState(() {
         isLoading = false;
-        if (mostReadImages.isNotEmpty) {
-          featuredMovieImage = mostReadImages[0];
+        if (bilimKurgu.isNotEmpty) {
+          featuredMovieImage = bilimKurgu[0];
         }
       });
     }
@@ -49,11 +48,11 @@ class _NetflixStyleHomeState extends State<NetflixStyleHome> {
   // Existing fetch methods remain the same
   Future<void> fetchMostReadMovies() async {
     try {
-      final movies = await movieService.searchMovies('Batman');
+      final movies = await movieService.getRomantikKomedi();
       if (mounted) {
         setState(() {
-          mostReadImages.clear();
-          mostReadImages.addAll(
+          bilimKurgu.clear();
+          bilimKurgu.addAll(
             movies
                 .where((movie) =>
                     movie.posterPath != null && movie.posterPath.isNotEmpty)
@@ -70,11 +69,11 @@ class _NetflixStyleHomeState extends State<NetflixStyleHome> {
 
   Future<void> fetchRecentlyWatchedMovies() async {
     try {
-      final movies = await movieService.searchMovies('Spiderman');
+      final movies = await movieService.getTrendingMovies();
       if (mounted) {
         setState(() {
-          recentlyWatchedImages.clear();
-          recentlyWatchedImages.addAll(
+          trendFilmler.clear();
+          trendFilmler.addAll(
             movies
                 .where((movie) =>
                     movie.posterPath != null && movie.posterPath.isNotEmpty)
@@ -91,7 +90,7 @@ class _NetflixStyleHomeState extends State<NetflixStyleHome> {
 
   Future<void> fetchActionMovies() async {
     try {
-      final movies = await movieService.searchMovies('Action');
+      final movies = await movieService.getTrendingSciFiMovies();
       if (mounted) {
         setState(() {
           actionMovies.clear();
@@ -106,7 +105,7 @@ class _NetflixStyleHomeState extends State<NetflixStyleHome> {
         });
       }
     } catch (e) {
-      debugPrint("Hata (Aksiyon Filmleri): $e");
+      debugPrint("Hata (Trend filmler): $e");
     }
   }
 
@@ -134,15 +133,23 @@ class _NetflixStyleHomeState extends State<NetflixStyleHome> {
             child: Column(
               children: [
                 ContentSection(
-                  title: "En Çok İzlenenler",
-                  movies: mostReadImages,
+                  title: "Trends",
+                  movies: actionMovies,
                 ),
                 ContentSection(
                   title: "Popüler",
-                  movies: recentlyWatchedImages,
+                  movies: trendFilmler,
                 ),
                 ContentSection(
                   title: "Aksiyon",
+                  movies: bilimKurgu,
+                ),
+                ContentSection(
+                  title: "Korku",
+                  movies: bilimKurgu,
+                ),
+                ContentSection(
+                  title: "Animasyon",
                   movies: actionMovies,
                 ),
               ],
@@ -163,30 +170,8 @@ class FeaturedMovieHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Featured Movie Image
-        Container(
-          height: MediaQuery.of(context).size.height * 0.5,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(
-                  'https://api.themoviedb.org/3/movie/603692/images?language=en-US&include_image_language=en,null'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          foregroundDecoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.3),
-                Colors.black.withOpacity(0.5),
-                Colors.black.withOpacity(0.8),
-                Colors.black,
-              ],
-            ),
-          ),
-        ),
-
+        // Arka Plan Rengi veya Görseli
+        Container(),
         // Custom AppBar
         Positioned(
           top: 0,
@@ -198,79 +183,35 @@ class FeaturedMovieHeader extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // Başlık
                   Text(
                     "Film Atlası",
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  // Arama Butonu
                   IconButton(
-                    icon: Icon(Icons.search, color: Colors.white),
-                    onPressed: () {},
+                    icon: const Icon(Icons.search, color: Colors.white),
+                    onPressed: () {
+                      print("Arama butonuna tıklandı!");
+                    },
                   ),
                 ],
               ),
             ),
           ),
         ),
-
-        // Movie Info Overlay
-        Positioned(
-          bottom: 40,
-          left: 16,
-          right: 16,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Featured Movie Title",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  _buildInfoChip("2024"),
-                  SizedBox(width: 8),
-                  _buildInfoChip("Action"),
-                  SizedBox(width: 8),
-                  _buildInfoChip("HD"),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                    onPressed: () {},
-                    icon: Icon(Icons.play_arrow),
-                    label: Text("Oynat"),
-                  ),
-                  SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[800]?.withOpacity(0.8),
-                      foregroundColor: Colors.white,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                    onPressed: () {},
-                    icon: Icon(Icons.info_outline),
-                    label: Text("Daha Fazla Bilgi"),
-                  ),
-                ],
-              ),
-            ],
+        // Örnek bir içerik alanı
+        Positioned.fill(
+          top: 100, // AppBar'ın altına yerleşecek
+          child: Center(
+            child: Text(
+              "Film içerikleri burada gösterilecek",
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+            ),
           ),
         ),
       ],
@@ -322,14 +263,14 @@ class ContentSection extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 200,
+          height: 150,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: movies.length,
             padding: EdgeInsets.symmetric(horizontal: 8),
             itemBuilder: (context, index) {
               return Container(
-                width: 130,
+                width: 80,
                 margin: EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
