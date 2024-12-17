@@ -18,14 +18,8 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   final List<Widget> _pages = const [
     Anasayfa(),
     DiscoverPage(),
-    ProfileScreen(),
-<<<<<<< Updated upstream
-    FilmEkleWidget(),
-    DiscoverPage()
-=======
->>>>>>> Stashed changes
+    ProfileScreen()
   ];
-
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +33,7 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
     return BottomNavigationBar(
       backgroundColor: Colors.black, // Arka plan siyah
       selectedItemColor:
-          const Color.fromARGB(255, 52, 1, 1), // Seçilen ikon rengi
+          const Color.fromARGB(255, 110, 5, 5), // Seçilen ikon rengi
       unselectedItemColor: Colors.grey, // Seçilmemiş ikon rengi
       showSelectedLabels: false, // Seçilen item etiketlerini gizle
       showUnselectedLabels: false, // Seçilmemiş item etiketlerini gizle
@@ -58,14 +52,10 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
           icon: Icon(Icons.explore), // Keşfet ikonu
           label: 'Keşfet',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.search), // Arama ikonu
-          label: 'Keşfet',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.message), // Mesaj ikonu
-          label: 'Mesajlar',
-        ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.search), // Arama ikonu
+        //   label: 'Keşfet',
+        // ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person), // Mesaj ikonu
           label: 'Hesabım',

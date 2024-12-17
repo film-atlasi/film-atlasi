@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/screens/AlintiEkle.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:flutter/material.dart';
 
@@ -32,7 +33,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
     ),
     const Icon(Icons.track_changes, color: Colors.white),
     const Text(
-      'Okuma Hedefi',
+      'İzleme Hedefi',
       style: TextStyle(color: Colors.white),
     ),
   ];
@@ -71,18 +72,43 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
               leading: items[2 * index],
               title: items[2 * index + 1],
               onTap: () {
-                showModalBottomSheet(
-                  backgroundColor:
-                      const Color.fromARGB(255, 0, 0, 0), // Modal açılır
-                  context: context, // Context
-                  builder: (BuildContext context) {
-                    // Modal içeriği
-                    return const SizedBox(
-                      height: 600,
-                      child: FilmAraWidget(),
-                    ); // Film ekleme widget'ı
-                  },
-                );
+                switch (index) {
+                  case 0:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FilmAraWidget()),
+                    );
+                    break;
+                  case 1:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AlintiEkle()),
+                    );
+                    break;
+                  case 2:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FilmAraWidget()),
+                    );
+                    break;
+                  case 3:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FilmAraWidget()),
+                    );
+                    break;
+                  case 4:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FilmAraWidget()),
+                    );
+                    break;
+                }
               },
             ),
           )),

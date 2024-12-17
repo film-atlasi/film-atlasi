@@ -1,253 +1,380 @@
-import 'package:film_atlasi/core/utils/helpers.dart';
-import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:flutter/material.dart';
+import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 
 class DiscoverPage extends StatelessWidget {
   const DiscoverPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 4, // Sekme sayısı
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Keşfet'),
-          backgroundColor: Colors.black,
-          bottom: const TabBar(
-            isScrollable: true, // Sekmelerin kaydırılabilir olmasını sağlar
-            indicatorColor: Colors.white,
-            tabs: [
-              Tab(text: 'Genel Bakış'),
-              Tab(text: 'En Çok Okunanlar'),
-              Tab(text: 'Yeni Çıkanlar'),
-              Tab(text: 'En Beğenilenler'),
+    return Scaffold(
+      body: NetflixStyleHome(),
+      backgroundColor: Colors.black,
+    );
+  }
+}
+
+class NetflixStyleHome extends StatefulWidget {
+  @override
+  _NetflixStyleHomeState createState() => _NetflixStyleHomeState();
+}
+
+class _NetflixStyleHomeState extends State<NetflixStyleHome> {
+  final List<String> mostReadImages = [];
+  final List<String> recentlyWatchedImages = [];
+  final List<String> actionMovies = [];
+  final movieService = MovieService();
+  bool isLoading = true;
+  String? featuredMovieImage;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAllData();
+  }
+
+  Future<void> fetchAllData() async {
+    await fetchMostReadMovies();
+    await fetchRecentlyWatchedMovies();
+    await fetchActionMovies();
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+        if (mostReadImages.isNotEmpty) {
+          featuredMovieImage = mostReadImages[0];
+        }
+      });
+    }
+  }
+
+  // Existing fetch methods remain the same
+  Future<void> fetchMostReadMovies() async {
+    try {
+      final movies = await movieService.searchMovies('Batman');
+      if (mounted) {
+        setState(() {
+          mostReadImages.clear();
+          mostReadImages.addAll(
+            movies
+                .where((movie) =>
+                    movie.posterPath != null && movie.posterPath.isNotEmpty)
+                .map((movie) =>
+                    'https://image.tmdb.org/t/p/original${movie.posterPath}')
+                .toList(),
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint("Hata (En Çok Okunanlar): $e");
+    }
+  }
+
+  Future<void> fetchRecentlyWatchedMovies() async {
+    try {
+      final movies = await movieService.searchMovies('Spiderman');
+      if (mounted) {
+        setState(() {
+          recentlyWatchedImages.clear();
+          recentlyWatchedImages.addAll(
+            movies
+                .where((movie) =>
+                    movie.posterPath != null && movie.posterPath.isNotEmpty)
+                .map((movie) =>
+                    'https://image.tmdb.org/t/p/w500${movie.posterPath}')
+                .toList(),
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint("Hata (Son İzlenen Filmler): $e");
+    }
+  }
+
+  Future<void> fetchActionMovies() async {
+    try {
+      final movies = await movieService.searchMovies('Action');
+      if (mounted) {
+        setState(() {
+          actionMovies.clear();
+          actionMovies.addAll(
+            movies
+                .where((movie) =>
+                    movie.posterPath != null && movie.posterPath.isNotEmpty)
+                .map((movie) =>
+                    'https://image.tmdb.org/t/p/w500${movie.posterPath}')
+                .toList(),
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint("Hata (Aksiyon Filmleri): $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.red),
+      );
+    }
+
+    return CustomScrollView(
+      slivers: [
+        // Featured Movie Section with Integrated AppBar
+        SliverToBoxAdapter(
+          child: FeaturedMovieHeader(
+            imageUrl: featuredMovieImage,
+          ),
+        ),
+
+        // Content Sections
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Column(
+              children: [
+                ContentSection(
+                  title: "En Çok İzlenenler",
+                  movies: mostReadImages,
+                ),
+                ContentSection(
+                  title: "Popüler",
+                  movies: recentlyWatchedImages,
+                ),
+                ContentSection(
+                  title: "Aksiyon",
+                  movies: actionMovies,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class FeaturedMovieHeader extends StatelessWidget {
+  final String? imageUrl;
+
+  const FeaturedMovieHeader({Key? key, this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Featured Movie Image
+        Container(
+          height: MediaQuery.of(context).size.height * 0.5,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage(
+                  'https://api.themoviedb.org/3/movie/603692/images?language=en-US&include_image_language=en,null'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          foregroundDecoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.3),
+                Colors.black.withOpacity(0.5),
+                Colors.black.withOpacity(0.8),
+                Colors.black,
+              ],
+            ),
+          ),
+        ),
+
+        // Custom AppBar
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Film Atlası",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.white),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Movie Info Overlay
+        Positioned(
+          bottom: 40,
+          left: 16,
+          right: 16,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Featured Movie Title",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  _buildInfoChip("2024"),
+                  SizedBox(width: 8),
+                  _buildInfoChip("Action"),
+                  SizedBox(width: 8),
+                  _buildInfoChip("HD"),
+                ],
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    onPressed: () {},
+                    icon: Icon(Icons.play_arrow),
+                    label: Text("Oynat"),
+                  ),
+                  SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[800]?.withOpacity(0.8),
+                      foregroundColor: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    onPressed: () {},
+                    icon: Icon(Icons.info_outline),
+                    label: Text("Daha Fazla Bilgi"),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-        body: TabBarView(
-          children: [
-            const Center(
-                child: Text('Genel Bakış Sayfası')), // İlk sekme içeriği
-            HorizontalCardList(), // En Çok Okunanlar
-            HorizontalCardList(), // Yeni Çıkanlar
-            HorizontalCardList(), // En Beğenilenler
-          ],
+      ],
+    );
+  }
+
+  Widget _buildInfoChip(String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[800]?.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 14,
         ),
       ),
     );
   }
 }
 
-class HorizontalCardList extends StatefulWidget {
-  @override
-  _HorizontalCardListState createState() => _HorizontalCardListState();
-}
+class ContentSection extends StatelessWidget {
+  final String title;
+  final List<String> movies;
 
-class _HorizontalCardListState extends State<HorizontalCardList> {
-  final List<String> mostReadImages = [];
-  final List<String> recentlyWatchedImages = [];
-  final List<String> actionmovies = [];
-
-  final movieService = MovieService();
-
-  @override
-  void initState() {
-    super.initState();
-    fetchMostReadMovies();
-    fetchRecentlyWatchedMovies();
-  }
-
-  void fetchMostReadMovies() async {
-    final movies = await movieService.searchMovies('Batman');
-    setState(() {
-      mostReadImages.clear();
-      mostReadImages.addAll(
-        movies
-            .where((movie) => movie.posterPath.isNotEmpty)
-            .map(
-                (movie) => 'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-            .toList(),
-      );
-    });
-  }
-
-  void fetchRecentlyWatchedMovies() async {
-    final movies = await movieService.searchMovies('Spiderman');
-    setState(() {
-      recentlyWatchedImages.clear();
-      recentlyWatchedImages.addAll(
-        movies
-            .where((movie) => movie.posterPath.isNotEmpty)
-            .map(
-                (movie) => 'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-            .toList(),
-      );
-    });
-  }
-
-  void fetchActionMovies() async {
-    final movies = await movieService.searchMovies('Action');
-    setState(() {
-      actionmovies.clear();
-      actionmovies.addAll(
-        movies
-            .where((movie) => movie.posterPath.isNotEmpty)
-            .map(
-                (movie) => 'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-            .toList(),
-      );
-    });
-  }
+  const ContentSection({
+    Key? key,
+    required this.title,
+    required this.movies,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: screenHeight * 0.01,
-            ),
-            child: Text(
-              "En Çok Okunanlar",
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: screenHeight * 0.01),
-          SizedBox(
-            height: screenHeight * 0.25,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: mostReadImages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: screenWidth * 0.7,
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
+        ),
+        SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: movies.length,
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            itemBuilder: (context, index) {
+              return Container(
+                width: 130,
+                margin: EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey[900],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    Image.network(
+                      movies[index],
+                      fit: BoxFit.cover,
+                      height: double.infinity,
+                      width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child:
+                              Icon(Icons.broken_image, color: Colors.white54),
+                        );
+                      },
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.8),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                        padding: EdgeInsets.all(8),
                       ),
-                    ],
-                  ),
-                  child: Image.network(
-                    mostReadImages[index],
-                    fit: BoxFit.cover,
-                    width: screenWidth * 0.6,
-                    height: screenHeight * 0.15,
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: screenHeight * 0.02,
-            ),
-            child: Text(
-              "Son İzlenen Filmler",
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.start,
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          SizedBox(
-            height: screenHeight * 0.25,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: recentlyWatchedImages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: screenWidth * 0.7,
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Image.network(
-                    recentlyWatchedImages[index],
-                    fit: BoxFit.cover,
-                    width: screenWidth * 0.6,
-                    height: screenHeight * 0.15,
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05,
-              vertical: screenHeight * 0.02,
-            ),
-            child: Text(
-              "Aksiyon",
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.start,
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          SizedBox(
-            height: screenHeight * 0.25,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: recentlyWatchedImages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: screenWidth * 0.7,
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Image.network(
-                    recentlyWatchedImages[index],
-                    fit: BoxFit.cover,
-                    width: screenWidth * 0.6,
-                    height: screenHeight * 0.15,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

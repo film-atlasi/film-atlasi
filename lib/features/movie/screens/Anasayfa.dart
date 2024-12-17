@@ -1,71 +1,70 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:flutter/material.dart';
 
 class Anasayfa extends StatefulWidget {
-  const Anasayfa({Key? key}) : super(key: key);
+  const Anasayfa({super.key});
 
   @override
-  _AnasayfaState createState() => _AnasayfaState();
+  AnasayfaState createState() => AnasayfaState();
 }
 
-class _AnasayfaState extends State<Anasayfa>
+class AnasayfaState extends State<Anasayfa>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    // Sekme sayısına uygun olarak length: 3 olarak tanımlandı
+    tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final TextTheme _textTheme = Theme.of(context).textTheme;
-    List<Widget> actions = [
-      IconButton(
-        icon: const Icon(Icons.search, color: Colors.white), // Arama ikonu
-        onPressed: () {
-          // Arama butonu fonksiyonu
-        },
-      ),
-      IconButton(
-        icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-        onPressed: () {
-          // Bildirim butonu fonksiyonu
-        },
-      ),
-      IconButton(
-        icon: const Icon(Icons.menu, color: Colors.white), // Menü ikonu
-        onPressed: () {
-          // Menü butonu fonksiyonu
-        },
-      ),
-    ];
+    final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: buildAppBar(_textTheme, actions),
+      appBar: buildAppBar(textTheme),
       body: buildTabBarView(),
+      drawer: buildDrawer(),
     );
   }
 
-  
-
-  AppBar buildAppBar(TextTheme _textTheme, List<Widget> actions) {
+  /// AppBar Yapısı
+  AppBar buildAppBar(TextTheme textTheme) {
     return AppBar(
       title: Text(
         AppConstants.AppName.toUpperCase(),
-        style: _textTheme.headlineSmall?.copyWith(color: AppConstants.red),
+        style: textTheme.headlineSmall?.copyWith(color: AppConstants.red),
       ),
-      actions: actions,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search, color: Colors.white),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FilmAraWidget()),
+            );
+            // Arama işlemi
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+          onPressed: () {
+            // Bildirim işlemi
+          },
+        ),
+      ],
       bottom: TabBar(
-        controller: _tabController,
+        controller: tabController,
         tabs: const [
           Tab(text: 'Akış'),
           Tab(text: 'Takipler'),
@@ -75,14 +74,59 @@ class _AnasayfaState extends State<Anasayfa>
     );
   }
 
+  /// TabBarView Yapısı
   Widget buildTabBarView() {
     return TabBarView(
-      controller: _tabController,
+      controller: tabController,
       children: [
-        FilmSeedPage(),
-        Center(child: Text('Takipler İçeriği')),
-        Center(child: Text('Popüler İçeriği')),
+        FilmSeedPage(), // Birinci sayfa
+        const Center(child: Text('Takipler İçeriği')), // İkinci sayfa
+        const Center(child: Text('Popüler İçeriği')), // Üçüncü sayfa
       ],
+    );
+  }
+
+  /// Drawer Menüsü
+  Widget buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 110, 5, 5),
+            ),
+            child: Text(
+              'Menü',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Ayarlar'),
+            onTap: () {
+              // Ayarlar işlemi
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock),
+            title: const Text('Gizlilik'),
+            onTap: () {
+              // Gizlilik işlemi
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.palette),
+            title: const Text('Tema'),
+            onTap: () {
+              // Tema işlemi
+            },
+          ),
+        ],
+      ),
     );
   }
 }

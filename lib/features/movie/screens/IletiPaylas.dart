@@ -4,6 +4,7 @@ import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/widgets/butonmert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:auto_size_text/auto_size_text.dart'; // AutoSizeText kütüphanesini eklemeyi unutmayın!
 
 class Iletipaylas extends StatefulWidget {
   final Movie movie;
@@ -20,10 +21,10 @@ class _IletipaylasState extends State<Iletipaylas> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.movie.title,
-            style: const TextStyle(color: Colors.white)),
-      ),
+      // appBar: AppBar(
+      //   title: Text(widget.movie.title,
+      //       style: const TextStyle(color: Colors.white)),
+      // ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -36,12 +37,16 @@ class _IletipaylasState extends State<Iletipaylas> {
 
   List<Widget> buildDetaylar(BuildContext context) {
     final TextTheme _textTheme = Theme.of(context).textTheme;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
     return [
       if (widget.movie.posterPath.isNotEmpty)
-        Center(
+        Container(
+          width: double.infinity,
+          height: MediaQuery.of(context).size.height * 0.5,
           child: Image.network(
             'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
-            height: 200,
+            fit: BoxFit.cover,
             errorBuilder: (_, __, ___) =>
                 const Icon(Icons.error, size: 100, color: Colors.red),
           ),
@@ -129,39 +134,107 @@ class _IletipaylasState extends State<Iletipaylas> {
     );
   }
 
-  Row buildTavsiyeButonlari() {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _recommendation = true;
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  _recommendation == true ? Colors.green : Colors.grey,
+  Widget buildTavsiyeButonlari() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center, // Ortala
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: _recommendation == true
+                      ? [Colors.green.shade400, Colors.green.shade600]
+                      : [Colors.grey.shade300, Colors.grey.shade500],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    offset: const Offset(0, 4),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _recommendation = true;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const AutoSizeText(
+                  'Evet',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
+                  maxFontSize: 18, // Maksimum font boyutu
+                  minFontSize: 12, // Minimum font boyutu
+                  maxLines: 1, // Tek satırda kalsın
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
-            child: const Text('Evet'),
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _recommendation = false;
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  _recommendation == false ? Colors.red : Colors.grey,
+          const SizedBox(width: 10.0), // Butonlar arası boşluk
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: _recommendation == false
+                      ? [Colors.red.shade400, Colors.red.shade600]
+                      : [Colors.grey.shade300, Colors.grey.shade500],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    offset: const Offset(0, 4),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _recommendation = false;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const AutoSizeText(
+                  'Hayır',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  maxFontSize: 18,
+                  minFontSize: 12,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
-            child: const Text('Hayır'),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
