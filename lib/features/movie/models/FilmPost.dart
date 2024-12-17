@@ -6,7 +6,6 @@ import 'package:film_atlasi/features/user/models/User.dart';
 
 class MoviePost {
   final User user;
-  final String title;
   final Movie movie;
   final int likes;
   final int comments;
@@ -14,7 +13,6 @@ class MoviePost {
 
   MoviePost(
       {required this.user,
-      required this.title,
       required this.movie,
       required this.likes,
       required this.comments,
@@ -23,7 +21,6 @@ class MoviePost {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'user': user.toMap(),
-      'title': title,
       'movie': movie.toMap(),
       'likes': likes,
       'content': content,
@@ -34,7 +31,6 @@ class MoviePost {
   factory MoviePost.fromMap(Map<String, dynamic> map) {
     return MoviePost(
         user: User.fromMap(map['user'] as Map<String, dynamic>),
-        title: map['title'] as String,
         movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
         likes: map['likes'] as int,
         comments: map['comments'] as int,
@@ -51,7 +47,6 @@ class MovieInceleme extends MoviePost {
   final double rank;
   MovieInceleme({
     required super.user,
-    required super.title,
     required super.movie,
     required super.likes,
     required super.comments,
@@ -68,7 +63,6 @@ class MovieInceleme extends MoviePost {
   factory MovieInceleme.fromMap(Map<String, dynamic> map) {
     return MovieInceleme(
       user: User.fromMap(map['user'] as Map<String, dynamic>),
-      title: map['title'] as String,
       movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
       likes: map['likes'] as int,
       comments: map['comments'] as int,
