@@ -1,10 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
-import 'package:film_atlasi/features/user/models/User.dart';
-import 'package:film_atlasi/features/movie/models/Movie.dart';
-import 'package:film_atlasi/core/utils/helpers.dart';
-
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,146 +11,207 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
-  TabController? _tabController;
-  Map<String, dynamic>? userData; // Firestore'dan gelen kullanıcı verisi
-  bool isLoading = true; // Veriler yüklenirken gösterilecek durum
+  late TabController _tabController;
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
-    _fetchUserData(); // Kullanıcı verilerini çek
+    _tabController =
+        TabController(length: 3, vsync: this); // TabController length = 3
+    _fetchUserData();
   }
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   Future<void> _fetchUserData() async {
     try {
-      // Giriş yapan kullanıcının UID'sini al
       final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        final uid = currentUser.uid;
-
-        // Firestore'dan kullanıcı bilgilerini çek
-        final DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-            .instance
-            .collection('users') // Kullanıcı bilgileri koleksiyonu
-            .doc(uid) // Kullanıcı UID'sine göre dökümanı çek
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
             .get();
 
-        if (snapshot.exists) {
-          setState(() {
-            userData = snapshot.data();
-            isLoading = false;
-          });
-        } else {
-          print("Kullanıcı verisi bulunamadı.");
-          setState(() {
-            isLoading = false;
-          });
-        }
-      } else {
-        print("Kullanıcı giriş yapmamış.");
+        setState(() {
+          userData = snapshot.exists ? snapshot.data() : null;
+          isLoading = false;
+        });
       }
     } catch (e) {
       print("Kullanıcı verisi çekilirken hata oluştu: $e");
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator()) // Yükleniyor animasyonu
+          ? const Center(child: CircularProgressIndicator())
           : userData == null
               ? const Center(child: Text("Kullanıcı bilgileri bulunamadı."))
-              : SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Kapak Fotoğrafı
-                      Container(
-                        height: MediaQuery.of(context).size.height * 0.18,
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          color: Colors.grey, // Kapak fotoğrafı için yer tutucu
-                        ),
-                      ),
-                      // Profil Fotoğrafı
-                      Transform.translate(
-                        offset: const Offset(20, -50),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundImage: userData!['profilePhotoUrl'] != null
-                              ? NetworkImage(userData!['profilePhotoUrl'])
-                              : null,
-                          child: userData!['profilePhotoUrl'] == null
-                              ? const Icon(
-                                  Icons.person,
-                                  size: 50,
-                                  color: Colors.grey,
-                                )
-                              : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${userData!['firstName']} ",
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  "@${userData!['userName']}",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          "Meslek: ${userData!['job'] ?? 'Bilinmiyor'}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          "yaş: ${userData!['age'] ?? 'Bilinmiyor'}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              : _buildProfileScreenContent(),
     );
   }
 
-  AppBar buildAppBar(BuildContext context) {
-    return AppBar(
-      title: const Text('Profil Ekranı'),
+  Widget _buildProfileScreenContent() {
+    return Stack(
+      children: [
+        Column(
+          children: [
+            _buildCoverPhoto(), // Kapak Fotoğrafı
+            _buildProfileAndStats(), // Kullanıcı Bilgileri ve İstatistikleri
+            const Divider(),
+            _buildTabs(), // Sekme Kontrolleri
+          ],
+        ),
+        _buildEditButton(), // Düzenle Butonu
+      ],
+    );
+  }
+
+  Widget _buildCoverPhoto() {
+    return Stack(
+      children: [
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            image: userData!['coverPhotoUrl'] != null
+                ? DecorationImage(
+                    image: NetworkImage(userData!['coverPhotoUrl']),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+        ),
+        Positioned(
+          left: 5,
+          bottom: 0,
+          child: CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.white,
+            backgroundImage: userData!['profilePhotoUrl'] != null
+                ? NetworkImage(userData!['profilePhotoUrl'])
+                : null,
+            child: userData!['profilePhotoUrl'] == null
+                ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                : null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileAndStats() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "${userData!['firstName']} ${userData!['lastName'] ?? ''}",
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "@${userData!['userName']}",
+            style: const TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Meslek: ${userData!['job'] ?? 'Bilinmiyor'}",
+            style: const TextStyle(fontSize: 16),
+          ),
+          Text(
+            "Yaş: ${userData!['age'] ?? 'Bilinmiyor'}",
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStatItem("9", "Film"),
+              _buildStatItem("2", "Takip Edilen"),
+              _buildStatItem("2", "Takipçi"),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabs() {
+    return Expanded(
+      child: Column(
+        children: [
+          TabBar(
+            controller: _tabController,
+            labelColor: Colors.white, // Seçili sekme rengi
+            unselectedLabelColor: Colors.grey, // Seçilmemiş sekme rengi
+            indicatorColor: Colors.black, // Alt çizgi rengi
+            indicatorWeight: 3, // Alt çizgi kalınlığı
+            tabs: const [
+              Tab(text: "Film Kutusu"),
+              Tab(text: "Film Listesi"),
+              Tab(text: "Beğenilenler"),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: const [
+                Center(child: Text("Film Kutusu İçeriği")),
+                Center(child: Text("Film Listesi İçeriği")),
+                Center(child: Text("Beğenilenler İçeriği")),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditButton() {
+    return Positioned(
+      top: 200,
+      right: 10,
+      child: SizedBox(
+        width: 100,
+        height: 40,
+        child: ElevatedButton(
+          onPressed: () => print("Düzenle butonuna tıklandı"),
+          child: const Text(
+            "Düzenle",
+            style: TextStyle(
+              color: Colors
+                  .red, // Metin rengini siyah yaparak temadaki butona uyum sağladık
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
