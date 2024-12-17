@@ -138,7 +138,7 @@ class _NetflixStyleHomeState extends State<NetflixStyleHome> {
                   movies: mostReadImages,
                 ),
                 ContentSection(
-                  title: "Son İzlenen Filmler",
+                  title: "Popüler",
                   movies: recentlyWatchedImages,
                 ),
                 ContentSection(

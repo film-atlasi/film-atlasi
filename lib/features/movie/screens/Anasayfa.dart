@@ -1,5 +1,6 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:flutter/material.dart';
 
 class Anasayfa extends StatefulWidget {
@@ -48,6 +49,10 @@ class AnasayfaState extends State<Anasayfa>
         IconButton(
           icon: const Icon(Icons.search, color: Colors.white),
           onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FilmAraWidget()),
+            );
             // Arama işlemi
           },
         ),

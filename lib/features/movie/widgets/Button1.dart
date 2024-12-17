@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 ElevatedButton Button1(bool _isHovering, BuildContext context, Function cb) =>
     ElevatedButton(
       onPressed: () async {
-       await cb();
+        await cb();
       },
       child: Text(
         'Giriş Yap',
