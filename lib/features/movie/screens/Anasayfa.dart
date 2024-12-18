@@ -53,7 +53,6 @@ class AnasayfaState extends State<Anasayfa>
               context,
               MaterialPageRoute(builder: (context) => const FilmAraWidget()),
             );
-            // Arama işlemi
           },
         ),
         IconButton(
@@ -119,10 +118,20 @@ class AnasayfaState extends State<Anasayfa>
             },
           ),
           ListTile(
-            leading: const Icon(Icons.palette),
-            title: const Text('Tema'),
+              leading: const Icon(Icons.palette),
+              title: const Text('Tema'),
+              onTap: () {
+                // Tema işlemi
+              }),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Çıkış Yap'),
             onTap: () {
-              // Tema işlemi
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/giris', // AppConstants.routes içinde tanımlı olan route
+                (Route<dynamic> route) => false, // Tüm önceki sayfaları sil
+              );
             },
           ),
         ],
