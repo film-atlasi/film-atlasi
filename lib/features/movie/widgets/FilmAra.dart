@@ -58,7 +58,6 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
     );
   }
 
-
 //filn arama butonu
   Padding buildSearchTextField() {
     return Padding(

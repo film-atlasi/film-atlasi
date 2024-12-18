@@ -1,3 +1,5 @@
+import 'package:film_atlasi/features/movie/models/Movie.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 
@@ -7,6 +9,23 @@ class DiscoverPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Film Atlası",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FilmAraWidget()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Kesfet(),
     );
   }
@@ -32,9 +51,31 @@ class _Kesfet extends State<Kesfet> {
   }
 
   Future<void> fetchAllData() async {
-    await fetchMostReadMovies();
-    await fetchRecentlyWatchedMovies();
-    await fetchActionMovies();
+    // Verilerin paralel olarak çekilmesi için `Future.wait` kullandık
+    await Future.wait([
+      fetchMovies(
+        fetchFunction: movieService.getRomantikKomedi,
+        onMoviesFetched: (movies) {
+          bilimKurgu.clear();
+          bilimKurgu.addAll(movies);
+        },
+      ),
+      fetchMovies(
+        fetchFunction: movieService.getTrendingMovies,
+        onMoviesFetched: (movies) {
+          trendFilmler.clear();
+          trendFilmler.addAll(movies);
+        },
+      ),
+      fetchMovies(
+        fetchFunction: movieService.getTrendingSciFiMovies,
+        onMoviesFetched: (movies) {
+          actionMovies.clear();
+          actionMovies.addAll(movies);
+        },
+      ),
+    ]);
+
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -45,67 +86,24 @@ class _Kesfet extends State<Kesfet> {
     }
   }
 
-  // Existing fetch methods remain the same
-  Future<void> fetchMostReadMovies() async {
+  /// Genel bir veri çekme metodu
+  Future<void> fetchMovies({
+    required Future<List<Movie>> Function() fetchFunction,
+    required void Function(List<String>) onMoviesFetched,
+  }) async {
     try {
-      final movies = await movieService.getRomantikKomedi();
+      final movies = await fetchFunction();
       if (mounted) {
-        setState(() {
-          bilimKurgu.clear();
-          bilimKurgu.addAll(
-            movies
-                .where((movie) =>
-                    movie.posterPath != null && movie.posterPath.isNotEmpty)
-                .map((movie) =>
-                    'https://image.tmdb.org/t/p/original${movie.posterPath}')
-                .toList(),
-          );
-        });
+        final validMovies = movies
+            .where((movie) =>
+                movie.posterPath != null && movie.posterPath.isNotEmpty)
+            .map((movie) =>
+                'https://image.tmdb.org/t/p/original${movie.posterPath}')
+            .toList();
+        onMoviesFetched(validMovies);
       }
     } catch (e) {
-      debugPrint("Hata (En Çok Okunanlar): $e");
-    }
-  }
-
-  Future<void> fetchRecentlyWatchedMovies() async {
-    try {
-      final movies = await movieService.getTrendingMovies();
-      if (mounted) {
-        setState(() {
-          trendFilmler.clear();
-          trendFilmler.addAll(
-            movies
-                .where((movie) =>
-                    movie.posterPath != null && movie.posterPath.isNotEmpty)
-                .map((movie) =>
-                    'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-                .toList(),
-          );
-        });
-      }
-    } catch (e) {
-      debugPrint("Hata (Son İzlenen Filmler): $e");
-    }
-  }
-
-  Future<void> fetchActionMovies() async {
-    try {
-      final movies = await movieService.getTrendingSciFiMovies();
-      if (mounted) {
-        setState(() {
-          actionMovies.clear();
-          actionMovies.addAll(
-            movies
-                .where((movie) =>
-                    movie.posterPath != null && movie.posterPath.isNotEmpty)
-                .map((movie) =>
-                    'https://image.tmdb.org/t/p/w500${movie.posterPath}')
-                .toList(),
-          );
-        });
-      }
-    } catch (e) {
-      debugPrint("Hata (Trend filmler): $e");
+      debugPrint("Hata (Veri Çekme): $e");
     }
   }
 
@@ -119,14 +117,6 @@ class _Kesfet extends State<Kesfet> {
 
     return CustomScrollView(
       slivers: [
-        // Featured Movie Section with Integrated AppBar
-        SliverToBoxAdapter(
-          child: FeaturedMovieHeader(
-            imageUrl: featuredMovieImage,
-          ),
-        ),
-
-        // Content Sections
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(top: 20),
@@ -157,81 +147,6 @@ class _Kesfet extends State<Kesfet> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class FeaturedMovieHeader extends StatelessWidget {
-  final String? imageUrl;
-
-  const FeaturedMovieHeader({Key? key, this.imageUrl}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Arka Plan Rengi veya Görseli
-        Container(),
-        // Custom AppBar
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Başlık
-                  Text(
-                    "Film Atlası",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  // Arama Butonu
-                  IconButton(
-                    icon: const Icon(Icons.search, color: Colors.white),
-                    onPressed: () {
-                      print("Arama butonuna tıklandı!");
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Örnek bir içerik alanı
-        Positioned.fill(
-          top: 100, // AppBar'ın altına yerleşecek
-          child: Center(
-            child: Text(
-              "Film içerikleri burada gösterilecek",
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoChip(String label) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey[800]?.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-        ),
-      ),
     );
   }
 }
