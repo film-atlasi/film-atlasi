@@ -24,6 +24,11 @@ class _LoginpageState extends State<Loginpage> {
 
   bool _obscurePassword = true; // Şifreyi gizlemek için kullanılan değişken
   bool _isHovering = false; // Butona fare ile üzerine gelindi mi kontrolü
+  void initstate() {
+    super.initState();
+    _emailController.text = "cel@gmail.com";
+    _passwordController.text = "123456";
+  }
 
   @override
   Widget build(BuildContext context) {

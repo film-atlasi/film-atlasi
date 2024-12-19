@@ -86,6 +86,7 @@ class MoviePostCard extends StatelessWidget {
                               ),
                       ),
                       const SizedBox(width: 8),
+
                       // Film Adı ve Konusu
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,175 +1,122 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AlintiEkle extends StatefulWidget {
-  const AlintiEkle({super.key});
+  final int movieId; // Dinamik olarak film ID'sini alacak
+
+  AlintiEkle({required this.movieId});
 
   @override
-  State<AlintiEkle> createState() => _AlintiEkleState();
+  _AlintiEkleState createState() => _AlintiEkleState();
 }
 
 class _AlintiEkleState extends State<AlintiEkle> {
-  final TextEditingController _baslikController = TextEditingController();
-  final TextEditingController _alintiController = TextEditingController();
-  final TextEditingController _sayfaController = TextEditingController();
-  String _konu = 'Film Yorumları';
-  bool _isLoading = false;
+  List<Actor> cast =
+      []; // Oyuncuları `Actor` modeline uygun bir liste olarak saklıyoruz
+  bool isLoading =
+      true; // Veriyi yüklediğimizi göstermek için bir durum kontrolü
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCast(widget.movieId);
+  }
+
+  // API'den oyuncu bilgilerini çeken fonksiyon
+  Future<void> fetchCast(int movieId) async {
+    try {
+      final actors = await getMovieActors(
+          movieId); // getMovieActors fonksiyonunu kullanıyoruz
+      setState(() {
+        cast = actors; // Gelen oyuncuları listeye atıyoruz
+        isLoading = false; // Yükleme tamamlandı
+      });
+    } catch (e) {
+      print('Hata: $e');
+      setState(() {
+        isLoading = false; // Hata durumunda da yükleme tamamlanır
+      });
+    }
+  }
+
+  // getMovieActors fonksiyonu
+  Future<List<Actor>> getMovieActors(int movieId) async {
+    const String baseUrl = 'https://api.themoviedb.org/3';
+    const String apiKey = 'c427167528d75438842677fbca3866fe';
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/movie/$movieId/credits?api_key=$apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['cast'] as List)
+          .map((actor) => Actor.fromJson(actor))
+          .toList();
+    } else {
+      throw Exception('Filmdeki oyuncular alınamadı.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alıntı Ekle'),
-        centerTitle: true,
+        title: Text(
+            'Harry Potter Cast'), // Dinamik olarak filmin adını alabilirsiniz
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Film Poster ve Başlık
-                  Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          'https://via.placeholder.com/100x150',
-                          height: 100,
-                          width: 70,
-                          fit: BoxFit.cover,
-                        ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) // Yükleniyor gösterimi
+          : cast.isEmpty
+              ? Center(
+                  child: Text(
+                    'Oyuncu bilgisi bulunamadı.',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: cast.length,
+                  itemBuilder: (context, index) {
+                    final actor = cast[index]; // Her bir oyuncuyu alıyoruz
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: actor.profilePhotoUrl != null
+                            ? NetworkImage(actor.profilePhotoUrl!)
+                            : null,
+                        backgroundColor: Colors.grey,
+                        child: actor.profilePhotoUrl == null
+                            ? Icon(Icons.person, color: Colors.white)
+                            : null,
                       ),
-                      const SizedBox(width: 12.0),
-                      const Expanded(
-                        child: Text(
-                          'Film İsmi: Örnek Film Adı',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                      title: Text(actor.name),
+                      subtitle: Text(actor.character),
+                    );
+                  },
+                ),
+    );
+  }
+}
 
-                  // Konu Seçimi
-                  const Text(
-                    'Konu Seçimi',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownButton<String>(
-                    value: _konu,
-                    isExpanded: true,
-                    items: <String>[
-                      'Film Yorumları',
-                      'Favori Sahneler',
-                      'Karakter Alıntıları',
-                    ].map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _konu = newValue!;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
+// Actor Modeli
+class Actor {
+  final String name;
+  final String character;
+  final String? profilePhotoUrl;
 
-                  // Başlık
-                  const Text(
-                    'Başlık',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _baslikController,
-                    maxLength: 65,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Başlık giriniz',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+  Actor({
+    required this.name,
+    required this.character,
+    this.profilePhotoUrl,
+  });
 
-                  // Alıntı Alanı
-                  const Text(
-                    'Alıntı *',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _alintiController,
-                    maxLines: 5,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Alıntınızı buraya yazın...',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Sayfa Numarası
-                  const Text(
-                    'Sayfa',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _sayfaController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Alıntı kaçıncı sayfada?',
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Paylaş Butonu
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_baslikController.text.isNotEmpty &&
-                            _alintiController.text.isNotEmpty) {
-                          setState(() {
-                            _isLoading = true;
-                          });
-                          Future.delayed(const Duration(seconds: 2), () {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Alıntı başarıyla eklendi!')),
-                            );
-                          });
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Lütfen zorunlu alanları doldurun!')),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 15),
-                      ),
-                      child: const Text(
-                        'Paylaş',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+  factory Actor.fromJson(Map<String, dynamic> json) {
+    return Actor(
+      name: json['name'] ?? 'Bilinmeyen Oyuncu',
+      character: json['character'] ?? 'Bilinmeyen Karakter',
+      profilePhotoUrl: json['profile_path'] != null
+          ? 'https://image.tmdb.org/t/p/w500${json['profile_path']}'
+          : null,
     );
   }
 }

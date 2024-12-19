@@ -84,7 +84,9 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const AlintiEkle()),
+                          builder: (context) => AlintiEkle(
+                                movieId: 223,
+                              )),
                     );
                     break;
                   case 2:
