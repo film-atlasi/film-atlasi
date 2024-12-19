@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -98,25 +99,3 @@ class _AlintiEkleState extends State<AlintiEkle> {
   }
 }
 
-// Actor Modeli
-class Actor {
-  final String name;
-  final String character;
-  final String? profilePhotoUrl;
-
-  Actor({
-    required this.name,
-    required this.character,
-    this.profilePhotoUrl,
-  });
-
-  factory Actor.fromJson(Map<String, dynamic> json) {
-    return Actor(
-      name: json['name'] ?? 'Bilinmeyen Oyuncu',
-      character: json['character'] ?? 'Bilinmeyen Karakter',
-      profilePhotoUrl: json['profile_path'] != null
-          ? 'https://image.tmdb.org/t/p/w500${json['profile_path']}'
-          : null,
-    );
-  }
-}

@@ -68,9 +68,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
               content: post["content"]);
         }).toList();
       });
-      print(moviePosts[0].movie.posterPath);
+      print(moviePosts);
     } catch (e) {
-      print(e);
+      print("sidar $e");
     }
   }
 
