@@ -56,10 +56,14 @@ class _IletipaylasState extends State<Iletipaylas> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: AppBar(
-      //  backgroundColor: Colors.transparent,
-      //  elevation: 0,
-      //),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,23 +75,21 @@ class _IletipaylasState extends State<Iletipaylas> {
 
   List<Widget> buildDetaylar(BuildContext context) {
     final TextTheme _textTheme = Theme.of(context).textTheme;
-    final double screenHeight = MediaQuery.of(context).size.height;
 
     return [
       if (widget.movie.posterPath.isNotEmpty)
         Stack(
           children: [
-            if (widget.movie.posterPath.isNotEmpty)
-              Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: Image.network(
-                  'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.error, size: 100, color: Colors.red),
-                ),
+            Container(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Image.network(
+                'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.error, size: 100, color: Colors.red),
               ),
+            ),
             Container(
               width: double.infinity,
               height: MediaQuery.of(context).size.height * 0.5,
@@ -136,7 +138,7 @@ class _IletipaylasState extends State<Iletipaylas> {
               },
             ),
             AddVerticalSpace(context, 0.01),
-            const Divider(color: const Color.fromARGB(255, 102, 102, 102)),
+            const Divider(color: Color.fromARGB(255, 102, 102, 102)),
             AddVerticalSpace(context, 0.01),
             Text(
               'Film hakkındaki düşünceleriniz:',
