@@ -68,9 +68,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
               content: post["content"]);
         }).toList();
       });
-      print(moviePosts[0].movie.posterPath);
+      print(moviePosts);
     } catch (e) {
-      print(e);
+      print("sidar $e");
     }
   }
 
@@ -107,7 +107,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
         );
       },
       child: Icon(Icons.add),
-      backgroundColor: Colors.blueGrey,
+      // backgroundColor: Colors.blueGrey,
     );
   }
 }

@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:film_atlasi/features/movie/models/Actor.dart';
+import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
+import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -87,21 +90,33 @@ class _MoviePostCardState extends State<MoviePostCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Film Posteri
-                Container(
-                  width: 120,
-                  height: 180,
-                  color: Colors.red,
-                  child: widget.moviePost.movie.posterPath.isNotEmpty
-                      ? Image.network(
-                          '$baseImageUrl${widget.moviePost.movie.posterPath}',
-                          fit: BoxFit.cover,
-                        )
-                      : Center(
-                          child: Text(
-                            'Poster Yok',
-                            style: TextStyle(color: Colors.black54),
+                GestureDetector(
+                  onTap: () {
+                    // FilmDetay sayfasına yönlendirme
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            MovieDetailsPage(movie: widget.moviePost.movie),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 120,
+                    height: 180,
+                    color: Colors.red,
+                    child: widget.moviePost.movie.posterPath.isNotEmpty
+                        ? Image.network(
+                            '$baseImageUrl${widget.moviePost.movie.posterPath}',
+                            fit: BoxFit.cover,
+                          )
+                        : Center(
+                            child: Text(
+                              'Poster Yok',
+                              style: TextStyle(color: Colors.black54),
+                            ),
                           ),
-                        ),
+                  ),
                 ),
                 const SizedBox(width: 16), // Mesafe eklemek için SizedBox
                 // Film Adı ve Konu
@@ -129,34 +144,65 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       const SizedBox(height: 8),
                       // Başrol Oyuncuları
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: List.generate(3, (index) {
-                          final actor =
-                              index < cast.length ? cast[index] : null;
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 27.0),
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundImage: actor != null &&
-                                      actor['profile_path'] != null
-                                  ? NetworkImage(
-                                      '$baseImageUrl${actor['profile_path']}')
-                                  : null,
-                              backgroundColor: Colors.grey,
-                              child:
-                                  actor == null || actor['profile_path'] == null
-                                      ? Icon(Icons.person,
-                                          color: Colors.white54, size: 20)
-                                      : null,
-                            ),
-                          );
-                        }),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FutureBuilder<List<Actor>>(
+                            future: ActorService.fetchTopThreeActors(
+                                int.parse(widget.moviePost.movie.id)),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Bir hata oluştu.');
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return Text('Oyuncu bilgisi bulunamadı.');
+                              } else {
+                                final actors = snapshot.data!;
+                                return Row(
+                                  children: actors.map((actor) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4.0),
+                                      child: Column(
+                                        children: [
+                                          CircleAvatar(
+                                            backgroundImage:
+                                                actor.profilePhotoUrl != null
+                                                    ? NetworkImage(
+                                                        actor.profilePhotoUrl!)
+                                                    : null,
+                                            backgroundColor: Colors.grey,
+                                            radius: 30,
+                                            child: actor.profilePhotoUrl == null
+                                                ? Icon(Icons.person,
+                                                    color: Colors.white)
+                                                : null,
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            actor.name,
+                                            style: const TextStyle(fontSize: 8),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                );
+                              }
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+
             const SizedBox(height: 18),
             // Beğeni, Yorum, Kaydet İkonları
             Row(

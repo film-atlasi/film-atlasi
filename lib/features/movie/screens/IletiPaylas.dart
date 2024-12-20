@@ -1,8 +1,10 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -139,6 +141,55 @@ class _IletipaylasState extends State<Iletipaylas> {
             ),
             AddVerticalSpace(context, 0.01),
             const Divider(color: Color.fromARGB(255, 102, 102, 102)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FutureBuilder<List<Actor>>(
+                  future: ActorService.fetchTopThreeActors(
+                      int.parse(widget.movie.id)),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Bir hata oluştu.');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Text('Oyuncu bilgisi bulunamadı.');
+                    } else {
+                      final actors = snapshot.data!;
+                      return Row(
+                        children: actors.map((actor) {
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: actor.profilePhotoUrl != null
+                                      ? NetworkImage(actor.profilePhotoUrl!)
+                                      : null,
+                                  backgroundColor: Colors.grey,
+                                  radius: 30,
+                                  child: actor.profilePhotoUrl == null
+                                      ? Icon(Icons.person, color: Colors.white)
+                                      : null,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  actor.name,
+                                  style: const TextStyle(fontSize: 12),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
             AddVerticalSpace(context, 0.01),
             Text(
               'Film hakkındaki düşünceleriniz:',

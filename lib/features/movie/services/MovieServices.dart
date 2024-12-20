@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:http/http.dart' as http;
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 
@@ -87,6 +88,18 @@ class MovieService {
           .toList();
     } else {
       throw Exception('En yüksek puanlı Romantik Komedi filmleri alınamadı');
+    }
+  }
+
+  Future<List<Actor>> getMovieActors(int movieId) async {
+    final response = await http.get(Uri.parse(
+        'https://api.themoviedb.org/3/movie/$movieId/credits?api_key=$apiKey'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List<dynamic> castJson = data['cast'];
+      return castJson.map((json) => Actor.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load cast');
     }
   }
 }

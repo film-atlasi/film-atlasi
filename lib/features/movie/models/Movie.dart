@@ -4,6 +4,7 @@ class Movie {
   final String posterPath;
   final String overview;
   final double voteAverage;
+  
 
   Movie({
     required this.id,
