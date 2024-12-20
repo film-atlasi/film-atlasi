@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
+import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -89,21 +90,33 @@ class _MoviePostCardState extends State<MoviePostCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Film Posteri
-                Container(
-                  width: 120,
-                  height: 180,
-                  color: Colors.red,
-                  child: widget.moviePost.movie.posterPath.isNotEmpty
-                      ? Image.network(
-                          '$baseImageUrl${widget.moviePost.movie.posterPath}',
-                          fit: BoxFit.cover,
-                        )
-                      : Center(
-                          child: Text(
-                            'Poster Yok',
-                            style: TextStyle(color: Colors.black54),
+                GestureDetector(
+                  onTap: () {
+                    // FilmDetay sayfasına yönlendirme
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            MovieDetailsPage(movie: widget.moviePost.movie),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 120,
+                    height: 180,
+                    color: Colors.red,
+                    child: widget.moviePost.movie.posterPath.isNotEmpty
+                        ? Image.network(
+                            '$baseImageUrl${widget.moviePost.movie.posterPath}',
+                            fit: BoxFit.cover,
+                          )
+                        : Center(
+                            child: Text(
+                              'Poster Yok',
+                              style: TextStyle(color: Colors.black54),
+                            ),
                           ),
-                        ),
+                  ),
                 ),
                 const SizedBox(width: 16), // Mesafe eklemek için SizedBox
                 // Film Adı ve Konu
