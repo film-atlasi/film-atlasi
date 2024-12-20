@@ -22,6 +22,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
   final String apiKey = 'YOUR_API_KEY';
   final String baseImageUrl = 'https://image.tmdb.org/t/p/w500';
   List<Map<String, dynamic>> cast = []; // Başrol oyuncuları listesi
+  List<Map<dynamic, dynamic>> allCast = []; // Başrol oyuncuları listesi
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
       final data = json.decode(response.body);
       setState(() {
         // İlk 3 başrol oyuncusunu alıyoruz
+        allCast = (data['cast'] as List<Map<dynamic, dynamic>>).toList();
         cast = (data['cast'] as List)
             .take(3)
             .map((actor) => {
@@ -96,8 +98,9 @@ class _MoviePostCardState extends State<MoviePostCard> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            MovieDetailsPage(movie: widget.moviePost.movie),
+                        builder: (context) => MovieDetailsPage(
+                          movie: widget.moviePost.movie,
+                        ),
                       ),
                     );
                   },
@@ -148,7 +151,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                         children: [
                           FutureBuilder<List<Actor>>(
                             future: ActorService.fetchTopThreeActors(
-                                int.parse(widget.moviePost.movie.id)),
+                                int.parse(widget.moviePost.movie.id), 3),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {

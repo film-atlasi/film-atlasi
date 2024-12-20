@@ -7,7 +7,7 @@ class ActorService {
   static const String apiKey = 'c427167528d75438842677fbca3866fe';
 
   /// Film ID'sine göre ilk 3 aktörü döndüren fonksiyon
-  static Future<List<Actor>> fetchTopThreeActors(int movieId) async {
+  static Future<List<Actor>> fetchTopThreeActors(int movieId, int count) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/movie/$movieId/credits?api_key=$apiKey'),
@@ -20,13 +20,38 @@ class ActorService {
             .toList();
 
         // İlk 3 aktörü al ve döndür
-        return allActors.take(3).toList();
+        return allActors.take(count).toList();
       } else {
         throw Exception('Filmdeki oyuncular alınamadı.');
       }
     } catch (e) {
       print('Hata: $e');
       return [];
+    }
+  }
+
+  static Future<Actor> getDirector(String movieId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/movie/$movieId/credits?api_key=$apiKey'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final crew = data['crew'] as List;
+        final director = crew.firstWhere(
+          (member) => member['job'] == 'Director',
+          orElse: () => null, // Yönetmen bulunamazsa null döner
+        );
+
+        // İlk 3 aktörü al ve döndür
+        return Actor.fromJson(director);
+      } else {
+        throw Exception('Filmdeki oyuncular alınamadı.');
+      }
+    } catch (e) {
+      print('Hata: $e');
+      return Actor(name: "sidar", character: "character");
     }
   }
 }

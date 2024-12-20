@@ -9,7 +9,7 @@ class Actor {
     this.profilePhotoUrl,
   });
 
-  factory Actor.fromJson(Map<String, dynamic> json) {
+  factory Actor.fromJson(Map<dynamic, dynamic> json) {
     return Actor(
       name: json['name'] ?? 'Bilinmeyen Oyuncu',
       character: json['character'] ?? 'Bilinmeyen Karakter',
