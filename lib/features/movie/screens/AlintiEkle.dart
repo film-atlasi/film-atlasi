@@ -98,4 +98,3 @@ class _AlintiEkleState extends State<AlintiEkle> {
     );
   }
 }
-

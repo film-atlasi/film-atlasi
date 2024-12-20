@@ -146,7 +146,7 @@ class _IletipaylasState extends State<Iletipaylas> {
               children: [
                 FutureBuilder<List<Actor>>(
                   future: ActorService.fetchTopThreeActors(
-                      int.parse(widget.movie.id)),
+                      int.parse(widget.movie.id), 3),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return CircularProgressIndicator();
