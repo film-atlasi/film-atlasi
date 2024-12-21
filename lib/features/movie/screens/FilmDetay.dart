@@ -5,6 +5,8 @@ import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
 
+import 'package:intl/intl.dart';
+
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
 
@@ -30,6 +32,64 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     });
   }
 
+  final Map<int, String> genreMap = {
+    28: "Aksiyon",
+    12: "Macera",
+    16: "Animasyon",
+    35: "Komedi",
+    80: "Suç",
+    99: "Belgesel",
+    18: "Dram",
+    10751: "Aile",
+    14: "Fantastik",
+    36: "Tarih",
+    27: "Korku",
+    10402: "Müzik",
+    9648: "Gizem",
+    10749: "Romantik",
+    878: "Bilim Kurgu",
+    10770: "TV Filmi",
+    53: "Gerilim",
+    10752: "Savaş",
+    37: "Western",
+  };
+
+  String reverseDate(String? releaseDate) {
+    if (releaseDate == null || releaseDate.isEmpty) return 'Bilinmiyor';
+    try {
+      // Tarihi "-" karakterine göre ayır
+      final parts = releaseDate.split('-');
+      if (parts.length == 3) {
+        // Gelen tarih sırasını ters çevir: Yıl-Ay-Gün -> Gün-Ay-Yıl
+        final day = parts[2];
+        final month = parts[1];
+        final year = parts[0];
+
+        // Ay numarasını Türkçe yazıya çevir
+        const months = [
+          'Ocak',
+          'Şubat',
+          'Mart',
+          'Nisan',
+          'Mayıs',
+          'Haziran',
+          'Temmuz',
+          'Ağustos',
+          'Eylül',
+          'Ekim',
+          'Kasım',
+          'Aralık'
+        ];
+        final monthName = months[int.parse(month) - 1];
+
+        return "$day $monthName $year"; // Ters çevrilmiş tarih
+      }
+      return 'Bilinmiyor';
+    } catch (e) {
+      return 'Bilinmiyor';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,13 +98,23 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
         backgroundColor: const Color.fromARGB(0, 20, 13, 13),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context); // Geri gitmek için Navigator.pop kullanılır
           },
         ),
+        title: Text(
+          widget.movie.title, // Filmin adını burada gösteriyoruz
+          style: TextStyle(
+            color: Colors.white, // Yazı rengi
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        centerTitle: true, // Başlığı ortalamak için
         actions: [
-          Icon(Icons.more_vert, color: Colors.black),
+          Icon(Icons.more_vert, color: Colors.white),
         ],
       ),
       body: SingleChildScrollView(
@@ -68,37 +138,91 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Yönetmen Bilgisi
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Yönetmen adı
                       Text(
-                        director.name ?? " ",
+                        director.name.isNotEmpty
+                            ? director.name
+                            : "Yönetmen Bilinmiyor",
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(height: 8),
-                      Text(
-                        "Yıl    süre",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+
+                      // Yönetmen fotoğrafı
+                      CircleAvatar(
+                        radius: 30, // Fotoğraf boyutu
+                        backgroundImage: director.profilePhotoUrl != null
+                            ? NetworkImage(director.profilePhotoUrl!)
+                            : null,
+                        backgroundColor: Colors.grey,
+                        child: director.profilePhotoUrl == null
+                            ? Icon(Icons.person, color: Colors.white, size: 30)
+                            : null,
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(
+                          height:
+                              16), // Fotoğraf ile diğer bilgiler arasında boşluk
+
                       Text(
-                        "film türü",
+                        "Yayınlanış Tarihi: ${reverseDate(widget.movie.releaseDate)}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      SizedBox(height: 8),
+
+                      // Türler
+                      Text(
+                        "Tür: ${widget.movie.genreIds != null && widget.movie.genreIds!.isNotEmpty ? widget.movie.genreIds!.map((id) => genreMap[id] ?? 'Bilinmiyor').join(', ') : 'Bilinmiyor'}",
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  Spacer(),
+
+                  Spacer(), // Yönetmen ve IMDB puanı arasındaki boşluğu oluşturur
+
+                  // IMDB Puanı
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SizedBox(height: 8),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.amber, // Sarı kutu
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.star,
+                                color: Colors.white, size: 18), // Yıldız ikonu
+                            SizedBox(width: 4),
+                            Text(
+                              widget.movie.voteAverage
+                                  .toStringAsFixed(1), // Puan
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
+
               SizedBox(height: 16),
 
               // Film Konusu
@@ -166,85 +290,10 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               SizedBox(height: 16),
 
               // Herkese / Arkadaşlar
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(child: Text("herkese")),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(child: Text("arkadaşlar")),
-                    ),
-                  ),
-                ],
-              ),
+
               SizedBox(height: 16),
 
-              // Kullanıcı Listesi
-              Column(
-                children: List.generate(
-                  5,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.grey[400],
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
               // Sizin İçin Alanı
-              Text(
-                "Sizin İçin",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  ...List.generate(
-                    3,
-                    (index) => Expanded(
-                      child: Container(
-                        height: 100,
-                        margin: EdgeInsets.only(right: index < 2 ? 8 : 0),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.arrow_forward),
-                ],
-              ),
             ],
           ),
         ),

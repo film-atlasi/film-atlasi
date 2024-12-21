@@ -22,12 +22,29 @@ class MovieService {
     }
   }
 
-  Future<Movie> getMovieDetails(int movieId) async {
+  Future<Map<int, String>> fetchGenreMap() async {
     final response = await http.get(
-        Uri.parse('$baseUrl/movie/$movieId?api_key=$apiKey&language=tr-TR'));
+      Uri.parse('$baseUrl/genre/movie/list?api_key=$apiKey&language=tr-TR'),
+    );
 
     if (response.statusCode == 200) {
-      return Movie.fromJson(json.decode(response.body));
+      final data = json.decode(response.body);
+      final genres = data['genres'] as List<dynamic>;
+      return {for (var genre in genres) genre['id']: genre['name']};
+    } else {
+      throw Exception('Tür bilgisi alınamadı');
+    }
+  }
+
+  Future<Movie> getMovieDetails(int movieId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/movie/$movieId?api_key=$apiKey&language=tr-TR'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print("Gelen JSON: $data"); // Gelen JSON'u konsola yazdır
+      return Movie.fromJson(data);
     } else {
       throw Exception('Film detayları alınamadı');
     }

@@ -44,14 +44,18 @@ class ActorService {
           orElse: () => null, // Yönetmen bulunamazsa null döner
         );
 
-        // İlk 3 aktörü al ve döndür
-        return Actor.fromJson(director);
+        if (director != null) {
+          return Actor.fromJson(
+              director); // Yönetmen bilgisi Actor modeline dönüştürülüyor
+        } else {
+          throw Exception('Yönetmen bulunamadı.');
+        }
       } else {
-        throw Exception('Filmdeki oyuncular alınamadı.');
+        throw Exception('Yönetmen bilgisi alınamadı.');
       }
     } catch (e) {
       print('Hata: $e');
-      return Actor(name: "sidar", character: "character");
+      return Actor(name: "Bilinmeyen Yönetmen", character: "Yönetmen");
     }
   }
 }
