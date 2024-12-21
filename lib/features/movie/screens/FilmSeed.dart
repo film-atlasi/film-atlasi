@@ -89,25 +89,6 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                 // Film postlarını listeliyoruz
               },
             ),
-      floatingActionButton: buildFloatingActionButton(context),
-    );
-  }
-
-  FloatingActionButton buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton(
-      shape: CircleBorder(),
-      onPressed: () {
-        showModalBottomSheet(
-          // Modal açılır
-          context: context, // Context
-          builder: (BuildContext context) {
-            // Modal içeriği
-            return FilmEkleWidget(); // Film ekleme widget'ı
-          },
-        );
-      },
-      child: Icon(Icons.add),
-      // backgroundColor: Colors.blueGrey,
     );
   }
 }
