@@ -30,7 +30,10 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
 
   Future<void> fetchAllPosts() async {
     try {
-      QuerySnapshot postsSnapshot = await firestore.collection("posts").get();
+      QuerySnapshot postsSnapshot = await firestore
+          .collection("posts")
+          .orderBy('timestamp', descending: true)
+          .get();
       List<Map<String, dynamic>> posts = postsSnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
@@ -77,18 +80,39 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _loading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              itemCount: moviePosts.length,
-              itemBuilder: (context, index) {
-                final post = moviePosts[index];
-                return MoviePostCard(moviePost: post);
-                // Film postlarını listeliyoruz
-              },
-            ),
+      body: RefreshIndicator(
+        onRefresh: () => fetchAllPosts(),
+        child: _loading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                itemCount: moviePosts.length,
+                itemBuilder: (context, index) {
+                  final post = moviePosts[index];
+                  return MoviePostCard(moviePost: post);
+                  // Film postlarını listeliyoruz
+                },
+              ),
+      ),
+      floatingActionButton: buildFloatingActionButton(context),
+    );
+  }
+
+  FloatingActionButton buildFloatingActionButton(BuildContext context) {
+    return FloatingActionButton(
+      shape: CircleBorder(),
+      onPressed: () {
+        showModalBottomSheet(
+          // Modal açılır
+          context: context, // Context
+          builder: (BuildContext context) {
+            // Modal içeriği
+            return FilmEkleWidget(); // Film ekleme widget'ı
+          },
+        );
+      },
+      child: Icon(Icons.add),
     );
   }
 }
