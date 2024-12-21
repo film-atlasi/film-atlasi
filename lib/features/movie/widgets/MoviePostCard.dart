@@ -92,7 +92,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
             Text(
               widget.moviePost.content,
               style: TextStyle(
-                color: Color(0xFF87093d),
+                color: Color.fromARGB(255, 161, 1, 182),
               ),
             ),
             SizedBox(height: 10),

@@ -14,8 +14,6 @@ class FilmAtlasiApp extends StatefulWidget {
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   int pageIndex = 0;
 
-
-
   final List<Widget> _pages = const [
     Anasayfa(),
     DiscoverPage(),
@@ -33,19 +31,17 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
 
   FloatingActionButton buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton(
+      heroTag: 'uniqueHeroTag', // Benzersiz bir tag ekleyin
       shape: CircleBorder(),
       onPressed: () {
         showModalBottomSheet(
-          // Modal açılır
-          context: context, // Context
+          context: context,
           builder: (BuildContext context) {
-            // Modal içeriği
-            return FilmEkleWidget(); // Film ekleme widget'ı
+            return FilmEkleWidget();
           },
         );
       },
       child: Icon(Icons.add),
-      // backgroundColor: Colors.blueGrey,
     );
   }
 
