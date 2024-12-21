@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Movie {
   final String id; // Film ID'si
   final String title; // Film Başlığı
@@ -54,6 +56,22 @@ class Movie {
       releaseDate: map['release_date'],
       genreIds:
           (map['genre_ids'] as List<dynamic>?)?.map((id) => id as int).toList(),
+    );
+  }
+
+  factory Movie.fromFirebase(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Movie(
+      id: doc.id,
+      title: data['title'] ?? '',
+      posterPath: data['posterPath'] ?? '',
+      overview: data['overview'] ?? '',
+      voteAverage: (data['vote_average'] ?? 0).toDouble(),
+      releaseDate: data['release_date'] ?? '',
+      genreIds: (data['genre_ids'] as List<dynamic>?)
+              ?.map((id) => id as int)
+              .toList() ??
+          [],
     );
   }
 

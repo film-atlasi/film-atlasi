@@ -3,19 +3,19 @@ import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+class UserPage extends StatefulWidget {
+  final String userUid;
+  const UserPage({super.key, required this.userUid});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  State<UserPage> createState() => _UserPageState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
+class _UserPageState extends State<UserPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Map<String, dynamic>? userData;
   bool isLoading = true;
-  late String userUid;
 
   @override
   void initState() {
@@ -37,11 +37,10 @@ class _ProfileScreenState extends State<ProfileScreen>
       if (currentUser != null) {
         final snapshot = await FirebaseFirestore.instance
             .collection('users')
-            .doc(currentUser.uid)
+            .doc(widget.userUid)
             .get();
 
         setState(() {
-          userUid = currentUser.uid;
           userData = snapshot.exists ? snapshot.data() : null;
           isLoading = false;
         });
@@ -55,6 +54,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : userData == null
@@ -184,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                Center(child: FilmKutusu(userUid: userUid)),
+                Center(child: FilmKutusu(userUid: widget.userUid)),
                 Center(child: Text("Film Listesi İçeriği")),
                 Center(child: Text("Beğenilenler İçeriği")),
               ],
@@ -207,9 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: const Text(
             "Düzenle",
             style: TextStyle(
-              color: Colors
-                  .red, // Metin rengini siyah yaparak temadaki butona uyum sağladık
-              fontSize: 16,
+              color: Colors.red,
               fontWeight: FontWeight.bold,
             ),
           ),

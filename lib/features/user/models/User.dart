@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 
 class User {
+  final String? uid;
   final String? firstName;
   final String? surname;
   final String? userName;
@@ -25,6 +26,7 @@ class User {
   final String? email;
 
   User({
+    this.uid,
     this.firstName,
     this.surname,
     this.userName,
@@ -94,6 +96,20 @@ class User {
           ? (map['createdAt'] as Timestamp)
           : null,
       email: map['email'] as String?,
+    );
+  }
+
+  factory User.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return User(
+      uid: doc.id,
+      userName: data['userName'] ?? '',
+      firstName: data['firstName'] ?? '',
+      email: data['email'] ?? '',
+      city: data['city'] ?? '',
+      createdAt: data['createdAt'] ?? Timestamp.now(),
+      age: data['age'] ?? 0,
+      job: data['job'] ?? '',
     );
   }
 
