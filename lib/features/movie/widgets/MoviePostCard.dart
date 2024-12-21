@@ -78,7 +78,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 const SizedBox(width: 12),
                 // Kullanıcı Adı
                 Text(
-                  '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.surname ?? ''}',
+                  '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 17,

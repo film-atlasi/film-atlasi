@@ -21,6 +21,7 @@ class Iletipaylas extends StatefulWidget {
 class _IletipaylasState extends State<Iletipaylas> {
   double _rating = 0.0;
   final TextEditingController _textEditingController = TextEditingController();
+
   bool? _recommendation;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -50,7 +51,8 @@ class _IletipaylasState extends State<Iletipaylas> {
         "movie": film_id,
         "likes": 0,
         "comments": 0,
-        "content": _textEditingController.text
+        "content": _textEditingController.text,
+        "timestamp": FieldValue.serverTimestamp(), // Server zamanı
       });
     } catch (e) {}
   }

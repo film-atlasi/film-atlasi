@@ -15,6 +15,9 @@ class FilmAtlasiApp extends StatefulWidget {
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   int pageIndex = 0;
+
+
+
   final List<Widget> _pages = const [
     Anasayfa(),
     DiscoverPage(),

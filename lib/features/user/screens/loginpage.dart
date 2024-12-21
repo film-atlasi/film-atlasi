@@ -23,12 +23,14 @@ class _LoginpageState extends State<Loginpage> {
   final firebaseAuth = FirebaseAuth.instance;
 
   bool _obscurePassword = true; // Şifreyi gizlemek için kullanılan değişken
-  bool _isHovering = false; // Butona fare ile üzerine gelindi mi kontrolü
-  void initstate() {
+  bool _isHovering = false; 
+  // Butona fare ile üzerine gelindi mi kontrolü
+ void initState() {
     super.initState();
-    _emailController.text = "cel@gmail.com";
-    _passwordController.text = "123456";
-  }
+    _emailController.text = "aycaa@gmail.com";
+    _passwordController.text = "hataylı";
+ }
+
 
   @override
   Widget build(BuildContext context) {
