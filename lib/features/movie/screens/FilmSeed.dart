@@ -77,18 +77,21 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _loading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              itemCount: moviePosts.length,
-              itemBuilder: (context, index) {
-                final post = moviePosts[index];
-                return MoviePostCard(moviePost: post);
-                // Film postlarını listeliyoruz
-              },
-            ),
+      body: RefreshIndicator(
+        onRefresh: () => fetchAllPosts(),
+        child: _loading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                itemCount: moviePosts.length,
+                itemBuilder: (context, index) {
+                  final post = moviePosts[index];
+                  return MoviePostCard(moviePost: post);
+                  // Film postlarını listeliyoruz
+                },
+              ),
+      ),
       floatingActionButton: buildFloatingActionButton(context),
     );
   }
@@ -107,7 +110,6 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
         );
       },
       child: Icon(Icons.add),
-      // backgroundColor: Colors.blueGrey,
     );
   }
 }
