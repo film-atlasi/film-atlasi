@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
+import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:http/http.dart' as http;
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 
@@ -13,7 +15,6 @@ class MovieService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      print(data);
       return (data['results'] as List)
           .map((movie) => Movie.fromJson(movie))
           .toList();
@@ -117,6 +118,22 @@ class MovieService {
       return castJson.map((json) => Actor.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load cast');
+    }
+  }
+
+  Future<Movie?> getMovieByUid(String Uid) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final moviesCollection = firestore.collection('films');
+      final docSnapshot = await moviesCollection.doc(Uid).get();
+      if (docSnapshot.exists) {
+        return Movie.fromFirebase(docSnapshot);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching movie by UID: $e');
+      return null;
     }
   }
 }
