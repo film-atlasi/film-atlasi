@@ -41,7 +41,10 @@ class _IletipaylasState extends State<Iletipaylas> {
           "title": filmData.title,
           "posterPath": filmData.posterPath,
           "overview": filmData.overview,
-          "voteAverage": filmData.voteAverage
+          "voteAverage": filmData.voteAverage,
+          "genre_ids": filmData.genreIds,
+          "release_date": filmData.releaseDate,
+          "vote_average": filmData.voteAverage
         });
       }
 
