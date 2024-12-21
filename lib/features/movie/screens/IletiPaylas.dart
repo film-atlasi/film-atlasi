@@ -125,7 +125,7 @@ class _IletipaylasState extends State<Iletipaylas> {
             ),
             AddVerticalSpace(context, 0.015),
             Text(
-              '10 üzerinden kaç verdiniz?',
+              '5 üzerinden kaç verdiniz?',
               style: _textTheme.bodyMedium,
             ),
             AddVerticalSpace(context, 0.005),
