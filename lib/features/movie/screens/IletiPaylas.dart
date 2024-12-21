@@ -5,6 +5,7 @@ import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmListButton.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -42,7 +43,10 @@ class _IletipaylasState extends State<Iletipaylas> {
           "title": filmData.title,
           "posterPath": filmData.posterPath,
           "overview": filmData.overview,
-          "voteAverage": filmData.voteAverage
+          "voteAverage": filmData.voteAverage,
+          "genre_ids": filmData.genreIds,
+          "release_date": filmData.releaseDate,
+          "vote_average": filmData.voteAverage
         });
       }
 
@@ -54,7 +58,12 @@ class _IletipaylasState extends State<Iletipaylas> {
         "content": _textEditingController.text,
         "timestamp": FieldValue.serverTimestamp(), // Server zamanı
       });
-    } catch (e) {}
+    } catch (e) {
+      print("Hata oluştu: $e"); // Hata detayını konsola yazdırır
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bir hata oluştu: $e')),
+      );
+    }
   }
 
   @override
@@ -121,7 +130,7 @@ class _IletipaylasState extends State<Iletipaylas> {
             ),
             AddVerticalSpace(context, 0.015),
             Text(
-              '10 üzerinden kaç verdiniz?',
+              '5 üzerinden kaç verdiniz?',
               style: _textTheme.bodyMedium,
             ),
             AddVerticalSpace(context, 0.005),
@@ -211,12 +220,8 @@ class _IletipaylasState extends State<Iletipaylas> {
                   contentPadding: const EdgeInsets.all(20)),
             ),
             AddVerticalSpace(context, 0.03),
-            Text(
-              'Filmi tavsiye eder misiniz?',
-              style: _textTheme.bodyLarge,
-            ),
             const SizedBox(height: 10),
-            buildTavsiyeButonlari(),
+            AddToMyListButton(),
             const SizedBox(height: 20),
             buildPaylasButton(context),
           ],
@@ -234,6 +239,8 @@ class _IletipaylasState extends State<Iletipaylas> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('İnceleme paylaşıldı!')),
             );
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Lütfen tüm alanları doldurun!')),
@@ -244,110 +251,6 @@ class _IletipaylasState extends State<Iletipaylas> {
           backgroundColor: Colors.blue,
         ),
         child: const Text('Paylaş'),
-      ),
-    );
-  }
-
-  Widget buildTavsiyeButonlari() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center, // Ortala
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: _recommendation == true
-                      ? [Colors.green.shade400, Colors.green.shade600]
-                      : [Colors.grey.shade300, Colors.grey.shade500],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    offset: const Offset(0, 4),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _recommendation = true;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const AutoSizeText(
-                  'Evet',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 0, 0, 0),
-                  ),
-                  maxFontSize: 18, // Maksimum font boyutu
-                  minFontSize: 12, // Minimum font boyutu
-                  maxLines: 1, // Tek satırda kalsın
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10.0), // Butonlar arası boşluk
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: _recommendation == false
-                      ? [Colors.red.shade400, Colors.red.shade600]
-                      : [Colors.grey.shade300, Colors.grey.shade500],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    offset: const Offset(0, 4),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _recommendation = false;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const AutoSizeText(
-                  'Hayır',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  maxFontSize: 18,
-                  minFontSize: 12,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

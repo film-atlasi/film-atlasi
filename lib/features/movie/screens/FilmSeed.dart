@@ -109,6 +109,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                 // Film postlarını listeliyoruz
               },
             ),
+            ),
 >>>>>>> 17fc22c (timestamp eklendi, postlar sırayla paylaşılıyor, ana sayfa güncelleme eklendi)
       ),
       floatingActionButton: buildFloatingActionButton(context),

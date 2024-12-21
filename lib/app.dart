@@ -1,10 +1,8 @@
-import 'package:film_atlasi/core/provider/PageIndexProvider.dart';
 import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
 import 'package:film_atlasi/features/movie/screens/DiscoverPage.dart';
 import 'package:film_atlasi/features/user/screens/Profile.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class FilmAtlasiApp extends StatefulWidget {
   const FilmAtlasiApp({super.key});
@@ -29,6 +27,25 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
     return Scaffold(
       body: _pages[pageIndex],
       bottomNavigationBar: buildBottomBar(context, pageIndex),
+      floatingActionButton: buildFloatingActionButton(context),
+    );
+  }
+
+  FloatingActionButton buildFloatingActionButton(BuildContext context) {
+    return FloatingActionButton(
+      shape: CircleBorder(),
+      onPressed: () {
+        showModalBottomSheet(
+          // Modal açılır
+          context: context, // Context
+          builder: (BuildContext context) {
+            // Modal içeriği
+            return FilmEkleWidget(); // Film ekleme widget'ı
+          },
+        );
+      },
+      child: Icon(Icons.add),
+      // backgroundColor: Colors.blueGrey,
     );
   }
 
