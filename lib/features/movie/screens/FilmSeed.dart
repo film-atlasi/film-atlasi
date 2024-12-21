@@ -31,9 +31,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   Future<void> fetchAllPosts() async {
     try {
       QuerySnapshot postsSnapshot = await firestore
-      .collection("posts")
-       .orderBy('timestamp', descending: true) 
-       .get();
+          .collection("posts")
+          .orderBy('timestamp', descending: true)
+          .get();
       List<Map<String, dynamic>> posts = postsSnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
@@ -81,7 +81,6 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
-<<<<<<< HEAD
         onRefresh: () => fetchAllPosts(),
         child: _loading
             ? Center(
@@ -95,22 +94,6 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                   // Film postlarını listeliyoruz
                 },
               ),
-=======
-        onRefresh:() => fetchAllPosts(),
-    child:  _loading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              itemCount: moviePosts.length,
-              itemBuilder: (context, index) {
-                final post = moviePosts[index];
-                return MoviePostCard(moviePost: post);
-                // Film postlarını listeliyoruz
-              },
-            ),
-            ),
->>>>>>> 17fc22c (timestamp eklendi, postlar sırayla paylaşılıyor, ana sayfa güncelleme eklendi)
       ),
       floatingActionButton: buildFloatingActionButton(context),
     );
