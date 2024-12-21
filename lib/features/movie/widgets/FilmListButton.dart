@@ -74,7 +74,7 @@ class _AddToMyListButtonState extends State<AddToMyListButton>
                   ),
                   child: Center(
                     child: Text(
-                      _isAdded ? 'Listeme eklendi  !' : 'FilmList Ekle?',
+                      _isAdded ? 'Listeme eklendi  !' : 'FilmList Ekle',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,

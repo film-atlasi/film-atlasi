@@ -75,6 +75,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                   backgroundColor: Colors.white,
                   radius: 20,
                 ),
+
                 const SizedBox(width: 12),
                 // Kullanıcı Adı
                 Text(
@@ -86,6 +87,15 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 ),
               ],
             ),
+            // İçerik Kısmı
+            SizedBox(height: 10),
+            Text(
+              widget.moviePost.content,
+              style: TextStyle(
+                color: Color(0xFF87093d),
+              ),
+            ),
+            SizedBox(height: 10),
             const SizedBox(height: 8),
             // Film Posteri, Başlık ve Konu
             Row(
@@ -144,67 +154,73 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       ),
                       const SizedBox(height: 20), // Konunun altında boşluk
 
-                      const SizedBox(height: 8),
                       // Başrol Oyuncuları
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          FutureBuilder<List<Actor>>(
-                            future: ActorService.fetchTopThreeActors(
-                                int.parse(widget.moviePost.movie.id), 3),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return CircularProgressIndicator();
-                              } else if (snapshot.hasError) {
-                                return Text('Bir hata oluştu.');
-                              } else if (!snapshot.hasData ||
-                                  snapshot.data!.isEmpty) {
-                                return Text('Oyuncu bilgisi bulunamadı.');
-                              } else {
-                                final actors = snapshot.data!;
-                                return Row(
-                                  children: actors.map((actor) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4.0),
-                                      child: Column(
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundImage:
-                                                actor.profilePhotoUrl != null
-                                                    ? NetworkImage(
-                                                        actor.profilePhotoUrl!)
-                                                    : null,
-                                            backgroundColor: Colors.grey,
-                                            radius: 30,
-                                            child: actor.profilePhotoUrl == null
-                                                ? Icon(Icons.person,
-                                                    color: Colors.white)
-                                                : null,
-                                          ),
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            actor.name,
-                                            style: const TextStyle(fontSize: 8),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            FutureBuilder<List<Actor>>(
+                              future: ActorService.fetchTopThreeActors(
+                                  int.parse(widget.moviePost.movie.id), 5),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return CircularProgressIndicator();
+                                } else if (snapshot.hasError) {
+                                  return Text('Bir hata oluştu.');
+                                } else if (!snapshot.hasData ||
+                                    snapshot.data!.isEmpty) {
+                                  return Text('Oyuncu bilgisi bulunamadı.');
+                                } else {
+                                  final actors = snapshot.data!;
+                                  return Row(
+                                    children: actors.map((actor) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 3.0),
+                                        child: Column(
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundImage: actor
+                                                          .profilePhotoUrl !=
+                                                      null
+                                                  ? NetworkImage(
+                                                      actor.profilePhotoUrl!)
+                                                  : null,
+                                              backgroundColor: Colors.grey,
+                                              radius: 20,
+                                              child:
+                                                  actor.profilePhotoUrl == null
+                                                      ? Icon(Icons.person,
+                                                          color: Colors.white)
+                                                      : null,
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              actor.name,
+                                              style:
+                                                  const TextStyle(fontSize: 8),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 8),
 
             const SizedBox(height: 18),
             // Beğeni, Yorum, Kaydet İkonları
