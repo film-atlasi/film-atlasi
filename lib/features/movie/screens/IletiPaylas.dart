@@ -69,14 +69,6 @@ class _IletipaylasState extends State<Iletipaylas> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,6 +142,7 @@ class _IletipaylasState extends State<Iletipaylas> {
                 });
               },
             ),
+            SizedBox(height: 10),
             AddVerticalSpace(context, 0.01),
             const Divider(color: Color.fromARGB(255, 102, 102, 102)),
             Row(

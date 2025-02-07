@@ -76,7 +76,6 @@ class _AddToMyListButtonState extends State<AddToMyListButton>
                     child: Text(
                       _isAdded ? 'Listeme eklendi  !' : 'FilmList Ekle',
                       style: const TextStyle(
-                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -86,15 +85,6 @@ class _AddToMyListButtonState extends State<AddToMyListButton>
               );
             },
           ),
-          // if (_isAdded)
-          //   Positioned(
-          //     right: 0,
-          //     child: Icon(
-          //       Icons.check_circle,
-          //       color: Colors.green,
-          //       size: 50,
-          //     ),
-          //   ),
         ],
       ),
     );

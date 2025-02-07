@@ -1,5 +1,6 @@
 import 'package:film_atlasi/features/movie/screens/AlintiEkle.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmList.dart';
 import 'package:flutter/material.dart';
 
 class FilmEkleWidget extends StatefulWidget {
@@ -14,27 +15,22 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
     const Icon(Icons.edit, color: Colors.white),
     const Text(
       'Film Ara Ve incele',
-      style: TextStyle(color: Colors.white),
     ),
     const Icon(Icons.format_quote, color: Colors.white),
     const Text(
       'Filmden Alıntı Paylaş',
-      style: TextStyle(color: Colors.white),
     ),
     const Icon(Icons.message, color: Colors.white),
     const Text(
       'İleti Paylaş',
-      style: TextStyle(color: Colors.white),
     ),
     const Icon(Icons.book, color: Colors.white),
     const Text(
       'Filmi Favorilere Ekle',
-      style: TextStyle(color: Colors.white),
     ),
     const Icon(Icons.track_changes, color: Colors.white),
     const Text(
       'İzleme Hedefi',
-      style: TextStyle(color: Colors.white),
     ),
   ];
 
@@ -99,8 +95,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                   case 3:
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const FilmAraWidget()),
+                      MaterialPageRoute(builder: (context) => FilmList()),
                     );
                     break;
                   case 4:

@@ -13,12 +13,19 @@ class FilmAtlasiApp extends StatefulWidget {
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   int pageIndex = 0;
+  final GlobalKey<AnasayfaState> _anasayfaKey = GlobalKey<AnasayfaState>();
 
-  final List<Widget> _pages = const [
-    Anasayfa(),
-    DiscoverPage(),
-    ProfileScreen()
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      Anasayfa(key: _anasayfaKey),
+      DiscoverPage(),
+      ProfileScreen()
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,22 +33,6 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
       body: _pages[pageIndex],
       bottomNavigationBar: buildBottomBar(context, pageIndex),
       floatingActionButton: buildFloatingActionButton(context),
-    );
-  }
-
-  FloatingActionButton buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton(
-      heroTag: 'uniqueHeroTag', // Benzersiz bir tag ekleyin
-      shape: CircleBorder(),
-      onPressed: () {
-        showModalBottomSheet(
-          context: context,
-          builder: (BuildContext context) {
-            return FilmEkleWidget();
-          },
-        );
-      },
-      child: Icon(Icons.add),
     );
   }
 
@@ -68,15 +59,27 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
           icon: Icon(Icons.explore), // Keşfet ikonu
           label: 'Keşfet',
         ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.search), // Arama ikonu
-        //   label: 'Keşfet',
-        // ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person), // Mesaj ikonu
           label: 'Hesabım',
         ),
       ],
+    );
+  }
+
+  FloatingActionButton buildFloatingActionButton(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: 'uniqueHeroTag', // Benzersiz bir tag ekleyin
+      shape: CircleBorder(),
+      onPressed: () {
+        showModalBottomSheet(
+          context: context,
+          builder: (BuildContext context) {
+            return FilmEkleWidget();
+          },
+        );
+      },
+      child: Icon(Icons.add),
     );
   }
 }
