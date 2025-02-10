@@ -17,7 +17,7 @@ class MovieDetailsPage extends StatefulWidget {
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  late Actor director = Actor(name: "name", character: "character");
+  late Actor director = Actor(name: "name", character: "character", id:-1);
   @override
   void initState() {
     // TODO: implement initState

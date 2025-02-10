@@ -136,4 +136,20 @@ class MovieService {
       return null;
     }
   }
+
+  Future<List<Movie>> getMoviesByActor(int actorId) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/person/$actorId/movie_credits?api_key=$apiKey&language=tr-TR'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['cast'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Oyuncunun filmleri alınamadı');
+    }
+  }
 }
