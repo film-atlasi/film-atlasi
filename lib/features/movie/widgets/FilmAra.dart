@@ -7,7 +7,11 @@ import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:flutter/material.dart';
 
 class FilmAraWidget extends StatefulWidget {
-  const FilmAraWidget({super.key});
+  /// Film seçildiğinde çalışacak callback fonksiyonu.
+  /// Eğer callback sağlanmazsa, varsayılan olarak Iletipaylas ekranına yönlendirme yapılır.
+  final void Function(Movie)? onMovieSelected;
+
+  const FilmAraWidget({Key? key, this.onMovieSelected}) : super(key: key);
 
   @override
   State<FilmAraWidget> createState() => _FilmAraWidgetState();
@@ -121,12 +125,18 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
         style: const TextStyle(color: Colors.grey),
       ),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Iletipaylas(movie: movie),
-          ),
-        );
+        if (widget.onMovieSelected != null) {
+          // Callback sağlanmışsa onu çalıştırıyoruz
+          widget.onMovieSelected!(movie);
+        } else {
+          // Callback yoksa eski davranış: Iletipaylas ekranına yönlendir
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Iletipaylas(movie: movie),
+            ),
+          );
+        }
       },
     );
   }
@@ -140,11 +150,14 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
       subtitle: Text(
         user.firstName ?? "first name",
         style: const TextStyle(color: Colors.grey),
-      ),onTap: () {
+      ),
+      onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => UserPage(userUid: user.uid!,),
+            builder: (context) => UserPage(
+              userUid: user.uid!,
+            ),
           ),
         );
       },

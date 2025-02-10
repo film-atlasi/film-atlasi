@@ -153,7 +153,6 @@ class _MoviePostCardState extends State<MoviePostCard> {
                             color: Colors.white54, fontSize: 12),
                       ),
                       const SizedBox(height: 20), // Konunun altında boşluk
-
                       // Başrol Oyuncuları
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -176,35 +175,84 @@ class _MoviePostCardState extends State<MoviePostCard> {
                                   final actors = snapshot.data!;
                                   return Row(
                                     children: actors.map((actor) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 3.0),
-                                        child: Column(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundImage: actor
-                                                          .profilePhotoUrl !=
-                                                      null
-                                                  ? NetworkImage(
-                                                      actor.profilePhotoUrl!)
-                                                  : null,
-                                              backgroundColor: Colors.grey,
-                                              radius: 20,
-                                              child:
-                                                  actor.profilePhotoUrl == null
-                                                      ? Icon(Icons.person,
-                                                          color: Colors.white)
-                                                      : null,
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Text(
-                                              actor.name,
-                                              style:
-                                                  const TextStyle(fontSize: 8),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
+                                      return GestureDetector(
+                                        onTap: () {
+                                          // Show actor details in a dialog
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                backgroundColor: Colors.black87,
+                                                content: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundImage: actor
+                                                                  .profilePhotoUrl !=
+                                                              null
+                                                          ? NetworkImage(actor
+                                                              .profilePhotoUrl!)
+                                                          : null,
+                                                      backgroundColor:
+                                                          Colors.grey,
+                                                      radius: 50,
+                                                      child:
+                                                          actor.profilePhotoUrl ==
+                                                                  null
+                                                              ? Icon(
+                                                                  Icons.person,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 50)
+                                                              : null,
+                                                    ),
+                                                    SizedBox(height: 16),
+                                                    Text(
+                                                      actor.name,
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3.0),
+                                          child: Column(
+                                            children: [
+                                              CircleAvatar(
+                                                backgroundImage: actor
+                                                            .profilePhotoUrl !=
+                                                        null
+                                                    ? NetworkImage(
+                                                        actor.profilePhotoUrl!)
+                                                    : null,
+                                                backgroundColor: Colors.grey,
+                                                radius: 20,
+                                                child: actor.profilePhotoUrl ==
+                                                        null
+                                                    ? Icon(Icons.person,
+                                                        color: Colors.white)
+                                                    : null,
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                actor.name,
+                                                style: const TextStyle(
+                                                    fontSize: 8),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       );
                                     }).toList(),
