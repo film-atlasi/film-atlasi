@@ -137,19 +137,27 @@ class MovieService {
     }
   }
 
-  Future<List<Movie>> getMoviesByActor(int actorId) async {
-    final response = await http.get(
-      Uri.parse(
-          '$baseUrl/person/$actorId/movie_credits?api_key=$apiKey&language=tr-TR'),
-    );
+  Future<List<Movie>> getMoviesByActor(int actorId, int page) async {
+    final String url =
+        '$baseUrl/discover/movie?api_key=$apiKey&with_cast=$actorId&page=$page&language=tr-TR';
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return (data['cast'] as List)
-          .map((movie) => Movie.fromJson(movie))
-          .toList();
-    } else {
-      throw Exception('Oyuncunun filmleri alınamadı');
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        List<Movie> movies = (data['results'] as List)
+            .map((movieJson) => Movie.fromJson(movieJson))
+            .toList();
+
+        return movies;
+      } else {
+        print("API Hatası: ${response.statusCode} - ${response.body}");
+        return [];
+      }
+    } catch (e) {
+      print("İstek sırasında hata oluştu: $e");
+      return [];
     }
   }
 }

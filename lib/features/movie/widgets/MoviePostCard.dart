@@ -3,6 +3,7 @@ import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
+import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -176,51 +177,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                                   final actors = snapshot.data!;
                                   return Row(
                                     children: actors.map((actor) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ActorMoviesPage(
-                                                actorName: actor.name,
-                                                actorId: actor.id,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 3.0),
-                                          child: Column(
-                                            children: [
-                                              CircleAvatar(
-                                                backgroundImage: actor
-                                                            .profilePhotoUrl !=
-                                                        null
-                                                    ? NetworkImage(
-                                                        actor.profilePhotoUrl!)
-                                                    : null,
-                                                backgroundColor: Colors.grey,
-                                                radius: 20,
-                                                child: actor.profilePhotoUrl ==
-                                                        null
-                                                    ? Icon(Icons.person,
-                                                        color: Colors.white)
-                                                    : null,
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                actor.name,
-                                                style: const TextStyle(
-                                                    fontSize: 8),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
+                                      return OyuncuCircleAvatar(actor: actor,);
                                     }).toList(),
                                   );
                                 }
