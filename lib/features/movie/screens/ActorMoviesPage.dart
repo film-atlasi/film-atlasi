@@ -37,7 +37,8 @@ class _ActorMoviesPageState extends State<ActorMoviesPage> {
 
     try {
       await Future.delayed(Duration(milliseconds: 500)); // UI takılmasını önler
-      final fetchedMovies = await _movieService.getMoviesByActor(widget.actorId, currentPage);
+      final fetchedMovies =
+          await _movieService.getMoviesByActor(widget.actorId, currentPage);
       if (fetchedMovies.isNotEmpty) {
         setState(() {
           movies.addAll(fetchedMovies);
@@ -114,7 +115,8 @@ class _ActorMoviesPageState extends State<ActorMoviesPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MovieDetailsPage(movie: movie),
+                            builder: (context) =>
+                                MovieDetailsPage(movie: movie),
                           ),
                         );
                       },
