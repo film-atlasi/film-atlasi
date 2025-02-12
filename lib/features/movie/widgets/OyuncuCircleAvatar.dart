@@ -1,13 +1,15 @@
-
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:flutter/material.dart';
 
 class OyuncuCircleAvatar extends StatelessWidget {
   final Actor actor;
+  final double radius; // Double olarak güncellendi
+
   const OyuncuCircleAvatar({
     super.key,
-    required this.actor
+    required this.actor,
+    this.radius = 25.0, // Varsayılan değer eklendi
   });
 
   @override
@@ -17,8 +19,7 @@ class OyuncuCircleAvatar extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ActorMoviesPage(
+            builder: (context) => ActorMoviesPage(
               actorName: actor.name,
               actorId: actor.id,
             ),
@@ -26,30 +27,23 @@ class OyuncuCircleAvatar extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 3.0),
+        padding: const EdgeInsets.symmetric(horizontal: 3.0),
         child: Column(
           children: [
             CircleAvatar(
-              backgroundImage: actor
-                          .profilePhotoUrl !=
-                      null
-                  ? NetworkImage(
-                      actor.profilePhotoUrl!)
+              backgroundImage: actor.profilePhotoUrl != null
+                  ? NetworkImage(actor.profilePhotoUrl!)
                   : null,
               backgroundColor: Colors.grey,
-              radius: 20,
-              child: actor.profilePhotoUrl ==
-                      null
-                  ? Icon(Icons.person,
-                      color: Colors.white)
+              radius: radius, // Parametre olarak verilen radius kullanıldı
+              child: actor.profilePhotoUrl == null
+                  ? const Icon(Icons.person, color: Colors.white)
                   : null,
             ),
             const SizedBox(height: 3),
             Text(
               actor.name,
-              style: const TextStyle(
-                  fontSize: 8),
+              style: const TextStyle(fontSize: 8),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

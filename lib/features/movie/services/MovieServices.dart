@@ -136,7 +136,7 @@ class MovieService {
       return null;
     }
   }
-
+  // actorlerin filmlerini sergileme için kullanılıyor 
   Future<List<Movie>> getMoviesByActor(int actorId, int page) async {
     final String url =
         '$baseUrl/discover/movie?api_key=$apiKey&with_cast=$actorId&page=$page&language=tr-TR';

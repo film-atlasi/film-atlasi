@@ -177,7 +177,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                                   final actors = snapshot.data!;
                                   return Row(
                                     children: actors.map((actor) {
-                                      return OyuncuCircleAvatar(actor: actor,);
+                                      return OyuncuCircleAvatar(actor: actor);
                                     }).toList(),
                                   );
                                 }

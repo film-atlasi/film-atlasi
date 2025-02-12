@@ -6,6 +6,7 @@ import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmListButton.dart';
+import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -162,30 +163,9 @@ class _IletipaylasState extends State<Iletipaylas> {
                       final actors = snapshot.data!;
                       return Row(
                         children: actors.map((actor) {
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Column(
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage: actor.profilePhotoUrl != null
-                                      ? NetworkImage(actor.profilePhotoUrl!)
-                                      : null,
-                                  backgroundColor: Colors.grey,
-                                  radius: 30,
-                                  child: actor.profilePhotoUrl == null
-                                      ? Icon(Icons.person, color: Colors.white)
-                                      : null,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  actor.name,
-                                  style: const TextStyle(fontSize: 12),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
+                          return OyuncuCircleAvatar(
+                            actor: actor,
+                            radius: 30,
                           );
                         }).toList(),
                       );
