@@ -4,7 +4,9 @@ import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,8 @@ class Iletipaylas extends StatefulWidget {
   State<Iletipaylas> createState() => _IletipaylasState();
 }
 
+const String baseImageUrl = 'https://image.tmdb.org/t/p/w500';
+
 class _IletipaylasState extends State<Iletipaylas> {
   double _rating = 0.0;
   final TextEditingController _textEditingController = TextEditingController();
@@ -30,37 +34,56 @@ class _IletipaylasState extends State<Iletipaylas> {
   Future<void> submitForm() async {
     try {
       final film = widget.movie;
+      final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lütfen önce giriş yapın!')),
+        );
+        return;
+      }
+
       String film_id = film.id.toString();
       DocumentReference filmRef = firestore.collection("films").doc(film_id);
-      final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
 
       DocumentSnapshot filmSnapshot = await filmRef.get();
 
       if (!filmSnapshot.exists) {
-        //eğer film yoksa
-        final filmData = film;
         await filmRef.set({
           'id': film_id,
-          "title": filmData.title,
-          "posterPath": filmData.posterPath,
-          "overview": filmData.overview,
-          "voteAverage": filmData.voteAverage,
-          "genre_ids": filmData.genreIds,
-          "release_date": filmData.releaseDate,
-          "vote_average": filmData.voteAverage
+          "title": film.title,
+          "posterPath": film.posterPath,
+          "overview": film.overview,
+          "voteAverage": film.voteAverage,
+          "genre_ids": film.genreIds,
+          "release_date": film.releaseDate,
+          "vote_average": film.voteAverage
         });
       }
 
-      await firestore.collection("posts").add({
-        "user": currentUser!.uid,
+      // **Yeni Post için Firestore'da benzersiz bir ID oluştur**
+      DocumentReference postRef = firestore.collection("posts").doc();
+
+      // **Postu Firestore'a ekle**
+      await postRef.set({
+        "postId": postRef.id, // Firestore’un kendi ID’sini kaydet
+        "user": currentUser.uid,
         "movie": film_id,
         "likes": 0,
         "comments": 0,
+        "likedUsers": [],
         "content": _textEditingController.text,
-        "timestamp": FieldValue.serverTimestamp(), // Server zamanı
+        "timestamp": FieldValue.serverTimestamp(),
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('İnceleme paylaşıldı!')),
+      );
+
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
     } catch (e) {
-      print("Hata oluştu: $e"); // Hata detayını konsola yazdırır
+      print("Hata oluştu: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Bir hata oluştu: $e')),
       );
@@ -146,33 +169,9 @@ class _IletipaylasState extends State<Iletipaylas> {
             SizedBox(height: 10),
             AddVerticalSpace(context, 0.01),
             const Divider(color: Color.fromARGB(255, 102, 102, 102)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FutureBuilder<List<Actor>>(
-                  future: ActorService.fetchTopThreeActors(
-                      int.parse(widget.movie.id), 3),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Bir hata oluştu.');
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text('Oyuncu bilgisi bulunamadı.');
-                    } else {
-                      final actors = snapshot.data!;
-                      return Row(
-                        children: actors.map((actor) {
-                          return OyuncuCircleAvatar(
-                            actor: actor,
-                            radius: 30,
-                          );
-                        }).toList(),
-                      );
-                    }
-                  },
-                ),
-              ],
+            FilmBilgiWidget(
+              movie: widget.movie,
+              baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
             ),
             AddVerticalSpace(context, 0.01),
             Text(

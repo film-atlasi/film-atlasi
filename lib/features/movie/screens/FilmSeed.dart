@@ -76,7 +76,6 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
       print("sidar $e");
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
