@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/movie/screens/IletiPaylas.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmList.dart';
 import 'package:film_atlasi/features/user/screens/UserPage.dart';
 
 class SearchResults extends StatelessWidget {
   final List<dynamic> searchResults;
+  final String mode; // Mode parametresi eklendi
 
-  const SearchResults({Key? key, required this.searchResults}) : super(key: key);
+  const SearchResults({Key? key, required this.searchResults, required this.mode}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +45,25 @@ class SearchResults extends StatelessWidget {
         style: const TextStyle(color: Colors.grey),
       ),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Iletipaylas(movie: movie),
-          ),
-        );
+      // 📌 Eğer mod "film_listesi" ise, aşağıdan modal açalım
+       if (mode == "film_listesi") {
+        
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilmList(selectedMovie: movie),
+      ),
+    );
+  }
+  else {
+          // Normalde ileti paylaşım ekranına yönlendir
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Iletipaylas(movie: movie),
+            ),
+          );
+        }
       },
     );
   }

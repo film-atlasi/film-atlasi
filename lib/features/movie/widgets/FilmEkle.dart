@@ -13,25 +13,15 @@ class FilmEkleWidget extends StatefulWidget {
 class _FilmEkleWidgetState extends State<FilmEkleWidget> {
   final List<dynamic> items = [
     const Icon(Icons.edit, color: Colors.white),
-    const Text(
-      'Film Ara Ve incele',
-    ),
+    const Text('Film Ara Ve İncele'),
     const Icon(Icons.format_quote, color: Colors.white),
-    const Text(
-      'Filmden Alıntı Paylaş',
-    ),
+    const Text('Filmden Alıntı Paylaş'),
     const Icon(Icons.message, color: Colors.white),
-    const Text(
-      'İleti Paylaş',
-    ),
-    const Icon(Icons.book, color: Colors.white),
-    const Text(
-      'Filmi Favorilere Ekle',
-    ),
-    const Icon(Icons.track_changes, color: Colors.white),
-    const Text(
-      'İzleme Hedefi',
-    ),
+    const Text('Film Listesi Oluştur'),
+     const Icon(Icons.book, color: Colors.white),
+     const Text('Filmi Favorilere Ekle'),
+   const Icon(Icons.track_changes, color: Colors.white),
+   const Text('İzleme Hedefi'),
   ];
 
   @override
@@ -62,53 +52,42 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
           const SizedBox(height: 20), // Başlıkla ikonlar arası boşluk
 
           Expanded(
-              child: ListView.builder(
-            itemCount: 5,
-            itemBuilder: (context, index) => ListTile(
-              leading: items[2 * index],
-              title: items[2 * index + 1],
-              onTap: () {
-                switch (index) {
-                  case 0:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const FilmAraWidget()),
-                    );
-                    break;
-                  case 1:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AlintiEkle(
-                                movieId: 223,
-                              )),
-                    );
-                    break;
-                  case 2:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const FilmAraWidget()),
-                    );
-                    break;
-                  case 3:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => FilmList()),
-                    );
-                    break;
-                  case 4:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const FilmAraWidget()),
-                    );
-                    break;
-                }
-              },
+            child: ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) => ListTile(
+                leading: items[2 * index],
+                title: items[2 * index + 1],
+                onTap: () {
+                  String mode = "";
+
+                  switch (index) {
+                    case 0:
+                      mode = "film_incele";
+                      break;
+                    case 1:
+                      mode = "film_alinti";
+                      break;
+                    case 2:
+                      mode = "film_listesi";
+                      break;
+                    case 3:
+                    mode = "favorilere_ekle";
+                      break;
+                    case 4:
+                      mode = "izleme_hedefi";
+                      break;
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FilmAraWidget(mode: mode),
+                    ),
+                  );
+                },
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );

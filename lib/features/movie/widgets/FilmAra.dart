@@ -3,7 +3,9 @@ import 'package:film_atlasi/features/movie/widgets/search_results.dart';
 import 'package:flutter/material.dart';
 
 class FilmAraWidget extends StatefulWidget {
-  const FilmAraWidget({super.key});
+  final String mode; // Yeni eklenen parametre
+
+  const FilmAraWidget({super.key, required this.mode});
 
   @override
   State<FilmAraWidget> createState() => _FilmAraWidgetState();
@@ -50,7 +52,12 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
           if (_isLoading)
             Center(child: const CircularProgressIndicator())
           else
-            Expanded(child: SearchResults(searchResults: _searchResults))
+            Expanded(
+              child: SearchResults(
+                searchResults: _searchResults,
+                mode: widget.mode, // Mode bilgisini SearchResults’a gönderiyoruz
+              ),
+            ),
         ],
       ),
     );
@@ -68,8 +75,9 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
           filled: true,
           fillColor: Colors.grey[900],
           border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: BorderSide.none),
+            borderRadius: BorderRadius.circular(50),
+            borderSide: BorderSide.none,
+          ),
           suffixIcon: IconButton(
             icon: const Icon(Icons.search, color: Colors.grey),
             onPressed: () => _searchMovies(_searchController.text),
