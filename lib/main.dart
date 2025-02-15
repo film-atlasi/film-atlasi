@@ -12,7 +12,7 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print("Firebase initialized successfully.");
+    print("Firebas initiali.");
   } catch (e) {
     print("Hata: $e");
   }
@@ -33,6 +33,6 @@ class Myapp extends StatelessWidget {
         darkTheme: AppTheme.darkTheme,
         theme: AppTheme.darkTheme,
         initialRoute: '/giris',
-        routes: AppConstants.routes);
+        routes: AppConstants.routes);//aaaa
   }
 }

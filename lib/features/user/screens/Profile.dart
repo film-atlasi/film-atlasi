@@ -185,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               controller: _tabController,
               children: [
                 Center(child: FilmKutusu(userUid: userUid)),
-                Center(child: Text("Film Listesi İçeriği")),
+                Center(child: Text("Film Listesi İçeriği")),//  Center(child: FilmListProfile(userUid: userUid)),  ✅ Kullanıcının film listelerini gösteriyoruz
                 Center(child: Text("Beğenilenler İçeriği")),
               ],
             ),
