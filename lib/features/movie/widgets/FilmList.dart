@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -25,11 +26,16 @@ class _FilmListState extends State<FilmList> {
 
   /// **Firebase'den Kayıtlı Listeleri Çek**
   void fetchListsFromFirestore() async {
-    QuerySnapshot snapshot = await firestore.collection("film_listeleri").get();
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
+    QuerySnapshot snapshot = await firestore
+        .collection("film_listeleri")
+        .where("userId", isEqualTo: userId)
+        .get();
 
     List<Map<String, dynamic>> firebaseLists = snapshot.docs.map((doc) {
       return {
         "name": doc["name"],
+        "userId": doc["userId"],
         "movies": (doc["movies"] as List)
             .map((m) => Movie(
                   id: m["id"] ?? "",
@@ -57,6 +63,7 @@ class _FilmListState extends State<FilmList> {
       Map<String, dynamic> newList = {
         "name": listName,
         "movies": widget.selectedMovie != null ? [widget.selectedMovie!] : [],
+        "userId": FirebaseAuth.instance.currentUser?.uid ?? "",
       };
 
       setState(() {
@@ -73,6 +80,7 @@ class _FilmListState extends State<FilmList> {
   Future<void> saveListToFirestore(String listName, List<Movie> movies) async {
     await firestore.collection("film_listeleri").doc(listName).set({
       "name": listName,
+      "userId": FirebaseAuth.instance.currentUser?.uid ?? "",
       "movies": movies
           .map((movie) => {
                 "id": movie.id,

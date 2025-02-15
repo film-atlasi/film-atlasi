@@ -18,10 +18,10 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
     const Text('Filmden Alıntı Paylaş'),
     const Icon(Icons.message, color: Colors.white),
     const Text('Film Listesi Oluştur'),
-     const Icon(Icons.book, color: Colors.white),
-     const Text('Filmi Favorilere Ekle'),
-   const Icon(Icons.track_changes, color: Colors.white),
-   const Text('İzleme Hedefi'),
+    //const Icon(Icons.book, color: Colors.white),
+    //    const Text('Filmi Favorilere Ekle'),
+    //  const Icon(Icons.track_changes, color: Colors.white),
+    //  const Text('İzleme Hedefi'),
   ];
 
   @override
@@ -29,7 +29,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
-      height: screenHeight * 0.4,
+      height: screenHeight * 0.33,
       padding: const EdgeInsets.all(20.0), // Kenar boşlukları için padding
       decoration: const BoxDecoration(
         color: Colors.black, // Arka plan rengi siyah
@@ -53,7 +53,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
 
           Expanded(
             child: ListView.builder(
-              itemCount: 5,
+              itemCount: 3,
               itemBuilder: (context, index) => ListTile(
                 leading: items[2 * index],
                 title: items[2 * index + 1],
@@ -70,12 +70,12 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                     case 2:
                       mode = "film_listesi";
                       break;
-                    case 3:
-                    mode = "favorilere_ekle";
-                      break;
-                    case 4:
-                      mode = "izleme_hedefi";
-                      break;
+                    // case 3:
+                    // mode = "favorilere_ekle";
+                    //   break;
+                    // case 4:
+                    //   mode = "izleme_hedefi";
+                    //   break;
                   }
 
                   Navigator.push(
