@@ -23,6 +23,7 @@ class PostServices {
 
         if (user != null && movie != null) {
           return MoviePost(
+              postId: data['postId'],
               user: user,
               movie: movie,
               content: data['content'] ?? '',

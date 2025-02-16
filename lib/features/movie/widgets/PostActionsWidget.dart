@@ -40,7 +40,6 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
 
     final postRef = firestore.collection('posts').doc(widget.postId);
     final postSnapshot = await postRef.get();
-
     if (postSnapshot.exists) {
       final likedUsers =
           List<String>.from(postSnapshot.get('likedUsers') ?? []);
@@ -55,32 +54,68 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     if (user == null) return;
 
     final postRef = firestore.collection('posts').doc(widget.postId);
-    final postSnapshot = await postRef.get();
+    final likesRef = postRef.collection('likes').doc(user.uid);
 
-    if (!postSnapshot.exists) return;
+    final likeSnapshot = await likesRef.get();
 
-    final likedUsers = List<String>.from(postSnapshot.get('likedUsers') ?? []);
-
-    bool isCurrentlyLiked = likedUsers.contains(user.uid);
-    int newLikesCount = isCurrentlyLiked ? likes - 1 : likes + 1;
-
-    try {
-      await postRef.update({
-        'likes': newLikesCount,
-        'likedUsers': isCurrentlyLiked
-            ? likedUsers.where((id) => id != user.uid).toList()
-            : [...likedUsers, user.uid],
-      });
-
+    if (likeSnapshot.exists) {
+      // Eğer kullanıcı zaten beğenmişse, beğeniyi kaldır
+      await likesRef.delete();
+      await postRef
+          .set({'likes': FieldValue.increment(-1)}, SetOptions(merge: true));
       setState(() {
-        isLiked = !isCurrentlyLiked;
-        likes = newLikesCount;
+        isLiked = false;
+        likes--;
       });
-
-      print("Beğeni güncellendi! Yeni like sayısı: $likes");
-    } catch (e) {
-      print("Firestore beğeni güncelleme hatası: $e");
+    } else {
+      // Eğer beğenmemişse, beğeni ekle
+      await likesRef
+          .set({'userId': user.uid, 'timestamp': FieldValue.serverTimestamp()});
+      await postRef
+          .set({'likes': FieldValue.increment(1)}, SetOptions(merge: true));
+      setState(() {
+        isLiked = true;
+        likes++;
+      });
     }
+  }
+
+  void _showLikers() async {
+    var likesRef =
+        firestore.collection('posts').doc(widget.postId).collection('likes');
+    var snapshot = await likesRef.get();
+
+    List<String> likers = snapshot.docs.map((doc) => doc.id).toList();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Beğenenler"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: likers
+                .map((userId) => FutureBuilder<DocumentSnapshot>(
+                      future: firestore.collection('users').doc(userId).get(),
+                      builder: (context, userSnapshot) {
+                        if (!userSnapshot.hasData)
+                          return CircularProgressIndicator();
+                        String userName =
+                            userSnapshot.data!.get('userName') ?? 'Bilinmiyor';
+                        return ListTile(title: Text(userName));
+                      },
+                    ))
+                .toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Kapat"),
+            )
+          ],
+        );
+      },
+    );
   }
 
   /// **Yorum sayısını artırma**
@@ -112,8 +147,21 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
             color: isLiked ? Colors.red : Colors.white,
           ),
         ),
-        Text(likes.toString(), style: TextStyle(color: Colors.white)),
+        StreamBuilder<DocumentSnapshot>(
+          stream: firestore.collection('posts').doc(widget.postId).snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || !snapshot.data!.exists) {
+              return Text("0", style: TextStyle(color: Colors.white));
+            }
 
+            int likeCount = snapshot.data!.get('likes') ?? 0;
+            return GestureDetector(
+              onTap: _showLikers,
+              child: Text(likeCount.toString(),
+                  style: TextStyle(color: Colors.white)),
+            );
+          },
+        ),
         const SizedBox(width: 20),
 
         // **Yorum Butonu**

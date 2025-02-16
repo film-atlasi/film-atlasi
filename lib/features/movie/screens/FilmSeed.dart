@@ -64,6 +64,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
 
           String userId = post['user'];
           return MoviePost(
+              postId: post["postId"],
               user: User.fromMap(users[userId] ?? {}),
               movie: Movie.fromMap(films[filmId] ?? {}),
               likes: post["likes"],
@@ -71,9 +72,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
               content: post["content"]);
         }).toList();
       });
-      print(moviePosts);
+    // ignore: empty_catches
     } catch (e) {
-      print("sidar $e");
+
     }
   }
 
