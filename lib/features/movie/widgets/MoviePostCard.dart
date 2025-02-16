@@ -3,9 +3,9 @@ import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
+import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
-import 'package:film_atlasi/features/movie/widgets/PostActionsWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

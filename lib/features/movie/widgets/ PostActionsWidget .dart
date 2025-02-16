@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -36,16 +37,37 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
   /// **Beğeni durumunu kontrol et**
   Future<void> checkIfUserLiked() async {
     final user = auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      print("DEBUG: Kullanıcı giriş yapmamış.");
+      return;
+    }
 
-    final postRef = firestore.collection('posts').doc(widget.postId);
-    final postSnapshot = await postRef.get();
-    if (postSnapshot.exists) {
+    try {
+      print(
+          "DEBUG: Firestore'dan post verisi çekiliyor... Post ID: ${widget.postId}");
+      final postRef = firestore.collection('posts').doc(widget.postId);
+      final postSnapshot = await postRef.get();
+
+      if (!postSnapshot.exists) {
+        print("HATA: Bu post Firestore'da bulunamadı! ID: ${widget.postId}");
+        return;
+      }
+
+      if (!postSnapshot.data()!.containsKey('likedUsers')) {
+        print("HATA: Firestore dokümanında 'likedUsers' alanı bulunmuyor!");
+        return;
+      }
+
       final likedUsers =
           List<String>.from(postSnapshot.get('likedUsers') ?? []);
+
       setState(() {
         isLiked = likedUsers.contains(user.uid);
       });
+
+      print("DEBUG: Beğeni kontrolü tamamlandı. Beğenildi mi? $isLiked");
+    } catch (e) {
+      print("HATA: Firestore'dan post verisi çekerken hata oluştu -> $e");
     }
   }
 
@@ -166,7 +188,14 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
 
         // **Yorum Butonu**
         IconButton(
-          onPressed: addComment,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CommentPage(postId: widget.postId),
+              ),
+            );
+          },
           icon: const Icon(Icons.comment_outlined, color: Colors.white),
         ),
         Text(comments.toString(), style: TextStyle(color: Colors.white)),
