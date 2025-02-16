@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
+import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 
@@ -52,6 +54,17 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
+  Stream<QuerySnapshot> getUserPosts() {
+    final user = auth.FirebaseAuth.instance.currentUser;
+    if (user == null) return const Stream.empty();
+
+    return FirebaseFirestore.instance
+        .collection('posts')
+        .where('user', isEqualTo: user.uid)
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,6 +92,23 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  Future<void> _updateProfilePhoto() async {
+    String? newPhotoUrl = await UserServices.uploadProfilePhoto(userUid);
+
+    if (newPhotoUrl != null) {
+      setState(() {
+        userData!['profilePhotoUrl'] = newPhotoUrl;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profil fotoğrafı güncellendi!")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Fotoğraf yüklenirken hata oluştu!")),
+      );
+    }
+  }
+
   Widget _buildCoverPhoto() {
     return Stack(
       children: [
@@ -97,15 +127,19 @@ class _ProfileScreenState extends State<ProfileScreen>
         Positioned(
           left: 5,
           bottom: 0,
-          child: CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.white,
-            backgroundImage: userData!['profilePhotoUrl'] != null
-                ? NetworkImage(userData!['profilePhotoUrl'])
-                : null,
-            child: userData!['profilePhotoUrl'] == null
-                ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                : null,
+          child: GestureDetector(
+            onTap:
+                _updateProfilePhoto, // 👈 Fotoğrafı değiştirmek için fonksiyonu çağırıyoruz
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.white,
+              backgroundImage: userData!['profilePhotoUrl'] != null
+                  ? NetworkImage(userData!['profilePhotoUrl'])
+                  : null,
+              child: userData!['profilePhotoUrl'] == null
+                  ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                  : null,
+            ),
           ),
         ),
       ],
@@ -185,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               controller: _tabController,
               children: [
                 Center(child: FilmKutusu(userUid: userUid)),
-                Center(child: Text("Film Listesi İçeriği")),//  Center(child: FilmListProfile(userUid: userUid)),  ✅ Kullanıcının film listelerini gösteriyoruz
+                Center(child: FilmListProfile(userUid: userUid)),
                 Center(child: Text("Beğenilenler İçeriği")),
               ],
             ),
@@ -199,21 +233,24 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Positioned(
       top: 200,
       right: 10,
-      child: SizedBox(
-        width: 100,
-        height: 40,
-        child: ElevatedButton(
-          onPressed: () => print("Düzenle butonuna tıklandı"),
-          child: const Text(
-            "Düzenle",
-            style: TextStyle(
-              color: Colors
-                  .red, // Metin rengini siyah yaparak temadaki butona uyum sağladık
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+      child: Column(
+        children: [
+          SizedBox(
+            width: 100,
+            height: 40,
+            child: ElevatedButton(
+              onPressed: _updateProfilePhoto,
+              child: const Text(
+                "Fotoğrafı Güncelle",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
