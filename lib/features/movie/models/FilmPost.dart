@@ -10,6 +10,7 @@ class MoviePost {
   final Movie movie;
   final int likes;
   final int comments;
+  String content;
   final String content;
   bool isQuote;
   MoviePost(
