@@ -69,7 +69,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
               movie: Movie.fromMap(films[filmId] ?? {}),
               likes: post["likes"],
               comments: post["comments"],
-              content: post["content"]);
+              content: post["content"],
+              isQuote: post["isQuote"] ?? false, // 🔥 Alıntı paylaşımı olup olmadığını belirtiyoruz
+          );
         }).toList();
       });
     // ignore: empty_catches
@@ -96,24 +98,24 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                 },
               ),
       ),
-      floatingActionButton: buildFloatingActionButton(context),
+    //  floatingActionButton: buildFloatingActionButton(context),
     );
   }
 
-  FloatingActionButton buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton(
-      shape: CircleBorder(),
-      onPressed: () {
-        showModalBottomSheet(
-          // Modal açılır
-          context: context, // Context
-          builder: (BuildContext context) {
-            // Modal içeriği
-            return FilmEkleWidget(); // Film ekleme widget'ı
-          },
-        );
-      },
-      child: Icon(Icons.add),
-    );
-  }
+  // FloatingActionButton buildFloatingActionButton(BuildContext context) {
+  //   return FloatingActionButton(
+  //     shape: CircleBorder(),
+  //     onPressed: () {
+  //       showModalBottomSheet(
+  //         // Modal açılır
+  //         context: context, // Context
+  //         builder: (BuildContext context) {
+  //           // Modal içeriği
+  //           return FilmEkleWidget(); // Film ekleme widget'ı
+  //         },
+  //       );
+  //     },
+  //     child: Icon(Icons.add),
+  //   );
+  // }
 }

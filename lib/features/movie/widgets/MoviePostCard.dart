@@ -35,103 +35,10 @@ class _MoviePostCardState extends State<MoviePostCard> {
     _contentController.text = widget.moviePost.content;
   }
 
-  // 🔹 **Postu Silme Fonksiyonu**
-  void _deletePost() async {
-    bool confirmDelete = await _showConfirmationDialog();
-    if (confirmDelete) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('posts')
-            .doc(widget.moviePost.postId) // Firestore'da post ID ile sil
-            .delete();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gönderi silindi!")),
-        );
-
-        setState(() {}); // UI'yi güncelle
-      } catch (e) {
-        print("Silme hatası: $e");
-      }
-    }
-  }
-
-  // 🔹 **Düzenleme Fonksiyonu**
-  void _editPost() async {
-    String? updatedContent = await _showEditDialog();
-    if (updatedContent != null) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('posts')
-            .doc(widget.moviePost.postId)
-            .update({"content": updatedContent});
-
-        setState(() {
-          widget.moviePost.content = updatedContent;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gönderi güncellendi!")),
-        );
-      } catch (e) {
-        print("Güncelleme hatası: $e");
-      }
-    }
-  }
-
-  // 🔹 **Silme İçin Onay Penceresi**
-  Future<bool> _showConfirmationDialog() async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text("Gönderiyi Sil"),
-            content: Text("Bu gönderiyi silmek istediğinize emin misiniz?"),
-            actions: [
-              TextButton(
-                child: Text("İptal"),
-                onPressed: () => Navigator.pop(context, false),
-              ),
-              TextButton(
-                child: Text("Sil"),
-                onPressed: () => Navigator.pop(context, true),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
-
-  // 🔹 **Düzenleme İçin Dialog Penceresi**
-  Future<String?> _showEditDialog() async {
-    return await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Gönderiyi Düzenle"),
-          content: TextField(
-            controller: _contentController,
-            maxLines: 4,
-            decoration: InputDecoration(border: OutlineInputBorder()),
-          ),
-          actions: [
-            TextButton(
-              child: Text("İptal"),
-              onPressed: () => Navigator.pop(context, null),
-            ),
-            TextButton(
-              child: Text("Kaydet"),
-              onPressed: () {
-                Navigator.pop(context, _contentController.text);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+
     return Card(
       color: Colors.black,
       child: Padding(
@@ -188,12 +95,89 @@ class _MoviePostCardState extends State<MoviePostCard> {
                     // Kaydet aksiyonu
                   },
                   icon: const Icon(Icons.bookmark_border, color: Colors.white),
+
+    return Column(
+      children: [
+        Card(
+          color: Colors.black,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    // Kullanıcı Profil Fotoğrafı
+                    CircleAvatar(
+                      backgroundImage: widget.moviePost.user.profilePhotoUrl != null
+                          ? NetworkImage(widget.moviePost.user.profilePhotoUrl!)
+                          : null,
+                      backgroundColor: Colors.white,
+                      radius: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    // Kullanıcı Adı
+                    Text(
+                      '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek
+                if (widget.moviePost.isQuote) ...[
+                  Text(
+                    '"${widget.moviePost.content}"',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "- ${widget.moviePost.movie.title}",
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
+                ] else ...[
+                  // Eğer normal post ise, film posteri ve detaylar gösterilecek
+                  Text(widget.moviePost.content, style: TextStyle(color: Colors.white)),
+                  const SizedBox(height: 10),
+                  FilmBilgiWidget(
+                    movie: widget.moviePost.movie,
+                    baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
+                  ),
+                ],
+
+                // 🔥 Beğeni, Yorum, Kaydet İkonları (Her iki post türü için de)
+                Row(
+                  children: [
+                    PostActionsWidget(
+                      postId: widget.moviePost.postId,  // Firestore'daki post ID
+                      initialLikes: widget.moviePost.likes, // Mevcut beğeni sayısı
+                      initialComments: widget.moviePost.comments, // Mevcut yorum sayısı
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () {
+                        // Kaydet aksiyonu
+                      },
+                      icon: const Icon(Icons.bookmark_border, color: Colors.white),
+                    ),
+                  ],
+
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+        Divider(color: Colors.grey), // Çizgi ekleniyor
+      ],
     );
   }
+
 }
