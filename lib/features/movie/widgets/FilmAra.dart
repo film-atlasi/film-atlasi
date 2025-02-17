@@ -1,24 +1,16 @@
-import 'package:film_atlasi/features/movie/services/MovieServices.dart';
-import 'package:film_atlasi/features/movie/models/Movie.dart';
-import 'package:film_atlasi/features/movie/screens/IletiPaylas.dart';
-import 'package:film_atlasi/features/user/models/User.dart';
-import 'package:film_atlasi/features/user/screens/UserPage.dart';
-import 'package:film_atlasi/features/user/services/UserServices.dart';
+import 'package:film_atlasi/features/movie/services/search_service.dart';
+import 'package:film_atlasi/features/movie/widgets/search_results.dart';
 import 'package:flutter/material.dart';
 
 class FilmAraWidget extends StatefulWidget {
-  /// Film seçildiğinde çalışacak callback fonksiyonu.
-  /// Eğer callback sağlanmazsa, varsayılan olarak Iletipaylas ekranına yönlendirme yapılır.
-  final void Function(Movie)? onMovieSelected;
-
-  const FilmAraWidget({Key? key, this.onMovieSelected}) : super(key: key);
+  const FilmAraWidget({super.key});
 
   @override
   State<FilmAraWidget> createState() => _FilmAraWidgetState();
 }
 
 class _FilmAraWidgetState extends State<FilmAraWidget> {
-  final MovieService _movieService = MovieService();
+  final SearchService _searchService = SearchService();
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _searchResults = [];
   bool _isLoading = false;
@@ -31,10 +23,9 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
     });
 
     try {
-      final movies = await _movieService.searchMovies(query);
-      final users = await UserServices.searchUsers(query);
+      final results = await _searchService.search(query);
       setState(() {
-        _searchResults = [...users, ...movies];
+        _searchResults = results;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,13 +50,17 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
           if (_isLoading)
             Center(child: const CircularProgressIndicator())
           else
-            buildSearchResults()
+            Expanded(
+              child: SearchResults(
+                searchResults: _searchResults,
+                mode: widget.mode, // Mode bilgisini SearchResults’a gönderiyoruz
+              ),
+            ),
         ],
       ),
     );
   }
 
-//filn arama butonu
   Padding buildSearchTextField() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -78,8 +73,9 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
           filled: true,
           fillColor: Colors.grey[900],
           border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: BorderSide.none),
+            borderRadius: BorderRadius.circular(50),
+            borderSide: BorderSide.none,
+          ),
           suffixIcon: IconButton(
             icon: const Icon(Icons.search, color: Colors.grey),
             onPressed: () => _searchMovies(_searchController.text),
@@ -125,18 +121,12 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
         style: const TextStyle(color: Colors.grey),
       ),
       onTap: () {
-        if (widget.onMovieSelected != null) {
-          // Callback sağlanmışsa onu çalıştırıyoruz
-          widget.onMovieSelected!(movie);
-        } else {
-          // Callback yoksa eski davranış: Iletipaylas ekranına yönlendir
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Iletipaylas(movie: movie),
-            ),
-          );
-        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Iletipaylas(movie: movie),
+          ),
+        );
       },
     );
   }
@@ -150,14 +140,11 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
       subtitle: Text(
         user.firstName ?? "first name",
         style: const TextStyle(color: Colors.grey),
-      ),
-      onTap: () {
+      ),onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => UserPage(
-              userUid: user.uid!,
-            ),
+            builder: (context) => UserPage(userUid: user.uid!,),
           ),
         );
       },

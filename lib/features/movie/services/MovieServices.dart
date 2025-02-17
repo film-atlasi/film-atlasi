@@ -136,4 +136,28 @@ class MovieService {
       return null;
     }
   }
+  // actorlerin filmlerini sergileme için kullanılıyor 
+  Future<List<Movie>> getMoviesByActor(int actorId, int page) async {
+    final String url =
+        '$baseUrl/discover/movie?api_key=$apiKey&with_cast=$actorId&page=$page&language=tr-TR';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        List<Movie> movies = (data['results'] as List)
+            .map((movieJson) => Movie.fromJson(movieJson))
+            .toList();
+
+        return movies;
+      } else {
+        print("API Hatası: ${response.statusCode} - ${response.body}");
+        return [];
+      }
+    } catch (e) {
+      print("İstek sırasında hata oluştu: $e");
+      return [];
+    }
+  }
 }

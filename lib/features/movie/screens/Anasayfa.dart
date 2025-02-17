@@ -45,7 +45,7 @@ class AnasayfaState extends State<Anasayfa>
             icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const FilmAraWidget()),
+              MaterialPageRoute(builder: (context) => const FilmAraWidget(mode: "film_incele")),
             ),
           ),
           IconButton(

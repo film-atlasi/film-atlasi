@@ -5,6 +5,7 @@ import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 
 class MoviePost {
+  final String postId;
   final User user;
   final Movie movie;
   final int likes;
@@ -13,6 +14,7 @@ class MoviePost {
 
   MoviePost(
       {required this.user,
+      required this.postId,
       required this.movie,
       required this.likes,
       required this.comments,
@@ -31,6 +33,7 @@ class MoviePost {
   factory MoviePost.fromMap(Map<String, dynamic> map) {
     return MoviePost(
         user: User.fromMap(map['user'] as Map<String, dynamic>),
+        postId: map['postId'] as String,
         movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
         likes: map['likes'] as int,
         comments: map['comments'] as int,
@@ -41,39 +44,4 @@ class MoviePost {
 
   factory MoviePost.fromJson(String source) =>
       MoviePost.fromMap(json.decode(source) as Map<String, dynamic>);
-}
-
-class MovieInceleme extends MoviePost {
-  final double rank;
-  MovieInceleme({
-    required super.user,
-    required super.movie,
-    required super.likes,
-    required super.comments,
-    required super.content,
-    required this.rank,
-  });
-
-  Map<String, dynamic> toMap() {
-    final map = super.toMap();
-    map['rank'] = rank;
-    return map;
-  }
-
-  factory MovieInceleme.fromMap(Map<String, dynamic> map) {
-    return MovieInceleme(
-      user: User.fromMap(map['user'] as Map<String, dynamic>),
-      movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
-      likes: map['likes'] as int,
-      comments: map['comments'] as int,
-      content: map['content'] as String,
-      rank: map['rank'] as double,
-    );
-  }
-
-  @override
-  String toJson() => json.encode(toMap());
-
-  factory MovieInceleme.fromJson(String source) =>
-      MovieInceleme.fromMap(json.decode(source) as Map<String, dynamic>);
 }

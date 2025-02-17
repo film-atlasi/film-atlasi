@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/services/PostServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UserServices {
   static Future<List<User>> searchUsers(String query) async {
@@ -70,6 +73,35 @@ class UserServices {
       }
     } catch (e) {
       print('Error fetching user by UID: $e');
+      return null;
+    }
+  }
+
+  static Future<String?> uploadProfilePhoto(String userUid) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile == null)
+        return null; // Kullanıcı fotoğraf seçmediyse iptal et
+
+      File file = File(pickedFile.path);
+      String fileName = "profile_pictures/$userUid.jpg";
+
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+      UploadTask uploadTask = storageRef.putFile(file);
+
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Firestore'daki kullanıcı belgesini güncelle
+      await FirebaseFirestore.instance.collection('users').doc(userUid).update({
+        'profilePhotoUrl': downloadUrl,
+      });
+
+      return downloadUrl;
+    } catch (e) {
+      print("Profil fotoğrafı yüklenirken hata oluştu: $e");
       return null;
     }
   }

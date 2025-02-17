@@ -13,25 +13,15 @@ class FilmEkleWidget extends StatefulWidget {
 class _FilmEkleWidgetState extends State<FilmEkleWidget> {
   final List<dynamic> items = [
     const Icon(Icons.edit, color: Colors.white),
-    const Text(
-      'Film Ara Ve incele',
-    ),
+    const Text('Film Ara Ve İncele'),
     const Icon(Icons.format_quote, color: Colors.white),
-    const Text(
-      'Filmden Alıntı Paylaş',
-    ),
+    const Text('Filmden Alıntı Paylaş'),
     const Icon(Icons.message, color: Colors.white),
-    const Text(
-      'İleti Paylaş',
-    ),
-    const Icon(Icons.book, color: Colors.white),
-    const Text(
-      'Filmi Favorilere Ekle',
-    ),
-    const Icon(Icons.track_changes, color: Colors.white),
-    const Text(
-      'İzleme Hedefi',
-    ),
+    const Text('Film Listesi Oluştur'),
+    //const Icon(Icons.book, color: Colors.white),
+    //    const Text('Filmi Favorilere Ekle'),
+    //  const Icon(Icons.track_changes, color: Colors.white),
+    //  const Text('İzleme Hedefi'),
   ];
 
   @override
@@ -39,7 +29,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
-      height: screenHeight * 0.4,
+      height: screenHeight * 0.33,
       padding: const EdgeInsets.all(20.0), // Kenar boşlukları için padding
       decoration: const BoxDecoration(
         color: Colors.black, // Arka plan rengi siyah
@@ -80,7 +70,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => FilmListScreen(
+                          builder: (context) => AlintiEkle(
                                 movieId: 223,
                               )),
                     );
@@ -108,7 +98,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                 }
               },
             ),
-          )),
+          ),
         ],
       ),
     );

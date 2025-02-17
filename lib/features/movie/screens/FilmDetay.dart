@@ -2,6 +2,7 @@ import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
+import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,7 @@ class MovieDetailsPage extends StatefulWidget {
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  late Actor director = Actor(name: "name", character: "character");
+  late Actor director = Actor(name: "name", character: "character", id:-1);
   @override
   void initState() {
     // TODO: implement initState
@@ -252,33 +253,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                           final actors = snapshot.data!;
                           return Row(
                             children: actors.map((actor) {
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: Column(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundImage: actor.profilePhotoUrl !=
-                                              null
-                                          ? NetworkImage(actor.profilePhotoUrl!)
-                                          : null,
-                                      backgroundColor: Colors.grey,
-                                      radius: 20,
-                                      child: actor.profilePhotoUrl == null
-                                          ? Icon(Icons.person,
-                                              color: Colors.white)
-                                          : null,
-                                    ),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                      actor.name,
-                                      style: const TextStyle(fontSize: 8),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              );
+                              return OyuncuCircleAvatar(actor: actor);
                             }).toList(),
                           );
                         }

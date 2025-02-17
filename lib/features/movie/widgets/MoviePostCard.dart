@@ -1,7 +1,11 @@
 import 'dart:convert';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
+import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
+import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,39 +23,6 @@ class MoviePostCard extends StatefulWidget {
 }
 
 class _MoviePostCardState extends State<MoviePostCard> {
-  final String apiKey = 'YOUR_API_KEY';
-  final String baseImageUrl = 'https://image.tmdb.org/t/p/w500';
-  List<Map<String, dynamic>> cast = []; // Başrol oyuncuları listesi
-  List<Map<dynamic, dynamic>> allCast = []; // Başrol oyuncuları listesi
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCast();
-  }
-
-  // TMDb API'den başrol oyuncularını çekme
-  Future<void> fetchCast() async {
-    final movieId = widget.moviePost.movie.id; // Filmin ID'si
-    final response = await http.get(Uri.parse(
-        'https://api.themoviedb.org/3/movie/$movieId/credits?api_key=$apiKey'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        // İlk 3 başrol oyuncusunu alıyoruz
-        allCast = (data['cast'] as List<Map<dynamic, dynamic>>).toList();
-        cast = (data['cast'] as List)
-            .take(3)
-            .map((actor) => {
-                  'name': actor['name'],
-                  'profile_path': actor['profile_path'],
-                })
-            .toList();
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -153,6 +124,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                             color: Colors.white54, fontSize: 12),
                       ),
                       const SizedBox(height: 20), // Konunun altında boşluk
+
                       // Başrol Oyuncuları
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -175,84 +147,35 @@ class _MoviePostCardState extends State<MoviePostCard> {
                                   final actors = snapshot.data!;
                                   return Row(
                                     children: actors.map((actor) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          // Show actor details in a dialog
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                backgroundColor: Colors.black87,
-                                                content: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    CircleAvatar(
-                                                      backgroundImage: actor
-                                                                  .profilePhotoUrl !=
-                                                              null
-                                                          ? NetworkImage(actor
-                                                              .profilePhotoUrl!)
-                                                          : null,
-                                                      backgroundColor:
-                                                          Colors.grey,
-                                                      radius: 50,
-                                                      child:
-                                                          actor.profilePhotoUrl ==
-                                                                  null
-                                                              ? Icon(
-                                                                  Icons.person,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 50)
-                                                              : null,
-                                                    ),
-                                                    SizedBox(height: 16),
-                                                    Text(
-                                                      actor.name,
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 3.0),
-                                          child: Column(
-                                            children: [
-                                              CircleAvatar(
-                                                backgroundImage: actor
-                                                            .profilePhotoUrl !=
-                                                        null
-                                                    ? NetworkImage(
-                                                        actor.profilePhotoUrl!)
-                                                    : null,
-                                                backgroundColor: Colors.grey,
-                                                radius: 20,
-                                                child: actor.profilePhotoUrl ==
-                                                        null
-                                                    ? Icon(Icons.person,
-                                                        color: Colors.white)
-                                                    : null,
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                actor.name,
-                                                style: const TextStyle(
-                                                    fontSize: 8),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                          ),
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 3.0),
+                                        child: Column(
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundImage: actor
+                                                          .profilePhotoUrl !=
+                                                      null
+                                                  ? NetworkImage(
+                                                      actor.profilePhotoUrl!)
+                                                  : null,
+                                              backgroundColor: Colors.grey,
+                                              radius: 20,
+                                              child:
+                                                  actor.profilePhotoUrl == null
+                                                      ? Icon(Icons.person,
+                                                          color: Colors.white)
+                                                      : null,
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              actor.name,
+                                              style:
+                                                  const TextStyle(fontSize: 8),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
                                         ),
                                       );
                                     }).toList(),
@@ -275,31 +198,12 @@ class _MoviePostCardState extends State<MoviePostCard> {
             Row(
               children: [
                 // Beğeni ve Yorum İkonları Grubu
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        // Beğeni aksiyonu
-                      },
-                      icon: const Icon(Icons.favorite_border,
-                          color: Colors.white),
-                    ),
-                    const SizedBox(width: 20), // İkonlar arası boşluk
-                    IconButton(
-                      onPressed: () {
-                        // Paylaş aksiyonu
-                      },
-                      icon: const Icon(Icons.share, color: Colors.white),
-                    ),
-                    const SizedBox(width: 20), // İkonlar arası boşluk
-                    IconButton(
-                      onPressed: () {
-                        // Yorum aksiyonu
-                      },
-                      icon: const Icon(Icons.comment_outlined,
-                          color: Colors.white),
-                    ),
-                  ],
+
+                PostActionsWidget(
+                  postId: widget.moviePost.movie.id, // Firestore'daki post ID
+                  initialLikes: widget.moviePost.likes, // Mevcut beğeni sayısı
+                  initialComments:
+                      widget.moviePost.comments, // Mevcut yorum sayısı
                 ),
                 const Spacer(), // İkonları sağa ve sola ayırmak için boşluk
                 // Kaydet İkonu
