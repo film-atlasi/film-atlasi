@@ -23,6 +23,29 @@ class MovieService {
     }
   }
 
+  Future<Map<String, String>> getWatchProviders(int movieId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/movie/$movieId/watch/providers?api_key=$apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['results'] != null && data['results']['TR'] != null) {
+        final providers = data['results']['TR']['flatrate'] as List<dynamic>?;
+        if (providers != null) {
+          return {
+            for (var provider in providers)
+              provider['provider_name'].toString():
+                  "https://image.tmdb.org/t/p/w200${provider['logo_path']}"
+          };
+        }
+      }
+      return {};
+    } else {
+      throw Exception('İzleme sağlayıcıları alınamadı');
+    }
+  }
+
   Future<Map<int, String>> fetchGenreMap() async {
     final response = await http.get(
       Uri.parse('$baseUrl/genre/movie/list?api_key=$apiKey&language=tr-TR'),
@@ -136,7 +159,8 @@ class MovieService {
       return null;
     }
   }
-  // actorlerin filmlerini sergileme için kullanılıyor 
+
+  // actorlerin filmlerini sergileme için kullanılıyor
   Future<List<Movie>> getMoviesByActor(int actorId, int page) async {
     final String url =
         '$baseUrl/discover/movie?api_key=$apiKey&with_cast=$actorId&page=$page&language=tr-TR';
