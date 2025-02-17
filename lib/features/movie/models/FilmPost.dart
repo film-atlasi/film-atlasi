@@ -10,7 +10,7 @@ class MoviePost {
   final Movie movie;
   final int likes;
   final int comments;
-  final String content;
+  String content;
 
   MoviePost(
       {required this.user,

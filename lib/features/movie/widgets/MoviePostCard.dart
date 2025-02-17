@@ -6,23 +6,130 @@ import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
+import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 // Film Post ve Kullanıcı Modeli
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore kullanıyorsan ekle
 
 class MoviePostCard extends StatefulWidget {
   final MoviePost moviePost;
+  final bool isOwnPost;
 
-  MoviePostCard({required this.moviePost});
+  MoviePostCard({required this.moviePost, this.isOwnPost = false});
 
   @override
   _MoviePostCardState createState() => _MoviePostCardState();
 }
 
 class _MoviePostCardState extends State<MoviePostCard> {
+  TextEditingController _contentController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _contentController.text = widget.moviePost.content;
+  }
+
+  // 🔹 **Postu Silme Fonksiyonu**
+  void _deletePost() async {
+    bool confirmDelete = await _showConfirmationDialog();
+    if (confirmDelete) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('posts')
+            .doc(widget.moviePost.postId) // Firestore'da post ID ile sil
+            .delete();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gönderi silindi!")),
+        );
+
+        setState(() {}); // UI'yi güncelle
+      } catch (e) {
+        print("Silme hatası: $e");
+      }
+    }
+  }
+
+  // 🔹 **Düzenleme Fonksiyonu**
+  void _editPost() async {
+    String? updatedContent = await _showEditDialog();
+    if (updatedContent != null) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('posts')
+            .doc(widget.moviePost.postId)
+            .update({"content": updatedContent});
+
+        setState(() {
+          widget.moviePost.content = updatedContent;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gönderi güncellendi!")),
+        );
+      } catch (e) {
+        print("Güncelleme hatası: $e");
+      }
+    }
+  }
+
+  // 🔹 **Silme İçin Onay Penceresi**
+  Future<bool> _showConfirmationDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Gönderiyi Sil"),
+            content: Text("Bu gönderiyi silmek istediğinize emin misiniz?"),
+            actions: [
+              TextButton(
+                child: Text("İptal"),
+                onPressed: () => Navigator.pop(context, false),
+              ),
+              TextButton(
+                child: Text("Sil"),
+                onPressed: () => Navigator.pop(context, true),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  // 🔹 **Düzenleme İçin Dialog Penceresi**
+  Future<String?> _showEditDialog() async {
+    return await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Gönderiyi Düzenle"),
+          content: TextField(
+            controller: _contentController,
+            maxLines: 4,
+            decoration: InputDecoration(border: OutlineInputBorder()),
+          ),
+          actions: [
+            TextButton(
+              child: Text("İptal"),
+              onPressed: () => Navigator.pop(context, null),
+            ),
+            TextButton(
+              child: Text("Kaydet"),
+              onPressed: () {
+                Navigator.pop(context, _contentController.text);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -32,13 +139,9 @@ class _MoviePostCardState extends State<MoviePostCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Divider(
-              color: Colors.white54,
-              thickness: 1, // İsim üzerindeki çizgi
-            ),
+            const Divider(color: Colors.white54, thickness: 1),
             Row(
               children: [
-                // Kullanıcı Profil Fotoğrafı
                 CircleAvatar(
                   backgroundImage: widget.moviePost.user.profilePhotoUrl != null
                       ? NetworkImage(widget.moviePost.user.profilePhotoUrl!)
@@ -46,9 +149,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                   backgroundColor: Colors.white,
                   radius: 20,
                 ),
-
                 const SizedBox(width: 12),
-                // Kullanıcı Adı
                 Text(
                   '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
                   style: const TextStyle(
@@ -56,9 +157,11 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       fontSize: 17,
                       fontWeight: FontWeight.bold),
                 ),
+                Spacer(),
+                if (widget.isOwnPost) // 🔹 Post silme düzenleme
+                  PostSilmeDuzenleme(moviePost: widget.moviePost),
               ],
             ),
-            // İçerik Kısmı
             SizedBox(height: 10),
             Text(
               widget.moviePost.content,
@@ -67,26 +170,19 @@ class _MoviePostCardState extends State<MoviePostCard> {
               ),
             ),
             SizedBox(height: 10),
-            const SizedBox(height: 8),
-            // Film Posteri, Başlık ve Konu
             FilmBilgiWidget(
               movie: widget.moviePost.movie,
               baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
             ),
             const SizedBox(height: 26),
-            // Beğeni, Yorum, Kaydet İkonları
             Row(
               children: [
-                // Beğeni ve Yorum İkonları Grubu
-
                 PostActionsWidget(
-                  postId: widget.moviePost.movie.id, // Firestore'daki post ID
-                  initialLikes: widget.moviePost.likes, // Mevcut beğeni sayısı
-                  initialComments:
-                      widget.moviePost.comments, // Mevcut yorum sayısı
+                  postId: widget.moviePost.movie.id,
+                  initialLikes: widget.moviePost.likes,
+                  initialComments: widget.moviePost.comments,
                 ),
-                const Spacer(), // İkonları sağa ve sola ayırmak için boşluk
-                // Kaydet İkonu
+                const Spacer(),
                 IconButton(
                   onPressed: () {
                     // Kaydet aksiyonu

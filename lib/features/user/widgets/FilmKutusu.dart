@@ -30,9 +30,12 @@ class _FilmKutusuState extends State<FilmKutusu> {
         } else {
           final posts = snapshot.data;
           return ListView.builder(
-              itemCount: posts!.length,
-              itemBuilder: (context, index) =>
-                  MoviePostCard(moviePost: posts[index]));
+            itemCount: posts!.length,
+            itemBuilder: (context, index) => MoviePostCard(
+              moviePost: posts[index],
+              isOwnPost: true,
+            ),
+          );
         }
       },
     );
