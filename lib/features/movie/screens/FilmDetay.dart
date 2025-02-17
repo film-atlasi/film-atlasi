@@ -2,10 +2,11 @@ import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
+import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 
 class MovieDetailsPage extends StatefulWidget {
@@ -18,12 +19,24 @@ class MovieDetailsPage extends StatefulWidget {
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  late Actor director = Actor(name: "name", character: "character", id:-1);
+  late Actor director = Actor(name: "name", character: "character", id: -1);
+  List<String> watchProviders = [];
+
+  Map<String, String> watchProvidersWithIcons = {};
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getDirector();
+    fetchWatchProviders();
+  }
+
+  Future<void> fetchWatchProviders() async {
+    final providers =
+        await MovieService().getWatchProviders(int.parse(widget.movie.id));
+    setState(() {
+      watchProvidersWithIcons = providers;
+    });
   }
 
   Future<void> getDirector() async {
@@ -232,6 +245,51 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
+
+              SizedBox(height: 16),
+
+// İzleme Platformları
+              if (watchProvidersWithIcons.isNotEmpty)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Başlık
+                    Text(
+                      "Bu platform da izleyebilirsiniz:",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                        width: 8), // Başlık ile ikon arasına boşluk ekleyelim
+
+                    // Platform İkonları
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection:
+                            Axis.horizontal, // Yatay kaydırma ekledik
+                        child: Row(
+                          children:
+                              watchProvidersWithIcons.entries.map((entry) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0), // İkonlar arasında boşluk
+                              child: Image.network(
+                                entry.value, // API'den gelen ikon URL
+                                width: 50,
+                                height: 50,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(Icons.broken_image,
+                                        size: 50, color: Colors.grey),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+              SizedBox(height: 24),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
