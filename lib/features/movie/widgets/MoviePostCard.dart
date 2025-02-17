@@ -39,62 +39,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
   @override
   Widget build(BuildContext context) {
 
-    return Card(
-      color: Colors.black,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Divider(color: Colors.white54, thickness: 1),
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: widget.moviePost.user.profilePhotoUrl != null
-                      ? NetworkImage(widget.moviePost.user.profilePhotoUrl!)
-                      : null,
-                  backgroundColor: Colors.white,
-                  radius: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold),
-                ),
-                Spacer(),
-                if (widget.isOwnPost) // 🔹 Post silme düzenleme
-                  PostSilmeDuzenleme(moviePost: widget.moviePost),
-              ],
-            ),
-            SizedBox(height: 10),
-            Text(
-              widget.moviePost.content,
-              style: TextStyle(
-                color: Color.fromARGB(255, 161, 1, 182),
-              ),
-            ),
-            SizedBox(height: 10),
-            FilmBilgiWidget(
-              movie: widget.moviePost.movie,
-              baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
-            ),
-            const SizedBox(height: 26),
-            Row(
-              children: [
-                PostActionsWidget(
-                  postId: widget.moviePost.movie.id,
-                  initialLikes: widget.moviePost.likes,
-                  initialComments: widget.moviePost.comments,
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {
-                    // Kaydet aksiyonu
-                  },
-                  icon: const Icon(Icons.bookmark_border, color: Colors.white),
+    
 
     return Column(
       children: [
