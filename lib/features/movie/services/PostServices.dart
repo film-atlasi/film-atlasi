@@ -5,6 +5,7 @@ import 'package:film_atlasi/features/user/services/UserServices.dart';
 
 class PostServices {
   static Future<MoviePost?> getPostByUid(String uid) async {
+    
     try {
       final firestore = FirebaseFirestore.instance;
       final postsCollection = firestore.collection('posts');
@@ -28,7 +29,8 @@ class PostServices {
               movie: movie,
               content: data['content'] ?? '',
               likes: data['likes'] ?? 0,
-              comments: data['comments'] ?? 0);
+              comments: data['comments'] ?? 0,
+              isQuote: data["isQuote"] ?? false,);
         } else {
           return null;
         }

@@ -11,14 +11,19 @@ class MoviePost {
   final int likes;
   final int comments;
   final String content;
-
+  bool isQuote;
   MoviePost(
       {required this.user,
       required this.postId,
       required this.movie,
       required this.likes,
       required this.comments,
-      required this.content});
+      required this.content,
+
+      this.isQuote = false,
+      });
+
+      
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{

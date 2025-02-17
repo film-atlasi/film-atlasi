@@ -9,6 +9,8 @@ class Movie {
   final String? releaseDate; // Yayınlanış Tarihi
   final List<int>? genreIds; // Tür ID'leri (genre_ids)
 
+  
+
   Movie({
     required this.id,
     required this.title,

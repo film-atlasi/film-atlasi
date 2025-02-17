@@ -211,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             tabs: const [
               Tab(text: "Film Kutusu"),
               Tab(text: "Film Listesi"),
-              Tab(text: "Beğenilenler"),
+            //  Tab(text: "Beğenilenler"),
             ],
           ),
           Expanded(
@@ -220,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: [
                 Center(child: FilmKutusu(userUid: userUid)),
                 Center(child: FilmListProfile(userUid: userUid)),
-                Center(child: Text("Beğenilenler İçeriği")),
+               // Center(child: Text("Beğenilenler İçeriği")),
               ],
             ),
           ),
