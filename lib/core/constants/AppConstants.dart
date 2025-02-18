@@ -19,4 +19,5 @@ class AppConstants {
 
   static Color get black => Colors.black;
   static Color get red => Colors.red;
+  static Color get baseColor => Color.fromARGB(255, 110, 5, 5);
 }

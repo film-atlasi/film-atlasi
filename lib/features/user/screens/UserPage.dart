@@ -1,4 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/user/services/FollowServices.dart';
+import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
@@ -14,12 +18,19 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  Map<String, dynamic>? userData;
+  User? userData;
   bool isLoading = true;
+  bool isFollowingUser = false;
+  String? currentUserUid;
+  bool followLoading = false;
+
+  FollowServices followServices = FollowServices();
 
   @override
   void initState() {
     super.initState();
+    currentUserUid = auth.FirebaseAuth.instance.currentUser?.uid;
+    checkFollowStatus();
     _tabController =
         TabController(length: 3, vsync: this); // TabController length = 3
     _fetchUserData();
@@ -29,6 +40,35 @@ class _UserPageState extends State<UserPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> checkFollowStatus() async {
+    setState(() {
+      followLoading = true;
+    });
+    bool following =
+        await followServices.isFollowing(currentUserUid!, widget.userUid);
+    setState(() {
+      isFollowingUser = following;
+      followLoading = false;
+    });
+  }
+
+  Future<void> toggleFollow() async {
+    if (followLoading) {
+      return;
+    }
+    setState(() {
+      followLoading = true;
+    });
+    if (isFollowingUser) {
+      //takip ediyorsa takipten çık
+      await followServices.unfollowUser(currentUserUid!, widget.userUid);
+    } else {
+      //etmiyorsa etsin
+      await followServices.followUser(currentUserUid!, widget.userUid);
+    }
+    checkFollowStatus();
   }
 
   Future<void> _fetchUserData() async {
@@ -41,7 +81,7 @@ class _UserPageState extends State<UserPage>
             .get();
 
         setState(() {
-          userData = snapshot.exists ? snapshot.data() : null;
+          userData = snapshot.exists ? User.fromFirestore(snapshot) : null;
           isLoading = false;
         });
       }
@@ -75,8 +115,7 @@ class _UserPageState extends State<UserPage>
             const Divider(),
             _buildTabs(), // Sekme Kontrolleri
           ],
-        ),
-        _buildEditButton(), // Düzenle Butonu
+        ) // Düzenle Butonu
       ],
     );
   }
@@ -88,9 +127,9 @@ class _UserPageState extends State<UserPage>
           height: 200,
           decoration: BoxDecoration(
             color: Colors.grey[300],
-            image: userData!['coverPhotoUrl'] != null
+            image: userData!.coverPhotoUrl != null
                 ? DecorationImage(
-                    image: NetworkImage(userData!['coverPhotoUrl']),
+                    image: NetworkImage(userData!.coverPhotoUrl!),
                     fit: BoxFit.cover,
                   )
                 : null,
@@ -102,10 +141,10 @@ class _UserPageState extends State<UserPage>
           child: CircleAvatar(
             radius: 50,
             backgroundColor: Colors.white,
-            backgroundImage: userData!['profilePhotoUrl'] != null
-                ? NetworkImage(userData!['profilePhotoUrl'])
+            backgroundImage: userData!.profilePhotoUrl != null
+                ? NetworkImage(userData!.profilePhotoUrl!)
                 : null,
-            child: userData!['profilePhotoUrl'] == null
+            child: userData!.profilePhotoUrl == null
                 ? const Icon(Icons.person, size: 50, color: Colors.grey)
                 : null,
           ),
@@ -118,32 +157,68 @@ class _UserPageState extends State<UserPage>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            "${userData!['firstName']} ${userData!['lastName'] ?? ''}",
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${userData!.firstName} ${userData!.lastName!}",
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    AddVerticalSpace(context, 0.01),
+                    Text(
+                      "@${userData!.userName}",
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    Text(
+                      "Meslek: ${userData!.job ?? 'Bilinmiyor'}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    Text(
+                      "Yaş: ${userData!.age ?? 'Bilinmiyor'}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                  child: GestureDetector(
+                      onTap: toggleFollow,
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: !isFollowingUser
+                                  ? AppConstants.red
+                                  : Colors.transparent,
+                              border: isFollowingUser
+                                  ? Border.all(color: Colors.white)
+                                  : null,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(25))),
+                          height: MediaQuery.of(context).size.height / 25,
+                          width: MediaQuery.of(context).size.width,
+                          alignment: Alignment.center,
+                          child: followLoading
+                              ? CircularProgressIndicator()
+                              : Text(
+                                  isFollowingUser
+                                      ? "Takip Ediyorsun"
+                                      : "Takip Et",
+                                  style: TextStyle(color: Colors.white),
+                                ))))
+            ],
           ),
-          Text(
-            "@${userData!['userName']}",
-            style: const TextStyle(color: Colors.grey),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            "Meslek: ${userData!['job'] ?? 'Bilinmiyor'}",
-            style: const TextStyle(fontSize: 16),
-          ),
-          Text(
-            "Yaş: ${userData!['age'] ?? 'Bilinmiyor'}",
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildStatItem("9", "Film"),
-              _buildStatItem("2", "Takip Edilen"),
-              _buildStatItem("2", "Takipçi"),
+              _buildStatItem(userData!.following.toString(), "Takip Edilen"),
+              _buildStatItem(userData!.followers.toString(), "Takipçi"),
             ],
           ),
         ],
@@ -152,17 +227,150 @@ class _UserPageState extends State<UserPage>
   }
 
   Widget _buildStatItem(String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-      ],
+    return GestureDetector(
+      onTap: label == "Takip Edilen"
+          ? () {
+              buildTakipEdilenler();
+            }
+          : label == "Takipçi"
+              ? () {
+                  buildTakipciler();
+                }
+              : null,
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<dynamic> buildTakipciler() {
+    return showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height ,
+          padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Takipçiler"),
+              Expanded(
+                child: FutureBuilder<List<User>>(
+                  future: followServices.getFollowers(widget.userUid),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: const CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Text("Hata: ${snapshot.error}");
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text("Takipçi bulunamadı.");
+                    } else {
+                      return ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          User user = snapshot.data![index];
+                          return ListTile(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      UserPage(userUid: user.uid!),
+                                ),
+                              );
+                            },
+                            leading: CircleAvatar(
+                              backgroundImage: user.profilePhotoUrl != null
+                                  ? NetworkImage(user.profilePhotoUrl!)
+                                  : null,
+                              child: user.profilePhotoUrl == null
+                                  ? const Icon(Icons.person)
+                                  : null,
+                            ),
+                            title: Text("${user.firstName} ${user.lastName}"),
+                            subtitle: Text("@${user.userName}"),
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<dynamic> buildTakipEdilenler() {
+    return showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height ,
+          padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Takip Edilenler"),
+              Expanded(
+                child: FutureBuilder<List<User>>(
+                  future: followServices.getFollowings(widget.userUid),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: const CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Text("Hata: ${snapshot.error}");
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text("Takip edilen kullanıcı bulunamadı.");
+                    } else {
+                      return ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          User user = snapshot.data![index];
+                          return ListTile(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      UserPage(userUid: user.uid!),
+                                ),
+                              );
+                            },
+                            leading: CircleAvatar(
+                              backgroundImage: user.profilePhotoUrl != null
+                                  ? NetworkImage(user.profilePhotoUrl!)
+                                  : null,
+                              child: user.profilePhotoUrl == null
+                                  ? const Icon(Icons.person)
+                                  : null,
+                            ),
+                            title: Text("${user.firstName} ${user.lastName}"),
+                            subtitle: Text("@${user.userName}"),
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -193,27 +401,6 @@ class _UserPageState extends State<UserPage>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildEditButton() {
-    return Positioned(
-      top: 200,
-      right: 10,
-      child: SizedBox(
-        width: 100,
-        height: 40,
-        child: ElevatedButton(
-          onPressed: () => print("Düzenle butonuna tıklandı"),
-          child: const Text(
-            "Düzenle",
-            style: TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
       ),
     );
   }
