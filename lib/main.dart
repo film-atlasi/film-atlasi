@@ -12,7 +12,9 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
     print("Firebas initiali application.");
+
   } catch (e) {
     print("Hata: $e");
   }
