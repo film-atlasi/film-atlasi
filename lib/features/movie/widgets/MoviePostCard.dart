@@ -1,5 +1,6 @@
 import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
 import 'package:flutter/material.dart';
 
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
@@ -54,6 +55,9 @@ class _MoviePostCardState extends State<MoviePostCard> {
                           fontSize: 17,
                           fontWeight: FontWeight.bold),
                     ),
+                    Spacer(),
+                    if (widget.isOwnPost) // 🔹 Post silme düzenleme
+                      PostSilmeDuzenleme(moviePost: widget.moviePost),
                   ],
                 ),
                 const SizedBox(height: 10),
