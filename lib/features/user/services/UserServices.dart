@@ -80,29 +80,50 @@ class UserServices {
   static Future<String?> uploadProfilePhoto(String userUid) async {
     try {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Resim kalitesini optimize et
+        maxWidth: 600, // Maksimum genişliği sınırla
+      );
 
-      if (pickedFile == null)
-        return null; // Kullanıcı fotoğraf seçmediyse iptal et
+      if (pickedFile == null) {
+        throw Exception('Fotoğraf seçilmedi');
+      }
 
       File file = File(pickedFile.path);
       String fileName = "profile_pictures/$userUid.jpg";
 
+      // Storage referansı oluştur
       Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
-      UploadTask uploadTask = storageRef.putFile(file);
+
+      // Upload metadata ekle
+      SettableMetadata metadata = SettableMetadata(
+          contentType: 'image/jpeg', customMetadata: {'userId': userUid});
+
+      UploadTask uploadTask = storageRef.putFile(file, metadata);
+
+      // Upload progress takibi eklenebilir
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        double progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        print('Upload progress: $progress%');
+      });
 
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();
 
-      // Firestore'daki kullanıcı belgesini güncelle
       await FirebaseFirestore.instance.collection('users').doc(userUid).update({
         'profilePhotoUrl': downloadUrl,
+        'lastUpdated': FieldValue.serverTimestamp(),
       });
 
       return downloadUrl;
+    } on FirebaseException catch (e) {
+      print('Firebase hatası: ${e.message}');
+      throw Exception('Fotoğraf yüklenemedi: ${e.message}');
     } catch (e) {
-      print("Profil fotoğrafı yüklenirken hata oluştu: $e");
-      return null;
+      print('Genel hata: $e');
+      throw Exception('Beklenmeyen bir hata oluştu');
     }
   }
 }

@@ -61,7 +61,7 @@ class AnasayfaState extends State<Anasayfa>
           tabs: const [
             Tab(text: 'Akış'),
             Tab(text: 'Takipler'),
-            Tab(text: 'Popüler'),
+           Tab(text: 'Popüler'),
           ],
         ),
       ),
@@ -70,7 +70,7 @@ class AnasayfaState extends State<Anasayfa>
         children: [
           FilmSeedPage(),
           const Center(child: Text('Takipler İçeriği')),
-          const Center(child: Text('Popüler İçeriği')),
+         const Center(child: Text('Popüler İçeriği')),
         ],
       ),
       drawer: Drawer(

@@ -55,12 +55,22 @@ class SearchResults extends StatelessWidget {
       ),
     );
   }
+
+     else if (mode == "film_alinti") { // 🔥 Eğer alıntı paylaşımıysa
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => Iletipaylas(movie: movie, isFromQuote: true), // 💡 Özel parametre ekledik
+    ),
+  );
+} 
+
   else {
           // Normalde ileti paylaşım ekranına yönlendir
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Iletipaylas(movie: movie),
+              builder: (context) => Iletipaylas(movie: movie, isFromQuote: false),
             ),
           );
         }
