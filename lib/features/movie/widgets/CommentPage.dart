@@ -111,6 +111,9 @@ class _CommentPageState extends State<CommentPage> {
     final userDoc = await firestore.collection('users').doc(user.uid).get();
     String userName =
         userDoc.exists ? userDoc['userName'] ?? "Anonim" : "Anonim";
+    String profilePhotoUrl = userDoc.exists
+        ? userDoc['profilePhotoUrl'] ?? ""
+        : ""; // 🔥 Profil fotoğrafını ekledik
 
     DocumentReference commentRef = firestore
         .collection('posts')
@@ -122,6 +125,8 @@ class _CommentPageState extends State<CommentPage> {
       "commentId": commentRef.id,
       "userId": user.uid,
       "userName": userName,
+      "profilePhotoUrl":
+          profilePhotoUrl, // 🔥 Kullanıcının profil fotoğrafını Firestore’a kaydediyoruz
       "content": _commentController.text.trim(),
       "timestamp": FieldValue.serverTimestamp(),
     });
@@ -158,7 +163,17 @@ class _CommentPageState extends State<CommentPage> {
 
                     return ListTile(
                       leading: CircleAvatar(
-                        child: Text(commentData['userName'][0].toUpperCase()),
+                        backgroundImage: commentData['profilePhotoUrl'] !=
+                                    null &&
+                                commentData['profilePhotoUrl'].isNotEmpty
+                            ? NetworkImage(commentData[
+                                'profilePhotoUrl']) // 🔥 Profil fotoğrafını gösteriyoruz
+                            : null,
+                        child: commentData['profilePhotoUrl'] == null ||
+                                commentData['profilePhotoUrl'].isEmpty
+                            ? Text(commentData['userName'][0]
+                                .toUpperCase()) // Eğer profil fotoğrafı yoksa baş harfi göster
+                            : null,
                       ),
                       title: Text(
                         commentData['userName'] ?? 'Anonim',

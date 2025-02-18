@@ -1,0 +1,2 @@
+/Users/kemalberfhatkirklar/Desktop/film-atlasi/android/app/.cxx/Debug/4t2l5k4i/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/kemalberfhatkirklar/Desktop/film-atlasi/android/app/.cxx/Debug/4t2l5k4i/armeabi-v7a/CMakeFiles/rebuild_cache.dir
