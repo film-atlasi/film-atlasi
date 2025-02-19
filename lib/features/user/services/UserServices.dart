@@ -5,6 +5,7 @@ import 'package:film_atlasi/features/user/models/User.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 class UserServices {
   static Future<List<User>> searchUsers(String query) async {
@@ -125,5 +126,10 @@ class UserServices {
       print('Genel hata: $e');
       throw Exception('Beklenmeyen bir hata oluştu');
     }
+  }
+
+  static String? get currentUserUid {
+    final user = auth.FirebaseAuth.instance.currentUser;
+    return user?.uid; // Kullanıcı giriş yaptıysa UID'yi döndür, yapmadıysa null
   }
 }
