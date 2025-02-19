@@ -2,8 +2,8 @@ import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart'
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
 import 'package:flutter/material.dart';
-
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MoviePostCard extends StatefulWidget {
   final MoviePost moviePost;
@@ -47,13 +47,19 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       radius: 20,
                     ),
                     const SizedBox(width: 12),
+
                     // Kullanıcı Adı
-                    Text(
-                      '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                     Spacer(),
                     if (widget.isOwnPost) // 🔹 Post silme düzenleme
@@ -88,7 +94,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                   ),
                 ],
 
-                // 🔥 Beğeni, Yorum, Kaydet İkonları (Her iki post türü için de)
+                // 🔥 Beğeni, Yorum, Kaydet İkonları
                 Row(
                   children: [
                     PostActionsWidget(
@@ -108,6 +114,16 @@ class _MoviePostCardState extends State<MoviePostCard> {
                     ),
                   ],
                 ),
+
+                // 🔥 Zaman damgasını beğeni & yorum butonlarının ALTINA ekledik
+                Padding(
+                  padding: const EdgeInsets.only(top: 6.0), // Hafif boşluk ekledik
+                  child: Text(
+                    _formatTimestamp(widget.moviePost.timestamp), // Tarih bilgisi
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
               ],
             ),
           ),
@@ -115,5 +131,28 @@ class _MoviePostCardState extends State<MoviePostCard> {
         Divider(color: Colors.grey), // Çizgi ekleniyor
       ],
     );
+  }
+
+  // 🔥 Timestamp'i "x dakika önce" formatına çeviren fonksiyon
+  String _formatTimestamp(Timestamp timestamp) {
+    DateTime postTime = timestamp.toDate();
+    Duration difference = DateTime.now().difference(postTime);
+
+    if (difference.inSeconds < 60) {
+      return "${difference.inSeconds} saniye";
+    } else if (difference.inMinutes < 60) {
+      return "${difference.inMinutes} dakika";
+    } else if (difference.inHours < 24) {
+      return "${difference.inHours} saat";
+    } else if (difference.inDays < 7) {
+      return "${difference.inDays} gün";
+    } 
+    else if (difference.inDays < 30) {
+      return "${(difference.inDays / 7).floor()} hafta";
+    } else if (difference.inDays < 365) {
+      return "${(difference.inDays / 30).floor()} ay";
+    } else {
+      return "${(difference.inDays / 365).floor()} yıl";   
+    }
   }
 }

@@ -71,6 +71,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
               comments: post["comments"],
               content: post["content"],
               isQuote: post["isQuote"] ?? false, // 🔥 Alıntı paylaşımı olup olmadığını belirtiyoruz
+              timestamp: post["timestamp"], // Add the required timestamp parameter
           );
         }).toList();
       });

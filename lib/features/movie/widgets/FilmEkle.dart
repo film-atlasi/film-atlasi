@@ -13,12 +13,13 @@ class FilmEkleWidget extends StatefulWidget {
 
 class _FilmEkleWidgetState extends State<FilmEkleWidget> {
   final List<dynamic> items = [
-    const Icon(Icons.edit, color: Colors.white),
-    const Text('Oyuncu Veya Yönetmen Ara'),
+  
     const Icon(Icons.format_quote, color: Colors.white),
     const Text('Filmden Alıntı Paylaş'),
     const Icon(Icons.message, color: Colors.white),
     const Text('Film Listesi Oluştur'),
+      const Icon(Icons.edit, color: Colors.white),
+    const Text('Oyuncu Veya Yönetmen Ara'),
     //const Icon(Icons.book, color: Colors.white),
     //    const Text('Filmi Favorilere Ekle'),
     //  const Icon(Icons.track_changes, color: Colors.white),
@@ -62,13 +63,13 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                   String mode = "";
 
                   switch (index) {
-                    case 0:
+                    case 2:
                       mode = "oyuncu_yonetmen";
                       break;
-                    case 1:
+                    case 0:
                       mode = "film_alinti";
                       break;
-                    case 2:
+                    case 1:
                       mode = "film_listesi";
                       break;
                     // case 3:

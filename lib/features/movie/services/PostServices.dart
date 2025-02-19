@@ -30,7 +30,8 @@ class PostServices {
               content: data['content'] ?? '',
               likes: data['likes'] ?? 0,
               comments: data['comments'] ?? 0,
-              isQuote: data["isQuote"] ?? false,);
+              isQuote: data["isQuote"] ?? false,
+              timestamp: data['timestamp'] as Timestamp,);
         } else {
           return null;
         }
