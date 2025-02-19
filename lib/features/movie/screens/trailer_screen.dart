@@ -1,0 +1,150 @@
+import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:film_atlasi/features/movie/models/Movie.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class TrailerScreen extends StatefulWidget {
+  final String? trailerUrl;
+  final Movie movie;
+
+  const TrailerScreen({Key? key, required this.trailerUrl, required this.movie})
+      : super(key: key);
+
+  @override
+  _TrailerScreenState createState() => _TrailerScreenState();
+}
+
+class _TrailerScreenState extends State<TrailerScreen> {
+  YoutubePlayerController? _controller;
+  bool isYouTubeVideo = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.trailerUrl != null) {
+      if (widget.trailerUrl!.contains("youtube.com")) {
+        isYouTubeVideo = true;
+        final videoId = YoutubePlayer.convertUrlToId(widget.trailerUrl!);
+        if (videoId != null) {
+          _controller = YoutubePlayerController(
+            initialVideoId: videoId,
+            flags: const YoutubePlayerFlags(
+              autoPlay: true,
+              mute: false,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  void _launchIMDB() async {
+    if (widget.trailerUrl != null) {
+      final url = Uri.parse(widget.trailerUrl!);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.movie.title)),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Filmin afişi
+            Container(
+              width: double.infinity,
+              height: 250,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(
+                      'https://image.tmdb.org/t/p/original${widget.movie.posterPath}'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Fragman oynatıcı veya IMDB butonu
+            if (isYouTubeVideo && _controller != null) ...[
+              Center(child: YoutubePlayer(controller: _controller!)),
+            ] else if (widget.trailerUrl != null) ...[
+              Center(
+                child: ElevatedButton(
+                  onPressed: _launchIMDB,
+                  child: const Text("IMDB'de İzle"),
+                ),
+              ),
+            ] else ...[
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "Bu film için fragman bulunamadı.",
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 10),
+
+            // **Her durumda filmin içeriği burada olacak**
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.movie.title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.movie.overview,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.yellow, size: 24),
+                      const SizedBox(width: 5),
+                      Text(
+                        widget.movie.voteAverage.toString(),
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+}
