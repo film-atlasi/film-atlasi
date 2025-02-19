@@ -12,8 +12,6 @@ class Movie {
   final Map<String, String>?
       watchProvidersWithIcons; // 🔥 Platform adı + İkon URL’si
 
-  
-
   Movie({
     required this.id,
     required this.title,

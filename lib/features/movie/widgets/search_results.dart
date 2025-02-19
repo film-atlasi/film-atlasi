@@ -9,7 +9,9 @@ class SearchResults extends StatelessWidget {
   final List<dynamic> searchResults;
   final String mode; // Mode parametresi eklendi
 
-  const SearchResults({Key? key, required this.searchResults, required this.mode}) : super(key: key);
+  const SearchResults(
+      {Key? key, required this.searchResults, required this.mode})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -45,32 +47,30 @@ class SearchResults extends StatelessWidget {
         style: const TextStyle(color: Colors.grey),
       ),
       onTap: () {
-      // 📌 Eğer mod "film_listesi" ise, aşağıdan modal açalım
-       if (mode == "film_listesi") {
-        
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FilmList(selectedMovie: movie),
-      ),
-    );
-  }
-
-     else if (mode == "film_alinti") { // 🔥 Eğer alıntı paylaşımıysa
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => Iletipaylas(movie: movie, isFromQuote: true), // 💡 Özel parametre ekledik
-    ),
-  );
-} 
-
-  else {
+        // 📌 Eğer mod "film_listesi" ise, aşağıdan modal açalım
+        if (mode == "film_listesi") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FilmList(selectedMovie: movie),
+            ),
+          );
+        } else if (mode == "film_alinti") {
+          // 🔥 Eğer alıntı paylaşımıysa
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Iletipaylas(
+                  movie: movie, isFromQuote: true), // 💡 Özel parametre ekledik
+            ),
+          );
+        } else {
           // Normalde ileti paylaşım ekranına yönlendir
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Iletipaylas(movie: movie, isFromQuote: false),
+              builder: (context) =>
+                  Iletipaylas(movie: movie, isFromQuote: false),
             ),
           );
         }
@@ -80,7 +80,16 @@ class SearchResults extends StatelessWidget {
 
   ListTile _buildUserListTile(User user, BuildContext context) {
     return ListTile(
-      leading: CircleAvatar(),
+      leading: user.profilePhotoUrl != null && user.profilePhotoUrl!.isNotEmpty
+          ? CircleAvatar(
+              backgroundImage: NetworkImage(
+                  user.profilePhotoUrl!), // Kullanıcının profil fotoğrafı
+            )
+          : const CircleAvatar(
+              backgroundColor:
+                  Colors.grey, // Fotoğraf yoksa sadece gri bir avatar
+              child: Icon(Icons.person, color: Colors.white), // Kullanıcı ikonu
+            ),
       title: Text(user.userName ?? "username",
           style: const TextStyle(color: Colors.white)),
       subtitle: Text(

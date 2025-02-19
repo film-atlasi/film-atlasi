@@ -102,17 +102,19 @@ class User {
   factory User.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return User(
-        uid: doc.id,
-        userName: data['userName'] ?? '',
-        firstName: data['firstName'] ?? '',
-        email: data['email'] ?? '',
-        city: data['city'] ?? '',
-        createdAt: data['createdAt'] ?? Timestamp.now(),
-        age: data['age'] ?? 0,
-        job: data['job'] ?? '',
-        followers: data['followers'] ?? 0,
-        following: data['following'] ?? 0,
-        lastName: data['lastName'] ?? "");
+      uid: doc.id,
+      userName: data['userName'] ?? '',
+      firstName: data['firstName'] ?? '',
+      email: data['email'] ?? '',
+      city: data['city'] ?? '',
+      createdAt: data['createdAt'] ?? Timestamp.now(),
+      age: data['age'] ?? 0,
+      job: data['job'] ?? '',
+      followers: data['followers'] ?? 0,
+      following: data['following'] ?? 0,
+      lastName: data['lastName'] ?? "",
+      profilePhotoUrl: data['profilePhotoUrl'] ?? "", // ✅ EKLENDİ!
+    );
   }
 
   String toJson() => json.encode(toMap());

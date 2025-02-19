@@ -20,7 +20,9 @@ class DiscoverPage extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FilmAraWidget(mode: "film_incele")),
+                MaterialPageRoute(
+                    builder: (context) =>
+                        const FilmAraWidget(mode: "film_incele")),
               );
             },
           ),
