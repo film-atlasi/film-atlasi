@@ -43,7 +43,9 @@ class UserServices {
       final postsCollection = firestore.collection('posts');
 
       final querySnapshot =
-          await postsCollection.where('user', isEqualTo: userUid).get();
+          await postsCollection.where('user', isEqualTo: userUid)
+          //.orderBy('timestamp', descending: true)
+          .get();
 
       final postUids = querySnapshot.docs.map((doc) => doc.id).toList();
 

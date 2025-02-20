@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 
@@ -12,15 +13,23 @@ class MoviePost {
   final int comments;
   String content;
   bool isQuote;
-  MoviePost({
-    required this.user,
-    required this.postId,
-    required this.movie,
-    required this.likes,
-    required this.comments,
-    required this.content,
-    this.isQuote = false,
-  });
+
+    final Timestamp timestamp;
+  
+  MoviePost(
+      {required this.user,
+      required this.postId,
+      required this.movie,
+      required this.likes,
+      required this.comments,
+      required this.content,
+      required this.timestamp,
+
+      this.isQuote = false,
+      });
+
+      
+
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -29,6 +38,7 @@ class MoviePost {
       'likes': likes,
       'content': content,
       'comments': comments,
+      'timestamp': timestamp,
     };
   }
 
@@ -39,7 +49,9 @@ class MoviePost {
         movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
         likes: map['likes'] as int,
         comments: map['comments'] as int,
-        content: map['content'] as String);
+        content: map['content'] as String,
+         timestamp: map['timestamp'] as Timestamp, 
+    );
   }
 
   String toJson() => json.encode(toMap());

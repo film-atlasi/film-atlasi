@@ -1,6 +1,7 @@
 import 'package:film_atlasi/features/movie/screens/AlintiEkle.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmList.dart';
+import 'package:film_atlasi/features/movie/widgets/oyuncu_yonetmen_ara_widget.dart';
 import 'package:flutter/material.dart';
 
 class FilmEkleWidget extends StatefulWidget {
@@ -12,12 +13,13 @@ class FilmEkleWidget extends StatefulWidget {
 
 class _FilmEkleWidgetState extends State<FilmEkleWidget> {
   final List<dynamic> items = [
-    const Icon(Icons.edit, color: Colors.white),
-    const Text('Film Ara Ve İncele'),
+  
     const Icon(Icons.format_quote, color: Colors.white),
     const Text('Filmden Alıntı Paylaş'),
     const Icon(Icons.message, color: Colors.white),
     const Text('Film Listesi Oluştur'),
+      const Icon(Icons.edit, color: Colors.white),
+    const Text('Oyuncu Veya Yönetmen Ara'),
     //const Icon(Icons.book, color: Colors.white),
     //    const Text('Filmi Favorilere Ekle'),
     //  const Icon(Icons.track_changes, color: Colors.white),
@@ -61,13 +63,13 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                   String mode = "";
 
                   switch (index) {
-                    case 0:
-                      mode = "film_incele";
+                    case 2:
+                      mode = "oyuncu_yonetmen";
                       break;
-                    case 1:
+                    case 0:
                       mode = "film_alinti";
                       break;
-                    case 2:
+                    case 1:
                       mode = "film_listesi";
                       break;
                     // case 3:
@@ -77,13 +79,27 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                     //   mode = "izleme_hedefi";
                     //   break;
                   }
-
-                  Navigator.push(
+    if (mode == "oyuncu_yonetmen") {
+        
+   Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => const OyuncuYonetmenAraWidget(mode: "oyuncu_yonetmen"),
+  ),
+);
+  }
+else{
+    Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => FilmAraWidget(mode: mode),
                     ),
                   );
+
+
+
+}
+                
                 },
               ),
             ),
