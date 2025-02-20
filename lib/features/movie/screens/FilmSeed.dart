@@ -61,23 +61,24 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
       setState(() {
         moviePosts = posts.map((post) {
           String filmId = post['movie'];
-
           String userId = post['user'];
+
           return MoviePost(
-              postId: post["postId"],
-              user: User.fromMap(users[userId] ?? {}),
-              movie: Movie.fromMap(films[filmId] ?? {}),
-              likes: post["likes"],
-              comments: post["comments"],
-              content: post["content"],
-              isQuote: post["isQuote"] ?? false, // 🔥 Alıntı paylaşımı olup olmadığını belirtiyoruz
-              timestamp: post["timestamp"], // Add the required timestamp parameter
+            postId: post["postId"],
+            user: User.fromMap(users[userId] ?? {}),
+            movie: Movie.fromMap(films[filmId] ?? {}),
+            likes: post["likes"],
+            comments: post["comments"],
+            content: post["content"],
+            isQuote: post["isQuote"] ?? false,
+            rating: (post["rating"] ?? 0)
+                .toDouble(), // ⭐️ Burada rating değerini alıyoruz!
+            timestamp: post["timestamp"],
           );
         }).toList();
       });
-    // ignore: empty_catches
     } catch (e) {
-
+      print("Hata oluştu: $e");
     }
   }
 
@@ -99,7 +100,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                 },
               ),
       ),
-    //  floatingActionButton: buildFloatingActionButton(context),
+      //  floatingActionButton: buildFloatingActionButton(context),
     );
   }
 

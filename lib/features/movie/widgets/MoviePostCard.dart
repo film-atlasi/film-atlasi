@@ -1,6 +1,7 @@
 import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
+import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -66,6 +67,11 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       PostSilmeDuzenleme(moviePost: widget.moviePost),
                   ],
                 ),
+                const SizedBox(height: 10),
+
+                // ⭐️ Kullanıcının verdiği puanı gösteriyoruz
+                RatingDisplayWidget(rating: widget.moviePost.rating),
+
                 const SizedBox(height: 10),
 
                 // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek

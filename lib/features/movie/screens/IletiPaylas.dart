@@ -64,7 +64,7 @@ class _IletipaylasState extends State<Iletipaylas> {
           "genre_ids": film.genreIds,
           "release_date": film.releaseDate,
           "vote_average": film.voteAverage,
-          "yildiz": _rating,
+          "yildiz": _rating, // ⭐️ Kullanıcının verdiği puanı kaydediyoruz!
         });
       }
 
@@ -81,25 +81,11 @@ class _IletipaylasState extends State<Iletipaylas> {
             .isFromQuote, // 🔥 Alıntı paylaşımı olup olmadığını işaretliyoruz
         "likes": 0,
         "comments": 0,
-        "vote_average": film.voteAverage,
-        "yildiz": _rating,
-
+        "rating": _rating, // 🔥 Burada puanı kaydediyoruz!
         "likedUsers": [],
         "timestamp": FieldValue.serverTimestamp(),
       };
 
-// 🔥 Eğer alıntı paylaşımı değilse (normal post ise), ekstra verileri ekle
-      if (!widget.isFromQuote) {
-        postData.addAll({
-          "posterPath": film.posterPath,
-          "overview": film.overview,
-          "genre_ids": film.genreIds,
-          "release_date": film.releaseDate,
-          "vote_average": film.voteAverage,
-        });
-      }
-
-// 🔥 Firestore'a post verisini kaydet
       await postRef.set(postData);
 
       ScaffoldMessenger.of(context).showSnackBar(

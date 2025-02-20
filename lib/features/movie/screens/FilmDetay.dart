@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -6,6 +7,7 @@ import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
+import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:flutter/material.dart';
@@ -80,6 +82,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           likes: doc['likes'],
           comments: doc['comments'],
           isQuote: doc["isQuote"] ?? false,
+          rating: (doc["rating"] ?? 0)
+              .toDouble(), // ⭐️ Eksik rating alanını ekledik
           timestamp: doc['timestamp'] as Timestamp,
         ));
       }
@@ -88,64 +92,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       print("🔥 HATA: fetchMoviePosts() içinde hata oluştu: $e");
       print(stackTrace);
       return [];
-    }
-  }
-
-  final Map<int, String> genreMap = {
-    28: "Aksiyon",
-    12: "Macera",
-    16: "Animasyon",
-    35: "Komedi",
-    80: "Suç",
-    99: "Belgesel",
-    18: "Dram",
-    10751: "Aile",
-    14: "Fantastik",
-    36: "Tarih",
-    27: "Korku",
-    10402: "Müzik",
-    9648: "Gizem",
-    10749: "Romantik",
-    878: "Bilim Kurgu",
-    10770: "TV Filmi",
-    53: "Gerilim",
-    10752: "Savaş",
-    37: "Western",
-  };
-
-  String reverseDate(String? releaseDate) {
-    if (releaseDate == null || releaseDate.isEmpty) return 'Bilinmiyor';
-    try {
-      // Tarihi "-" karakterine göre ayır
-      final parts = releaseDate.split('-');
-      if (parts.length == 3) {
-        // Gelen tarih sırasını ters çevir: Yıl-Ay-Gün -> Gün-Ay-Yıl
-        final day = parts[2];
-        final month = parts[1];
-        final year = parts[0];
-
-        // Ay numarasını Türkçe yazıya çevir
-        const months = [
-          'Ocak',
-          'Şubat',
-          'Mart',
-          'Nisan',
-          'Mayıs',
-          'Haziran',
-          'Temmuz',
-          'Ağustos',
-          'Eylül',
-          'Ekim',
-          'Kasım',
-          'Aralık'
-        ];
-        final monthName = months[int.parse(month) - 1];
-
-        return "$day $monthName $year"; // Ters çevrilmiş tarih
-      }
-      return 'Bilinmiyor';
-    } catch (e) {
-      return 'Bilinmiyor';
     }
   }
 
@@ -236,18 +182,16 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
 
                       SizedBox(height: 16),
                       Text(
-                        "Yayınlanış Tarihi: ${reverseDate(widget.movie.releaseDate)}",
+                        "Yayınlanış Tarihi: ${Helpers.reverseDate(widget.movie.releaseDate)}",
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
 
                       SizedBox(height: 8),
 
                       // Türler
                       Text(
-                        "Tür: ${widget.movie.genreIds != null && widget.movie.genreIds!.isNotEmpty ? widget.movie.genreIds!.map((id) => genreMap[id] ?? 'Bilinmiyor').join(', ') : 'Bilinmiyor'}",
+                        "Tür: ${Helpers.getGenres(widget.movie.genreIds)}",
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
@@ -394,36 +338,54 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                         ...posts.map((post) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                radius: 20,
-                                backgroundImage: post.user.profilePhotoUrl !=
-                                            null &&
-                                        post.user.profilePhotoUrl!.isNotEmpty
-                                    ? NetworkImage(post.user.profilePhotoUrl!)
-                                    : null,
-                                backgroundColor: Colors.grey,
-                                child: post.user.profilePhotoUrl == null ||
-                                        post.user.profilePhotoUrl!.isEmpty
-                                    ? Icon(Icons.person,
-                                        color: Colors.white, size: 30)
-                                    : null,
-                              ),
-                              title: Text(
-                                post.user.userName ?? "Bilinmeyen Kullanıcı",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
-                              ),
-                              subtitle: Text(
-                                post.content,
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                              trailing: Text(
-                                DateFormat('dd MM yyyy')
-                                    .format(post.timestamp.toDate()),
-                                style: TextStyle(color: Colors.white70),
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListTile(
+                                  leading: CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage:
+                                        post.user.profilePhotoUrl != null &&
+                                                post.user.profilePhotoUrl!
+                                                    .isNotEmpty
+                                            ? NetworkImage(
+                                                post.user.profilePhotoUrl!)
+                                            : null,
+                                    backgroundColor: Colors.grey,
+                                    child: post.user.profilePhotoUrl == null ||
+                                            post.user.profilePhotoUrl!.isEmpty
+                                        ? Icon(Icons.person,
+                                            color: Colors.white, size: 30)
+                                        : null,
+                                  ),
+                                  title: Text(
+                                    post.user.userName ??
+                                        "Bilinmeyen Kullanıcı",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // ⭐ Kullanıcının verdiği puanı burada gösteriyoruz
+                                      RatingDisplayWidget(rating: post.rating),
+                                      const SizedBox(
+                                          height: 4), // Boşluk ekledik
+                                      Text(
+                                        post.content,
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Text(
+                                    DateFormat('dd MM yyyy')
+                                        .format(post.timestamp.toDate()),
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -431,7 +393,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                     );
                   }
                 },
-              ),
+              )
             ],
           ),
         ),

@@ -13,23 +13,20 @@ class MoviePost {
   final int comments;
   String content;
   bool isQuote;
+  final double rating; // ⭐️ Kullanıcının verdiği puan
+  final Timestamp timestamp;
 
-    final Timestamp timestamp;
-  
-  MoviePost(
-      {required this.user,
-      required this.postId,
-      required this.movie,
-      required this.likes,
-      required this.comments,
-      required this.content,
-      required this.timestamp,
-
-      this.isQuote = false,
-      });
-
-      
-
+  MoviePost({
+    required this.user,
+    required this.postId,
+    required this.movie,
+    required this.likes,
+    required this.comments,
+    required this.content,
+    required this.timestamp,
+    required this.rating, // ⭐️ Yeni eklenen alan
+    this.isQuote = false,
+  });
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -38,19 +35,22 @@ class MoviePost {
       'likes': likes,
       'content': content,
       'comments': comments,
+      'rating': rating, // 🔥 Firestore'a yazarken kaydediyoruz
       'timestamp': timestamp,
     };
   }
 
   factory MoviePost.fromMap(Map<String, dynamic> map) {
     return MoviePost(
-        user: User.fromMap(map['user'] as Map<String, dynamic>),
-        postId: map['postId'] as String,
-        movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
-        likes: map['likes'] as int,
-        comments: map['comments'] as int,
-        content: map['content'] as String,
-         timestamp: map['timestamp'] as Timestamp, 
+      user: User.fromMap(map['user'] as Map<String, dynamic>),
+      postId: map['postId'] as String,
+      movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
+      likes: map['likes'] as int,
+      comments: map['comments'] as int,
+      content: map['content'] as String,
+      rating: (map['rating'] ?? 0)
+          .toDouble(), // 🔥 Firestore'dan çekerken default 0 veriyoruz
+      timestamp: map['timestamp'] as Timestamp,
     );
   }
 

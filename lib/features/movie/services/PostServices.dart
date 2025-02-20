@@ -24,19 +24,17 @@ class PostServices {
 
         if (user != null && movie != null) {
           return MoviePost(
-
-              postId: data['postId'],
-              user: user,
-              movie: movie,
-              content: data['content'] ?? '',
-              likes: data['likes'] ?? 0,
-              comments: data['comments'] ?? 0,
-              isQuote: data["isQuote"] ?? false,
-              timestamp: data['timestamp'] as Timestamp,);
-
-        
-          
-
+            postId: data['postId'],
+            user: user,
+            movie: movie,
+            content: data['content'] ?? '',
+            likes: data['likes'] ?? 0,
+            comments: data['comments'] ?? 0,
+            isQuote: data["isQuote"] ?? false,
+            rating: (data['rating'] ?? 0)
+                .toDouble(), // ⭐️ Firestore'dan rating çekiyoruz!
+            timestamp: data['timestamp'] as Timestamp,
+          );
         } else {
           return null;
         }
