@@ -20,11 +20,7 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   @override
   void initState() {
     super.initState();
-    _pages = [
-      Anasayfa(key: _anasayfaKey),
-      DiscoverPage(),
-      ProfileScreen()
-    ];
+    _pages = [Anasayfa(key: _anasayfaKey), DiscoverPage(), ProfileScreen()];
   }
 
   @override

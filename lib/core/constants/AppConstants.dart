@@ -9,7 +9,7 @@ class AppConstants {
   /// class and are used to maintain consistency and avoid magic numbers
   /// or hard-coded values in the codebase.
   ///
-  static String get AppName => "Film Atlası";
+  static String get AppName => " ";
 
   static Map<String, WidgetBuilder> get routes => {
         '/giris': (context) => const Loginpage(),

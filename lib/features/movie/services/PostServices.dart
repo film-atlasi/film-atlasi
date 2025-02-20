@@ -35,7 +35,7 @@ class PostServices {
               timestamp: data['timestamp'] as Timestamp,);
 
         
-          );
+          
 
         } else {
           return null;

@@ -4,6 +4,7 @@ import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/user/services/FollowServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
+import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 
@@ -258,7 +259,7 @@ class _UserPageState extends State<UserPage>
       builder: (BuildContext context) {
         return Container(
           width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height ,
+          height: MediaQuery.of(context).size.height,
           padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -319,7 +320,7 @@ class _UserPageState extends State<UserPage>
       builder: (BuildContext context) {
         return Container(
           width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height ,
+          height: MediaQuery.of(context).size.height,
           padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -395,7 +396,7 @@ class _UserPageState extends State<UserPage>
               controller: _tabController,
               children: [
                 Center(child: FilmKutusu(userUid: widget.userUid)),
-                Center(child: Text("Film Listesi İçeriği")),
+                Center(child: FilmListProfile(userUid: widget.userUid)),
                 Center(child: Text("Beğenilenler İçeriği")),
               ],
             ),
@@ -404,4 +405,5 @@ class _UserPageState extends State<UserPage>
       ),
     );
   }
+  
 }

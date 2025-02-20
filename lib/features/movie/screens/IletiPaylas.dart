@@ -18,7 +18,7 @@ class Iletipaylas extends StatefulWidget {
   final Movie movie;
   final bool isFromQuote; // 💡 Alıntı mı, normal paylaşım mı?
 
- const Iletipaylas({
+  const Iletipaylas({
     Key? key,
     required this.movie,
     this.isFromQuote = false, // 💡 Varsayılan olarak normal paylaşım
@@ -63,7 +63,8 @@ class _IletipaylasState extends State<Iletipaylas> {
           "voteAverage": film.voteAverage,
           "genre_ids": film.genreIds,
           "release_date": film.releaseDate,
-          "vote_average": film.voteAverage
+          "vote_average": film.voteAverage,
+          "yildiz": _rating,
         });
       }
 
@@ -71,32 +72,35 @@ class _IletipaylasState extends State<Iletipaylas> {
       DocumentReference postRef = firestore.collection("posts").doc();
 
       // **Postu Firestore'a ekle**
- Map<String, dynamic> postData = {
-  "postId": postRef.id,
-  "user": currentUser.uid,
-  "movie": film.id,
-  "content": _textEditingController.text, // Kullanıcının yorumu
-  "isQuote": widget.isFromQuote, // 🔥 Alıntı paylaşımı olup olmadığını işaretliyoruz
-  "likes": 0,
-  "comments": 0,
-  "likedUsers": [],
-  "timestamp": FieldValue.serverTimestamp(),
-};
+      Map<String, dynamic> postData = {
+        "postId": postRef.id,
+        "user": currentUser.uid,
+        "movie": film.id,
+        "content": _textEditingController.text, // Kullanıcının yorumu
+        "isQuote": widget
+            .isFromQuote, // 🔥 Alıntı paylaşımı olup olmadığını işaretliyoruz
+        "likes": 0,
+        "comments": 0,
+        "vote_average": film.voteAverage,
+        "yildiz": _rating,
+
+        "likedUsers": [],
+        "timestamp": FieldValue.serverTimestamp(),
+      };
 
 // 🔥 Eğer alıntı paylaşımı değilse (normal post ise), ekstra verileri ekle
-if (!widget.isFromQuote) {
-  postData.addAll({
-    "posterPath": film.posterPath,
-    "overview": film.overview,
-    "genre_ids": film.genreIds,
-    "release_date": film.releaseDate,
-    "vote_average": film.voteAverage,
-  });
-}
+      if (!widget.isFromQuote) {
+        postData.addAll({
+          "posterPath": film.posterPath,
+          "overview": film.overview,
+          "genre_ids": film.genreIds,
+          "release_date": film.releaseDate,
+          "vote_average": film.voteAverage,
+        });
+      }
 
 // 🔥 Firestore'a post verisini kaydet
-await postRef.set(postData);
-
+      await postRef.set(postData);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('İnceleme paylaşıldı!')),

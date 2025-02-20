@@ -55,7 +55,8 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
             Expanded(
               child: SearchResults(
                 searchResults: _searchResults,
-                mode: widget.mode, // Mode bilgisini SearchResults’a gönderiyoruz
+                mode:
+                    widget.mode, // Mode bilgisini SearchResults’a gönderiyoruz
               ),
             ),
         ],

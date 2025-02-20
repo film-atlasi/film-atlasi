@@ -117,9 +117,11 @@ class _MoviePostCardState extends State<MoviePostCard> {
 
                 // 🔥 Zaman damgasını beğeni & yorum butonlarının ALTINA ekledik
                 Padding(
-                  padding: const EdgeInsets.only(top: 6.0), // Hafif boşluk ekledik
+                  padding:
+                      const EdgeInsets.only(top: 6.0), // Hafif boşluk ekledik
                   child: Text(
-                    _formatTimestamp(widget.moviePost.timestamp), // Tarih bilgisi
+                    _formatTimestamp(
+                        widget.moviePost.timestamp), // Tarih bilgisi
                     style: TextStyle(color: Colors.grey, fontSize: 12),
                     textAlign: TextAlign.left,
                   ),
@@ -146,13 +148,12 @@ class _MoviePostCardState extends State<MoviePostCard> {
       return "${difference.inHours} saat";
     } else if (difference.inDays < 7) {
       return "${difference.inDays} gün";
-    } 
-    else if (difference.inDays < 30) {
+    } else if (difference.inDays < 30) {
       return "${(difference.inDays / 7).floor()} hafta";
     } else if (difference.inDays < 365) {
       return "${(difference.inDays / 30).floor()} ay";
     } else {
-      return "${(difference.inDays / 365).floor()} yıl";   
+      return "${(difference.inDays / 365).floor()} yıl";
     }
   }
 }

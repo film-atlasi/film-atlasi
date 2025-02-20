@@ -13,15 +13,15 @@ class FilmEkleWidget extends StatefulWidget {
 
 class _FilmEkleWidgetState extends State<FilmEkleWidget> {
   final List<dynamic> items = [
-  
+    const Icon(Icons.book, color: Colors.white),
+    const Text('Filmi Ara ve İncele '),
+    const Icon(Icons.edit, color: Colors.white),
+    const Text('Oyuncu ve Yönetmen Ara'),
     const Icon(Icons.format_quote, color: Colors.white),
     const Text('Filmden Alıntı Paylaş'),
     const Icon(Icons.message, color: Colors.white),
     const Text('Film Listesi Oluştur'),
-      const Icon(Icons.edit, color: Colors.white),
-    const Text('Oyuncu Veya Yönetmen Ara'),
-    //const Icon(Icons.book, color: Colors.white),
-    //    const Text('Filmi Favorilere Ekle'),
+
     //  const Icon(Icons.track_changes, color: Colors.white),
     //  const Text('İzleme Hedefi'),
   ];
@@ -31,7 +31,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
-      height: screenHeight * 0.33,
+      height: screenHeight * 0.35,
       padding: const EdgeInsets.all(20.0), // Kenar boşlukları için padding
       decoration: const BoxDecoration(
         color: Colors.black, // Arka plan rengi siyah
@@ -55,7 +55,7 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
 
           Expanded(
             child: ListView.builder(
-              itemCount: 3,
+              itemCount: 4,
               itemBuilder: (context, index) => ListTile(
                 leading: items[2 * index],
                 title: items[2 * index + 1],
@@ -63,43 +63,39 @@ class _FilmEkleWidgetState extends State<FilmEkleWidget> {
                   String mode = "";
 
                   switch (index) {
-                    case 2:
-                      mode = "oyuncu_yonetmen";
-                      break;
                     case 0:
-                      mode = "film_alinti";
+                      mode = "favorilere_ekle";
                       break;
                     case 1:
+                      mode = "oyuncu_yonetmen";
+                      break;
+                    case 3:
                       mode = "film_listesi";
                       break;
-                    // case 3:
-                    // mode = "favorilere_ekle";
-                    //   break;
+                    case 2:
+                      mode = "film_alinti";
+                      break;
+
                     // case 4:
                     //   mode = "izleme_hedefi";
                     //   break;
                   }
-    if (mode == "oyuncu_yonetmen") {
-        
-   Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => const OyuncuYonetmenAraWidget(mode: "oyuncu_yonetmen"),
-  ),
-);
-  }
-else{
-    Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => FilmAraWidget(mode: mode),
-                    ),
-                  );
-
-
-
-}
-                
+                  if (mode == "oyuncu_yonetmen") {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const OyuncuYonetmenAraWidget(
+                            mode: "oyuncu_yonetmen"),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FilmAraWidget(mode: mode),
+                      ),
+                    );
+                  }
                 },
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
+import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
@@ -79,6 +80,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           likes: doc['likes'],
           comments: doc['comments'],
           isQuote: doc["isQuote"] ?? false,
+          timestamp: doc['timestamp'] as Timestamp,
         ));
       }
       return posts;
@@ -208,16 +210,30 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                         ),
                       ),
                       SizedBox(height: 8),
-                      CircleAvatar(
-                        radius: 30, // Fotoğraf boyutu
-                        backgroundImage: director.profilePhotoUrl != null
-                            ? NetworkImage(director.profilePhotoUrl!)
-                            : null,
-                        backgroundColor: Colors.grey,
-                        child: director.profilePhotoUrl == null
-                            ? Icon(Icons.person, color: Colors.white, size: 30)
-                            : null,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ActorMoviesPage(
+                                  actorName: director.name,
+                                  actorId: director.id),
+                            ),
+                          );
+                        },
+                        child: CircleAvatar(
+                          radius: 30, // Fotoğraf boyutu
+                          backgroundImage: director.profilePhotoUrl != null
+                              ? NetworkImage(director.profilePhotoUrl!)
+                              : null,
+                          backgroundColor: Colors.grey,
+                          child: director.profilePhotoUrl == null
+                              ? Icon(Icons.person,
+                                  color: Colors.white, size: 30)
+                              : null,
+                        ),
                       ),
+
                       SizedBox(height: 16),
                       Text(
                         "Yayınlanış Tarihi: ${reverseDate(widget.movie.releaseDate)}",
@@ -289,7 +305,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "Bu platform da izleyebilirsiniz:",
+                      "Bu platformdan izleyebilirsiniz:",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -350,8 +366,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                   ],
                 ),
               ),
-              SizedBox(height: 16),
-              SizedBox(height: 24),
+              SizedBox(height: 30),
               FutureBuilder<List<MoviePost>>(
                 future: fetchMoviePosts(),
                 builder: (context, snapshot) {
@@ -373,17 +388,15 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                         Text(
                           "Kullanıcı Yorumları",
                           style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold),
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 10),
+                        SizedBox(height: 4),
                         ...posts.map((post) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: ListTile(
                               leading: CircleAvatar(
-                                radius: 25,
+                                radius: 20,
                                 backgroundImage: post.user.profilePhotoUrl !=
                                             null &&
                                         post.user.profilePhotoUrl!.isNotEmpty
@@ -404,6 +417,11 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                               ),
                               subtitle: Text(
                                 post.content,
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                              trailing: Text(
+                                DateFormat('dd MM yyyy')
+                                    .format(post.timestamp.toDate()),
                                 style: TextStyle(color: Colors.white70),
                               ),
                             ),
