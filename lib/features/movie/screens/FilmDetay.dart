@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -5,6 +6,7 @@ import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
+import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
@@ -44,6 +46,47 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     setState(() {
       director = dir;
     });
+  }
+
+  Future<List<MoviePost>> fetchMoviePosts() async {
+    final firestore = FirebaseFirestore.instance;
+    List<MoviePost> posts = [];
+
+    try {
+      final querySnapshot = await firestore
+          .collection('posts')
+          .where('movie', isEqualTo: widget.movie.id)
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        final userUid = doc['user'];
+        final user = await UserServices.getUserByUid(userUid);
+
+        if (user == null) {
+          print("❌ Kullanıcı bulunamadı: $userUid");
+          continue;
+        }
+
+        print(
+            "👤 Kullanıcı: ${user.userName} - Fotoğraf URL: ${user.profilePhotoUrl}");
+
+        posts.add(MoviePost(
+          postId: doc['postId'],
+          user: user,
+          movie: widget.movie,
+          content: doc['content'],
+          likes: doc['likes'],
+          comments: doc['comments'],
+          isQuote: doc["isQuote"] ?? false,
+        ));
+      }
+      return posts;
+    } catch (e, stackTrace) {
+      print("🔥 HATA: fetchMoviePosts() içinde hata oluştu: $e");
+      print(stackTrace);
+      return [];
+    }
   }
 
   final Map<int, String> genreMap = {
@@ -137,7 +180,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Görsel Alanı
               Container(
                 child: Image.network(
                   'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
@@ -148,7 +190,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               ),
               SizedBox(height: 16),
 
-              // Yönetmen, Yıl, Süre, Oyuncular
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -167,8 +208,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                         ),
                       ),
                       SizedBox(height: 8),
-
-                      // Yönetmen fotoğrafı
                       CircleAvatar(
                         radius: 30, // Fotoğraf boyutu
                         backgroundImage: director.profilePhotoUrl != null
@@ -179,10 +218,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                             ? Icon(Icons.person, color: Colors.white, size: 30)
                             : null,
                       ),
-                      SizedBox(
-                          height:
-                              16), // Fotoğraf ile diğer bilgiler arasında boşluk
-
+                      SizedBox(height: 16),
                       Text(
                         "Yayınlanış Tarihi: ${reverseDate(widget.movie.releaseDate)}",
                         style: TextStyle(
@@ -248,21 +284,16 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
 
               SizedBox(height: 16),
 
-// İzleme Platformları
               if (watchProvidersWithIcons.isNotEmpty)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Başlık
                     Text(
                       "Bu platform da izleyebilirsiniz:",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(
-                        width: 8), // Başlık ile ikon arasına boşluk ekleyelim
-
-                    // Platform İkonları
+                    SizedBox(width: 8),
                     Expanded(
                       child: SingleChildScrollView(
                         scrollDirection:
@@ -289,7 +320,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                   ],
                 ),
 
-              SizedBox(height: 24),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -321,12 +351,69 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                 ),
               ),
               SizedBox(height: 16),
-
-              // Herkese / Arkadaşlar
-
-              SizedBox(height: 16),
-
-              // Sizin İçin Alanı
+              SizedBox(height: 24),
+              FutureBuilder<List<MoviePost>>(
+                future: fetchMoviePosts(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Text('Bir hata oluştu.',
+                        style: TextStyle(color: Colors.white));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Text(
+                      'Henüz bu film hakkında paylaşım yapılmamış.',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    );
+                  } else {
+                    final posts = snapshot.data!;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Kullanıcı Yorumları",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 10),
+                        ...posts.map((post) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                radius: 25,
+                                backgroundImage: post.user.profilePhotoUrl !=
+                                            null &&
+                                        post.user.profilePhotoUrl!.isNotEmpty
+                                    ? NetworkImage(post.user.profilePhotoUrl!)
+                                    : null,
+                                backgroundColor: Colors.grey,
+                                child: post.user.profilePhotoUrl == null ||
+                                        post.user.profilePhotoUrl!.isEmpty
+                                    ? Icon(Icons.person,
+                                        color: Colors.white, size: 30)
+                                    : null,
+                              ),
+                              title: Text(
+                                post.user.userName ?? "Bilinmeyen Kullanıcı",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                post.content,
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    );
+                  }
+                },
+              ),
             ],
           ),
         ),

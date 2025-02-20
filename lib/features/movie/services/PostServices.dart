@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 class PostServices {
   static Future<MoviePost?> getPostByUid(String uid) async {
-    
     try {
       final firestore = FirebaseFirestore.instance;
       final postsCollection = firestore.collection('posts');
@@ -24,6 +24,7 @@ class PostServices {
 
         if (user != null && movie != null) {
           return MoviePost(
+
               postId: data['postId'],
               user: user,
               movie: movie,
@@ -32,6 +33,10 @@ class PostServices {
               comments: data['comments'] ?? 0,
               isQuote: data["isQuote"] ?? false,
               timestamp: data['timestamp'] as Timestamp,);
+
+        
+          );
+
         } else {
           return null;
         }
@@ -42,5 +47,14 @@ class PostServices {
       print('Error fetching post by UID: $e');
       return null;
     }
+  }
+
+  /// Kullanıcının post sahibi olup olmadığını kontrol eden fonksiyon
+  static Future<bool> isPostOwner(String postUid) async {
+    final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return false;
+
+    final post = await getPostByUid(postUid);
+    return post != null && post.user.uid == currentUser.uid;
   }
 }

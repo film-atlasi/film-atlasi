@@ -80,12 +80,17 @@ class _CommentPageState extends State<CommentPage> {
 
   Future<void> _deleteComment(String commentId) async {
     try {
-      await firestore
-          .collection('posts')
-          .doc(widget.postId)
-          .collection('comments')
-          .doc(commentId)
-          .delete();
+      // Firestore referansları
+      DocumentReference postRef =
+          firestore.collection('posts').doc(widget.postId);
+      DocumentReference commentRef =
+          postRef.collection('comments').doc(commentId);
+
+      // Yorumu silme işlemi
+      await commentRef.delete();
+
+      // Yorum sayısını 1 azalt
+      await postRef.update({'comments': FieldValue.increment(-1)});
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Yorum silindi!")),

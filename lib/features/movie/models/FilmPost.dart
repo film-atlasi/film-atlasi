@@ -11,8 +11,9 @@ class MoviePost {
   final Movie movie;
   final int likes;
   final int comments;
- String content;
+  String content;
   bool isQuote;
+
     final Timestamp timestamp;
   
   MoviePost(
@@ -28,6 +29,7 @@ class MoviePost {
       });
 
       
+
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{

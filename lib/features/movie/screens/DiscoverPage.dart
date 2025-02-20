@@ -1,13 +1,16 @@
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
-import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
+import 'package:film_atlasi/features/movie/screens/trailer_screen.dart';
+import 'package:flutter/material.dart';
 
 class DiscoverPage extends StatelessWidget {
   const DiscoverPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final movieService = MovieService(); // MovieService nesnesini oluşturduk
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -20,27 +23,32 @@ class DiscoverPage extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FilmAraWidget(mode: "film_incele")),
+                MaterialPageRoute(
+                    builder: (context) =>
+                        const FilmAraWidget(mode: "film_incele")),
               );
             },
           ),
         ],
       ),
-      body: Kesfet(),
+      body: Kesfet(movieService: movieService),
     );
   }
 }
 
 class Kesfet extends StatefulWidget {
+  final MovieService movieService;
+
+  const Kesfet({Key? key, required this.movieService}) : super(key: key);
+
   @override
   _Kesfet createState() => _Kesfet();
 }
 
 class _Kesfet extends State<Kesfet> {
-  final List<String> bilimKurgu = [];
-  final List<String> trendFilmler = [];
-  final List<String> actionMovies = [];
-  final movieService = MovieService();
+  final List<Movie> bilimKurgu = [];
+  final List<Movie> trendFilmler = [];
+  final List<Movie> actionMovies = [];
   bool isLoading = true;
   String? featuredMovieImage;
 
@@ -51,24 +59,23 @@ class _Kesfet extends State<Kesfet> {
   }
 
   Future<void> fetchAllData() async {
-    // Verilerin paralel olarak çekilmesi için `Future.wait` kullandık
     await Future.wait([
       fetchMovies(
-        fetchFunction: movieService.getRomantikKomedi,
+        fetchFunction: widget.movieService.getRomantikKomedi,
         onMoviesFetched: (movies) {
           bilimKurgu.clear();
           bilimKurgu.addAll(movies);
         },
       ),
       fetchMovies(
-        fetchFunction: movieService.getTrendingMovies,
+        fetchFunction: widget.movieService.getTrendingMovies,
         onMoviesFetched: (movies) {
           trendFilmler.clear();
           trendFilmler.addAll(movies);
         },
       ),
       fetchMovies(
-        fetchFunction: movieService.getTrendingSciFiMovies,
+        fetchFunction: widget.movieService.getTrendingSciFiMovies,
         onMoviesFetched: (movies) {
           actionMovies.clear();
           actionMovies.addAll(movies);
@@ -80,27 +87,20 @@ class _Kesfet extends State<Kesfet> {
       setState(() {
         isLoading = false;
         if (bilimKurgu.isNotEmpty) {
-          featuredMovieImage = bilimKurgu[0];
+          featuredMovieImage = bilimKurgu[0].posterPath;
         }
       });
     }
   }
 
-  /// Genel bir veri çekme metodu
   Future<void> fetchMovies({
     required Future<List<Movie>> Function() fetchFunction,
-    required void Function(List<String>) onMoviesFetched,
+    required void Function(List<Movie>) onMoviesFetched,
   }) async {
     try {
       final movies = await fetchFunction();
       if (mounted) {
-        final validMovies = movies
-            .where((movie) =>
-                movie.posterPath != null && movie.posterPath.isNotEmpty)
-            .map((movie) =>
-                'https://image.tmdb.org/t/p/original${movie.posterPath}')
-            .toList();
-        onMoviesFetched(validMovies);
+        onMoviesFetched(movies);
       }
     } catch (e) {
       debugPrint("Hata (Veri Çekme): $e");
@@ -125,22 +125,27 @@ class _Kesfet extends State<Kesfet> {
                 ContentSection(
                   title: "Trends",
                   movies: actionMovies,
+                  movieService: widget.movieService,
                 ),
                 ContentSection(
                   title: "Popüler",
                   movies: trendFilmler,
+                  movieService: widget.movieService,
                 ),
                 ContentSection(
                   title: "Aksiyon",
                   movies: bilimKurgu,
+                  movieService: widget.movieService,
                 ),
                 ContentSection(
                   title: "Korku",
                   movies: bilimKurgu,
+                  movieService: widget.movieService,
                 ),
                 ContentSection(
                   title: "Animasyon",
                   movies: actionMovies,
+                  movieService: widget.movieService,
                 ),
               ],
             ),
@@ -153,12 +158,14 @@ class _Kesfet extends State<Kesfet> {
 
 class ContentSection extends StatelessWidget {
   final String title;
-  final List<String> movies;
+  final List<Movie> movies;
+  final MovieService movieService;
 
   const ContentSection({
     Key? key,
     required this.title,
     required this.movies,
+    required this.movieService,
   }) : super(key: key);
 
   @override
@@ -170,7 +177,7 @@ class ContentSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -182,49 +189,71 @@ class ContentSection extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: movies.length,
-            padding: EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             itemBuilder: (context, index) {
-              return Container(
-                width: 80,
-                margin: EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[900],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  children: [
-                    Image.network(
-                      movies[index],
-                      fit: BoxFit.cover,
-                      height: double.infinity,
-                      width: double.infinity,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child:
-                              Icon(Icons.broken_image, color: Colors.white54),
-                        );
-                      },
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.8),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                        padding: EdgeInsets.all(8),
+              final Movie movie = movies[index];
+              return GestureDetector(
+                onTap: () async {
+                  final Movie movie = movies[index];
+                  final movieId = int.parse(movie.id);
+                  final trailerUrl =
+                      await movieService.getMovieTrailer(movieId);
+
+                  if (!context.mounted) return;
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TrailerScreen(
+                        trailerUrl:
+                            trailerUrl, // Eğer fragman bulunamazsa IMDB linki dönebilir
+                        movie: movie,
                       ),
                     ),
-                  ],
+                  );
+                },
+                child: Container(
+                  width: 80,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey[900],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    children: [
+                      Image.network(
+                        'https://image.tmdb.org/t/p/original${movie.posterPath}',
+                        fit: BoxFit.cover,
+                        height: double.infinity,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child:
+                                Icon(Icons.broken_image, color: Colors.white54),
+                          );
+                        },
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withAlpha((0.8 * 255).toInt()),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

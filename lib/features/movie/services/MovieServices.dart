@@ -23,6 +23,49 @@ class MovieService {
     }
   }
 
+  Future<String?> getMovieTrailer(int movieId) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.themoviedb.org/3/movie/$movieId/videos?api_key=$apiKey&language=tr-TR'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final results = data['results'] as List<dynamic>;
+
+      if (results.isNotEmpty) {
+        final trailer = results.firstWhere(
+          (video) => video['type'] == 'Trailer' && video['site'] == 'YouTube',
+          orElse: () => results.isNotEmpty ? results.first : null,
+        );
+
+        if (trailer != null) {
+          return 'https://www.youtube.com/watch?v=${trailer['key']}';
+        }
+      }
+    }
+
+    // Eğer TMDB'de fragman yoksa, IMDB'ye yönlendirebiliriz
+    final imdbUrl = await getIMDBTrailer(movieId);
+    return imdbUrl ?? null;
+  }
+
+  /// IMDB sayfasına yönlendirme için bir fonksiyon
+  Future<String?> getIMDBTrailer(int movieId) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.themoviedb.org/3/movie/$movieId/external_ids?api_key=$apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['imdb_id'] != null) {
+        return 'https://www.imdb.com/title/${data['imdb_id']}/';
+      }
+    }
+    return null;
+  }
+
   Future<Map<String, String>> getWatchProviders(int movieId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/movie/$movieId/watch/providers?api_key=$apiKey'),
@@ -182,6 +225,21 @@ class MovieService {
     } catch (e) {
       print("İstek sırasında hata oluştu: $e");
       return [];
+    }
+  }
+
+  Future<List<Movie>> getUpcomingMovies() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/movie/upcoming?api_key=$apiKey&language=tr-TR'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Yakında çıkacak filmler alınamadı');
     }
   }
 }

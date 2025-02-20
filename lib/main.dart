@@ -35,6 +35,6 @@ class Myapp extends StatelessWidget {
         darkTheme: AppTheme.darkTheme,
         theme: AppTheme.darkTheme,
         initialRoute: '/giris',
-        routes: AppConstants.routes);//aaaa
+        routes: AppConstants.routes); //aaaa
   }
 }
