@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
+import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
@@ -87,7 +88,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             _buildTabs(), // Sekme Kontrolleri
           ],
         ),
-        _buildEditButton(), // Düzenle Butonu
       ],
     );
   }
@@ -170,10 +170,43 @@ class _ProfileScreenState extends State<ProfileScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "${userData!['firstName']} ${userData!['lastName'] ?? ''}",
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          // Kullanıcı ismi ve düzenleme butonu
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "${userData!['firstName']} ${userData!['lastName'] ?? ''}",
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EditProfileScreen(userData: userData!),
+                    ),
+                  ).then((_) => _fetchUserData());
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue, // Buton rengi
+                    borderRadius: BorderRadius.circular(8), // Köşeleri yuvarlat
+                  ),
+                  child: const Text(
+                    "Düzenle",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
           ),
+          const SizedBox(
+              height: 10), // Buton ile alt kısım arasına boşluk ekleyelim
           Text(
             "@${userData!['userName']}",
             style: const TextStyle(color: Colors.grey),
@@ -240,32 +273,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 Center(child: FilmListProfile(userUid: userUid)),
                 Center(child: Text("Beğenilenler İçeriği")),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEditButton() {
-    return Positioned(
-      top: 200,
-      right: 10,
-      child: Column(
-        children: [
-          SizedBox(
-            width: 100,
-            height: 40,
-            child: ElevatedButton(
-              onPressed: _updateProfilePhoto,
-              child: const Text(
-                "Fotoğrafı Güncelle",
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
           ),
         ],
