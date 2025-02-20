@@ -1,5 +1,6 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
+import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:flutter/material.dart';
 
@@ -28,7 +29,6 @@ class AnasayfaState extends State<Anasayfa>
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +45,9 @@ class AnasayfaState extends State<Anasayfa>
             icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const FilmAraWidget(mode: "film_incele")),
+              MaterialPageRoute(
+                  builder: (context) =>
+                      const FilmAraWidget(mode: "film_incele")),
             ),
           ),
           IconButton(
@@ -61,7 +63,7 @@ class AnasayfaState extends State<Anasayfa>
           tabs: const [
             Tab(text: 'Akış'),
             Tab(text: 'Takipler'),
-           Tab(text: 'Popüler'),
+            Tab(text: 'News'),
           ],
         ),
       ),
@@ -70,7 +72,7 @@ class AnasayfaState extends State<Anasayfa>
         children: [
           FilmSeedPage(),
           const Center(child: Text('Takipler İçeriği')),
-         const Center(child: Text('Popüler İçeriği')),
+          NewsScreen(),
         ],
       ),
       drawer: Drawer(

@@ -33,7 +33,7 @@ class _FilmKutusuState extends State<FilmKutusu> {
             itemCount: posts!.length,
             itemBuilder: (context, index) => MoviePostCard(
               moviePost: posts[index],
-              isOwnPost: true,
+              isOwnPost: posts[index].user.uid == UserServices.currentUserUid,
             ),
           );
         }
