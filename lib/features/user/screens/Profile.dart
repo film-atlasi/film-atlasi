@@ -92,6 +92,24 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  Future<void> _updateCoverPhoto() async {
+    String? newCoverUrl = await UserServices.uploadCoverPhoto(userUid);
+
+    if (newCoverUrl != null) {
+      setState(() {
+        userData!['coverPhotoUrl'] = newCoverUrl;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Kapak fotoğrafı güncellendi!")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Kapak fotoğrafı yüklenirken hata oluştu!")),
+      );
+    }
+  }
+
   Future<void> _updateProfilePhoto() async {
     String? newPhotoUrl = await UserServices.uploadProfilePhoto(userUid);
 
@@ -110,26 +128,26 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildCoverPhoto() {
-    return Stack(
-      children: [
-        Container(
-          height: 200,
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            image: userData!['coverPhotoUrl'] != null
-                ? DecorationImage(
-                    image: NetworkImage(userData!['coverPhotoUrl']),
-                    fit: BoxFit.cover,
-                  )
-                : null,
+    return GestureDetector(
+      onTap:
+          _updateCoverPhoto, // 👈 Kapağa tıklayınca değiştirme fonksiyonunu çağır
+      child: Stack(
+        children: [
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              image: userData!['coverPhotoUrl'] != null
+                  ? DecorationImage(
+                      image: NetworkImage(userData!['coverPhotoUrl']),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
           ),
-        ),
-        Positioned(
-          left: 5,
-          bottom: 0,
-          child: GestureDetector(
-            onTap:
-                _updateProfilePhoto, // 👈 Fotoğrafı değiştirmek için fonksiyonu çağırıyoruz
+          Positioned(
+            left: 5,
+            bottom: 0,
             child: CircleAvatar(
               radius: 50,
               backgroundColor: Colors.white,
@@ -141,8 +159,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                   : null,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

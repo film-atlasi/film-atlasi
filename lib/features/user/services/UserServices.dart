@@ -80,6 +80,51 @@ class UserServices {
     }
   }
 
+  static Future<String?> uploadCoverPhoto(String userUid) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Fotoğrafın kalitesini düşürerek optimize ediyoruz
+        maxWidth: 1000, // Maksimum genişlik belirliyoruz
+      );
+
+      if (pickedFile == null) {
+        throw Exception('Fotoğraf seçilmedi');
+      }
+
+      File file = File(pickedFile.path);
+      String fileName = "cover_pictures/$userUid.jpg"; // ✅ Kapak fotoğrafı yolu
+
+      // Firebase Storage referansı oluştur
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+
+      // Upload metadata ekle
+      SettableMetadata metadata = SettableMetadata(
+          contentType: 'image/jpeg', customMetadata: {'userId': userUid});
+
+      UploadTask uploadTask = storageRef.putFile(file, metadata);
+
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Firestore'da kapak fotoğrafını güncelle
+      await FirebaseFirestore.instance.collection('users').doc(userUid).update({
+        'coverPhotoUrl':
+            downloadUrl, // ✅ Firestore'a kapak fotoğrafı URL’sini kaydet
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      return downloadUrl;
+    } on FirebaseException catch (e) {
+      print('Firebase hatası: ${e.message}');
+      throw Exception('Kapak fotoğrafı yüklenemedi: ${e.message}');
+    } catch (e) {
+      print('Genel hata: $e');
+      throw Exception('Beklenmeyen bir hata oluştu');
+    }
+  }
+
   static Future<String?> uploadProfilePhoto(String userUid) async {
     try {
       final picker = ImagePicker();

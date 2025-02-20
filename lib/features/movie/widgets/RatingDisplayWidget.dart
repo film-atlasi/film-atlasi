@@ -15,7 +15,7 @@ class RatingDisplayWidget extends StatelessWidget {
         color: Colors.amber, // Yıldız rengi sarı
       ),
       itemCount: 5, // Toplam 5 yıldız olacak
-      itemSize: 20, // Yıldızların boyutu (isteğe göre artırılabilir)
+      itemSize: 17, // Yıldızların boyutu (isteğe göre artırılabilir)
       direction: Axis.horizontal, // Yatay dizilim
     );
   }
