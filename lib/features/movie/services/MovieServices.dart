@@ -184,4 +184,19 @@ class MovieService {
       return [];
     }
   }
+
+  Future<List<Movie>> getUpcomingMovies() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/movie/upcoming?api_key=$apiKey&language=tr-TR'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Yakında çıkacak filmler alınamadı');
+    }
+  }
 }
