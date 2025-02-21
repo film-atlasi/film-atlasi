@@ -1,33 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
-import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/%20UserCommentsWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/DirectorWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/IMDBWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
-import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
-import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:intl/intl.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
 
-  MovieDetailsPage({required this.movie});
+  const MovieDetailsPage({super.key, required this.movie});
 
   @override
   State<MovieDetailsPage> createState() => _MovieDetailsPageState();
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  late Actor director = Actor(name: "name", character: "character", id: -1);
-  List<String> watchProviders = [];
-
+  late Actor director =
+      Actor(name: "Yönetmen Bilinmiyor", character: "", id: -1);
   Map<String, String> watchProvidersWithIcons = {};
 
   @override
@@ -52,6 +50,11 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     });
   }
 
+  Future<List<Actor>> fetchActors() async {
+    return await ActorService.fetchTopThreeActors(
+        int.parse(widget.movie.id), 10);
+  }
+
   Future<List<MoviePost>> fetchMoviePosts() async {
     final firestore = FirebaseFirestore.instance;
     List<MoviePost> posts = [];
@@ -67,13 +70,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
         final userUid = doc['user'];
         final user = await UserServices.getUserByUid(userUid);
 
-        if (user == null) {
-          print("❌ Kullanıcı bulunamadı: $userUid");
-          continue;
-        }
-
-        print(
-            "👤 Kullanıcı: ${user.userName} - Fotoğraf URL: ${user.profilePhotoUrl}");
+        if (user == null) continue;
 
         posts.add(MoviePost(
           postId: doc['postId'],
@@ -83,15 +80,13 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           likes: doc['likes'],
           comments: doc['comments'],
           isQuote: doc["isQuote"] ?? false,
-          rating: (doc["rating"] ?? 0)
-              .toDouble(), // ⭐️ Eksik rating alanını ekledik
+          rating: (doc["rating"] ?? 0).toDouble(),
           timestamp: doc['timestamp'] as Timestamp,
         ));
       }
       return posts;
-    } catch (e, stackTrace) {
+    } catch (e) {
       print("🔥 HATA: fetchMoviePosts() içinde hata oluştu: $e");
-      print(stackTrace);
       return [];
     }
   }
@@ -101,311 +96,125 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 10, 6, 26),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(0, 20, 13, 13),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context); // Geri gitmek için Navigator.pop kullanılır
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.movie.title, // Filmin adını burada gösteriyoruz
-          style: TextStyle(
-            color: Colors.white, // Yazı rengi
+          widget.movie.title,
+          style: const TextStyle(
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
           overflow: TextOverflow.ellipsis,
         ),
-        centerTitle: true, // Başlığı ortalamak için
-        actions: [
+        centerTitle: true,
+        actions: const [
           Icon(Icons.more_vert, color: Colors.white),
         ],
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                child: Image.network(
-                  'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      const Icon(Icons.error, size: 100, color: Colors.red),
-                ),
-              ),
-              SizedBox(height: 16),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🎬 Film Posteri
+            Image.network(
+              'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.error, size: 100, color: Colors.red),
+            ),
+            const SizedBox(height: 16),
 
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Yönetmen Bilgisi
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Yönetmen adı
-                      Text(
-                        director.name.isNotEmpty
-                            ? director.name
-                            : "Yönetmen Bilinmiyor",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ActorMoviesPage(
-                                  actorName: director.name,
-                                  actorId: director.id),
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                          radius: 30, // Fotoğraf boyutu
-                          backgroundImage: director.profilePhotoUrl != null
-                              ? NetworkImage(director.profilePhotoUrl!)
-                              : null,
-                          backgroundColor: Colors.grey,
-                          child: director.profilePhotoUrl == null
-                              ? Icon(Icons.person,
-                                  color: Colors.white, size: 30)
-                              : null,
-                        ),
-                      ),
+            // 🎥 Yönetmen Bilgisi
+            DirectorWidget(director: director),
+            const SizedBox(height: 16),
 
-                      SizedBox(height: 16),
-                      Text(
-                        "Yayınlanış Tarihi: ${Helpers.reverseDate(widget.movie.releaseDate)}",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+            // 📅 Yayınlanış Tarihi ve Tür Bilgisi
+            MovieInfoWidget(
+              releaseDate: widget.movie.releaseDate ?? '',
+              genreIds: widget.movie.genreIds,
+            ),
+            const SizedBox(height: 16),
 
-                      SizedBox(height: 8),
+            // 🌟 IMDb Puanı ve Listeye Ekle Butonu
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IMDBWidget(voteAverage: widget.movie.voteAverage),
+                AddToListButton(movie: widget.movie),
+              ],
+            ),
+            const SizedBox(height: 16),
 
-                      // Türler
-                      Text(
-                        "Tür: ${Helpers.getGenres(widget.movie.genreIds)}",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+            // 📜 Film Konusu
+            Text(
+              widget.movie.overview,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
 
-                  Spacer(), // Yönetmen ve IMDB puanı arasındaki boşluğu oluşturur
-
-                  // IMDB Puanı
-                  // IMDB Puanı + Listeye Ekle Butonu
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      // IMDB PUANI
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.amber, // Sarı kutu
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.star,
-                                color: Colors.white, size: 18), // Yıldız ikonu
-                            SizedBox(width: 4),
-                            Text(
-                              widget.movie.voteAverage
-                                  .toStringAsFixed(1), // Puan
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                          height:
-                              12), // IMDB puanı ile buton arasına boşluk ekledik
-
-                      // LİSTEYE EKLE BUTONU
-                      AddToListButton(movie: widget.movie),
-                    ],
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 16),
-
-              // Film Konusu
-              Text(
-                widget.movie.overview,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-
-              SizedBox(height: 16),
-
-              if (watchProvidersWithIcons.isNotEmpty)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Bu platformdan izleyebilirsiniz:",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // 🎭 Oyuncular Listesi
+            const Text(
+              "Oyuncular",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder<List<Actor>>(
+              future: fetchActors(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Text('Oyuncu bilgisi alınamadı.',
+                      style: TextStyle(color: Colors.white));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Text(
+                    'Oyuncu bilgisi bulunamadı.',
+                    style: TextStyle(color: Colors.white),
+                  );
+                } else {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: snapshot.data!
+                          .map((actor) => OyuncuCircleAvatar(actor: actor))
+                          .toList(),
                     ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection:
-                            Axis.horizontal, // Yatay kaydırma ekledik
-                        child: Row(
-                          children:
-                              watchProvidersWithIcons.entries.map((entry) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0), // İkonlar arasında boşluk
-                              child: Image.network(
-                                entry.value, // API'den gelen ikon URL
-                                width: 50,
-                                height: 50,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Icon(Icons.broken_image,
-                                        size: 50, color: Colors.grey),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 16),
 
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FutureBuilder<List<Actor>>(
-                      future: ActorService.fetchTopThreeActors(
-                          int.parse(widget.movie.id), 10),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        } else if (snapshot.hasError) {
-                          return Text('Bir hata oluştu.');
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return Text('Oyuncu bilgisi bulunamadı.');
-                        } else {
-                          final actors = snapshot.data!;
-                          return Row(
-                            children: actors.map((actor) {
-                              return OyuncuCircleAvatar(actor: actor);
-                            }).toList(),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 30),
-              FutureBuilder<List<MoviePost>>(
-                future: fetchMoviePosts(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Text('Bir hata oluştu.',
-                        style: TextStyle(color: Colors.white));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Text(
-                      'Henüz bu film hakkında paylaşım yapılmamış.',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    );
-                  } else {
-                    final posts = snapshot.data!;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Kullanıcı Yorumları",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 4),
-                        ...posts.map((post) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ListTile(
-                                  leading: CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage:
-                                        post.user.profilePhotoUrl != null &&
-                                                post.user.profilePhotoUrl!
-                                                    .isNotEmpty
-                                            ? NetworkImage(
-                                                post.user.profilePhotoUrl!)
-                                            : null,
-                                    backgroundColor: Colors.grey,
-                                    child: post.user.profilePhotoUrl == null ||
-                                            post.user.profilePhotoUrl!.isEmpty
-                                        ? Icon(Icons.person,
-                                            color: Colors.white, size: 30)
-                                        : null,
-                                  ),
-                                  title: Text(
-                                    post.user.userName ??
-                                        "Bilinmeyen Kullanıcı",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // ⭐ Kullanıcının verdiği puanı burada gösteriyoruz
-                                      RatingDisplayWidget(rating: post.rating),
-                                      const SizedBox(
-                                          height: 4), // Boşluk ekledik
-                                      Text(
-                                        post.content,
-                                        style: TextStyle(color: Colors.white70),
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: Text(
-                                    DateFormat('dd MM yyyy')
-                                        .format(post.timestamp.toDate()),
-                                    style: TextStyle(color: Colors.white70),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    );
-                  }
-                },
-              )
-            ],
-          ),
+            // 📺 İzlenebilecek Platformlar
+            PlatformWidget(watchProvidersWithIcons: watchProvidersWithIcons),
+            const SizedBox(height: 16),
+
+            // 💬 Kullanıcı Yorumları
+            FutureBuilder<List<MoviePost>>(
+              future: fetchMoviePosts(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Text('Bir hata oluştu.',
+                      style: TextStyle(color: Colors.white));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Text(
+                    'Henüz bu film hakkında paylaşım yapılmamış.',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  );
+                } else {
+                  return UserCommentsWidget(posts: snapshot.data!);
+                }
+              },
+            ),
+          ],
         ),
       ),
     );
