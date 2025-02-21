@@ -6,6 +6,7 @@ import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
+import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
@@ -201,9 +202,11 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                   Spacer(), // Yönetmen ve IMDB puanı arasındaki boşluğu oluşturur
 
                   // IMDB Puanı
+                  // IMDB Puanı + Listeye Ekle Butonu
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      // IMDB PUANI
                       Container(
                         padding:
                             EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -228,6 +231,13 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                           ],
                         ),
                       ),
+
+                      SizedBox(
+                          height:
+                              12), // IMDB puanı ile buton arasına boşluk ekledik
+
+                      // LİSTEYE EKLE BUTONU
+                      AddToListButton(movie: widget.movie),
                     ],
                   ),
                 ],

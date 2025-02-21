@@ -128,26 +128,27 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildCoverPhoto() {
-    return GestureDetector(
-      onTap:
-          _updateCoverPhoto, // 👈 Kapağa tıklayınca değiştirme fonksiyonunu çağır
-      child: Stack(
-        children: [
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              image: userData!['coverPhotoUrl'] != null
-                  ? DecorationImage(
-                      image: NetworkImage(userData!['coverPhotoUrl']),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
+    return Stack(
+      clipBehavior:
+          Clip.none, // Stack'in dışına taşan widget'ları göstermek için
+      children: [
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            image: userData!['coverPhotoUrl'] != null
+                ? DecorationImage(
+                    image: NetworkImage(userData!['coverPhotoUrl']),
+                    fit: BoxFit.cover,
+                  )
+                : null,
           ),
-          Positioned(
-            left: 5,
-            bottom: 0,
+        ),
+        Positioned(
+          left: 20, // Profil fotoğrafını biraz sağa kaydırmak için
+          bottom: -40, // Fotoğrafın yarısını dışarı taşırmak için
+          child: GestureDetector(
+            onTap: _updateProfilePhoto,
             child: CircleAvatar(
               radius: 50,
               backgroundColor: Colors.white,
@@ -159,8 +160,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                   : null,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -170,14 +171,28 @@ class _ProfileScreenState extends State<ProfileScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Kullanıcı ismi ve düzenleme butonu
+          const SizedBox(
+              height: 30), // Profil fotoğrafı ile çakışmayı önlemek için
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "${userData!['firstName']} ${userData!['lastName'] ?? ''}",
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${userData!['firstName']} ${userData!['lastName'] ?? ''}",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "@${userData!['userName']}",
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
               GestureDetector(
                 onTap: () {
@@ -193,8 +208,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.blue, // Buton rengi
-                    borderRadius: BorderRadius.circular(8), // Köşeleri yuvarlat
+                    color: Colors.grey, // Buton rengi
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     "Düzenle",
@@ -205,20 +220,14 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             ],
           ),
-          const SizedBox(
-              height: 10), // Buton ile alt kısım arasına boşluk ekleyelim
-          Text(
-            "@${userData!['userName']}",
-            style: const TextStyle(color: Colors.grey),
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             "Meslek: ${userData!['job'] ?? 'Bilinmiyor'}",
-            style: const TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 12),
           ),
           Text(
             "Yaş: ${userData!['age'] ?? 'Bilinmiyor'}",
-            style: const TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 12),
           ),
           const SizedBox(height: 20),
           Row(
