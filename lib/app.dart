@@ -3,6 +3,7 @@ import 'package:film_atlasi/features/movie/screens/DiscoverPage.dart';
 import 'package:film_atlasi/features/user/screens/Profile.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class FilmAtlasiApp extends StatefulWidget {
   const FilmAtlasiApp({super.key});
@@ -12,54 +13,65 @@ class FilmAtlasiApp extends StatefulWidget {
 }
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
-  int pageIndex = 0;
-  final GlobalKey<AnasayfaState> _anasayfaKey = GlobalKey<AnasayfaState>();
+  final PersistentTabController _controller =
+      PersistentTabController(initialIndex: 0);
 
-  late final List<Widget> _pages;
+  List<Widget> _buildScreens() {
+    return [
+      Anasayfa(),
+      DiscoverPage(),
+      ProfileScreen(),
+    ];
+  }
 
-  @override
-  void initState() {
-    super.initState();
-    _pages = [Anasayfa(key: _anasayfaKey), DiscoverPage(), ProfileScreen()];
+  List<PersistentBottomNavBarItem> _navBarsItems() {
+    return [
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.home),
+        title: "Ana Sayfa",
+        activeColorPrimary: const Color.fromARGB(255, 110, 5, 5),
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.explore),
+        title: "Keşfet",
+        activeColorPrimary: const Color.fromARGB(255, 110, 5, 5),
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.person),
+        title: "Hesabım",
+        activeColorPrimary: const Color.fromARGB(255, 110, 5, 5),
+        inactiveColorPrimary: Colors.grey,
+      ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[pageIndex],
-      bottomNavigationBar: buildBottomBar(context, pageIndex),
-      floatingActionButton: buildFloatingActionButton(context),
-    );
-  }
-
-  BottomNavigationBar buildBottomBar(BuildContext context, int currentIndex) {
-    return BottomNavigationBar(
-      backgroundColor: Colors.black, // Arka plan siyah
-      selectedItemColor:
-          const Color.fromARGB(255, 110, 5, 5), // Seçilen ikon rengi
-      unselectedItemColor: Colors.grey, // Seçilmemiş ikon rengi
-      showSelectedLabels: false, // Seçilen item etiketlerini gizle
-      showUnselectedLabels: false, // Seçilmemiş item etiketlerini gizle
-      currentIndex: currentIndex, // Seçili olan öğeyi belirler
-      onTap: (value) {
-        setState(() {
-          pageIndex = value;
-        });
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home), // Ana sayfa ikonu
-          label: 'Ana Sayfa',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.explore), // Keşfet ikonu
-          label: 'Keşfet',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person), // Mesaj ikonu
-          label: 'Hesabım',
-        ),
-      ],
+      body: Stack(
+        children: [
+          PersistentTabView(
+            context,
+            controller: _controller,
+            screens: _buildScreens(),
+            items: _navBarsItems(),
+            navBarStyle: NavBarStyle
+                .style6, // Seçenekleri değiştirerek farklı stilleri deneyebilirsin.
+            backgroundColor: Colors.black,
+            decoration: NavBarDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              colorBehindNavBar: Colors.black,
+            ),
+          ),
+          Positioned(
+            bottom: 80, // FloatingActionButton'ın konumunu ayarla
+            right: 20,
+            child: buildFloatingActionButton(context),
+          ),
+        ],
+      ),
     );
   }
 
