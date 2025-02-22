@@ -2,6 +2,8 @@ import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart'
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
 import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
+import 'package:film_atlasi/features/user/models/User.dart';
+import 'package:film_atlasi/features/user/screens/UserPage.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,6 +27,22 @@ class _MoviePostCardState extends State<MoviePostCard> {
     _contentController.text = widget.moviePost.content;
   }
 
+  // 🔥 Kullanıcıyı profiline yönlendiren fonksiyon
+// 🔥 Kullanıcıyı profiline yönlendiren fonksiyon
+  void _navigateToUserProfile(BuildContext context) {
+    if (widget.moviePost.user.uid != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserPage(userUid: widget.moviePost.user.uid!),
+        ),
+      );
+    } else {
+      print("Kullanıcı profiline gidilemedi, UID eksik!");
+      print("🔥 Kullanıcı UID: ${widget.moviePost.user.uid}");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -39,30 +57,37 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 Row(
                   children: [
                     // Kullanıcı Profil Fotoğrafı
-                    CircleAvatar(
-                      backgroundImage: widget.moviePost.user.profilePhotoUrl !=
-                              null
-                          ? NetworkImage(widget.moviePost.user.profilePhotoUrl!)
-                          : null,
-                      backgroundColor: Colors.white,
-                      radius: 20,
+                    GestureDetector(
+                      onTap: () => _navigateToUserProfile(context),
+                      child: CircleAvatar(
+                        backgroundImage:
+                            widget.moviePost.user.profilePhotoUrl != null
+                                ? NetworkImage(
+                                    widget.moviePost.user.profilePhotoUrl!)
+                                : null,
+                        backgroundColor: Colors.white,
+                        radius: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
 
                     // Kullanıcı Adı
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    GestureDetector(
+                      onTap: () => _navigateToUserProfile(context),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${widget.moviePost.user.firstName ?? ''} @${widget.moviePost.user.userName ?? ''}',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
-                    Spacer(),
+                    const Spacer(),
                     if (widget.isOwnPost) // 🔹 Post silme düzenleme
                       PostSilmeDuzenleme(moviePost: widget.moviePost),
                   ],
@@ -78,21 +103,23 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 if (widget.moviePost.isQuote) ...[
                   Text(
                     '"${widget.moviePost.content}"',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontStyle: FontStyle.italic,
                       color: Colors.white,
                       fontSize: 16,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
                     "- ${widget.moviePost.movie.title}",
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                 ] else ...[
                   // Eğer normal post ise, film posteri ve detaylar gösterilecek
-                  Text(widget.moviePost.content,
-                      style: TextStyle(color: Colors.white)),
+                  Text(
+                    widget.moviePost.content,
+                    style: const TextStyle(color: Colors.white),
+                  ),
                   const SizedBox(height: 10),
                   FilmBilgiWidget(
                     movie: widget.moviePost.movie,
@@ -128,7 +155,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                   child: Text(
                     _formatTimestamp(
                         widget.moviePost.timestamp), // Tarih bilgisi
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                     textAlign: TextAlign.left,
                   ),
                 ),
@@ -136,7 +163,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
             ),
           ),
         ),
-        Divider(color: Colors.grey), // Çizgi ekleniyor
+        const Divider(color: Colors.grey), // Çizgi ekleniyor
       ],
     );
   }

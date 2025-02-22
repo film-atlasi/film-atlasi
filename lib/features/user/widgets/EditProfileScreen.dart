@@ -20,6 +20,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    print("DEBUG: Kullanıcı UID: ${widget.userData['uid']}");
+
     firstNameController =
         TextEditingController(text: widget.userData['firstName']);
     lastNameController =

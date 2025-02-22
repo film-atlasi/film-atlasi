@@ -9,8 +9,8 @@ import 'package:film_atlasi/features/movie/widgets/FilmDetails/%20UserCommentsWi
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/DirectorWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/IMDBWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
-import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:flutter/material.dart';
 
