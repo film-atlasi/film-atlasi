@@ -19,10 +19,10 @@ class Iletipaylas extends StatefulWidget {
   final bool isFromQuote; // 💡 Alıntı mı, normal paylaşım mı?
 
   const Iletipaylas({
-    Key? key,
+    super.key,
     required this.movie,
     this.isFromQuote = false, // 💡 Varsayılan olarak normal paylaşım
-  }) : super(key: key);
+  });
 
   @override
   State<Iletipaylas> createState() => _IletipaylasState();
@@ -49,14 +49,14 @@ class _IletipaylasState extends State<Iletipaylas> {
         return;
       }
 
-      String film_id = film.id.toString();
-      DocumentReference filmRef = firestore.collection("films").doc(film_id);
+      String filmId = film.id.toString();
+      DocumentReference filmRef = firestore.collection("films").doc(filmId);
 
       DocumentSnapshot filmSnapshot = await filmRef.get();
 
       if (!filmSnapshot.exists) {
         await filmRef.set({
-          'id': film_id,
+          'id': filmId,
           "title": film.title,
           "posterPath": film.posterPath,
           "overview": film.overview,
@@ -115,13 +115,13 @@ class _IletipaylasState extends State<Iletipaylas> {
   }
 
   List<Widget> buildDetaylar(BuildContext context) {
-    final TextTheme _textTheme = Theme.of(context).textTheme;
+    final TextTheme textTheme = Theme.of(context).textTheme;
 
     return [
       if (widget.movie.posterPath.isNotEmpty)
         Stack(
           children: [
-            Container(
+            SizedBox(
               width: double.infinity,
               height: MediaQuery.of(context).size.height * 0.5,
               child: Image.network(
@@ -154,12 +154,12 @@ class _IletipaylasState extends State<Iletipaylas> {
             const SizedBox(height: 20),
             Text(
               widget.movie.title,
-              style: _textTheme.titleLarge,
+              style: textTheme.titleLarge,
             ),
             AddVerticalSpace(context, 0.015),
             Text(
               '5 üzerinden kaç verdiniz?',
-              style: _textTheme.bodyMedium,
+              style: textTheme.bodyMedium,
             ),
             AddVerticalSpace(context, 0.005),
             RatingBar.builder(
@@ -188,7 +188,7 @@ class _IletipaylasState extends State<Iletipaylas> {
             AddVerticalSpace(context, 0.01),
             Text(
               'Film hakkındaki düşünceleriniz:',
-              style: _textTheme.bodyMedium,
+              style: textTheme.bodyMedium,
             ),
             AddVerticalSpace(context, 0.01),
             AutoSizeTextField(

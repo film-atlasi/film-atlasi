@@ -10,8 +10,7 @@ class SearchResults extends StatelessWidget {
   final String mode; // Mode parametresi eklendi
 
   const SearchResults(
-      {Key? key, required this.searchResults, required this.mode})
-      : super(key: key);
+      {super.key, required this.searchResults, required this.mode});
 
   @override
   Widget build(BuildContext context) {

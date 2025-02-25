@@ -4,7 +4,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 class RatingDisplayWidget extends StatelessWidget {
   final double rating;
 
-  const RatingDisplayWidget({Key? key, required this.rating}) : super(key: key);
+  const RatingDisplayWidget({super.key, required this.rating});
 
   @override
   Widget build(BuildContext context) {

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NewsScreen extends StatefulWidget {
+  const NewsScreen({super.key});
+
   @override
   _NewsScreenState createState() => _NewsScreenState();
 }
@@ -51,7 +53,7 @@ class _NewsScreenState extends State<NewsScreen> {
                 child: Column(
                   children: [
                     Image.network(
-                      movie.posterPath?.isNotEmpty == true
+                      movie.posterPath.isNotEmpty == true
                           ? "https://image.tmdb.org/t/p/w500${movie.posterPath}"
                           : "https://via.placeholder.com/300x200?text=G%C3%B6rsel+Bulunamad%C4%B1",
                       height: 200,
@@ -72,8 +74,8 @@ class _NewsScreenState extends State<NewsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                              movie.overview?.isNotEmpty == true
-                                  ? movie.overview!
+                              movie.overview.isNotEmpty == true
+                                  ? movie.overview
                                   : "Açıklama bulunmuyor",
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis),
@@ -85,12 +87,10 @@ class _NewsScreenState extends State<NewsScreen> {
                       ),
                       trailing: Icon(Icons.arrow_forward),
                       onTap: () async {
-                        if (movie.id != null) {
-                          final movieUrl =
-                              "https://www.themoviedb.org/movie/${movie.id}";
-                          await launchUrl(Uri.parse(movieUrl));
-                        }
-                      },
+                        final movieUrl =
+                            "https://www.themoviedb.org/movie/${movie.id}";
+                        await launchUrl(Uri.parse(movieUrl));
+                                            },
                     ),
                   ],
                 ),

@@ -6,7 +6,7 @@ import 'package:film_atlasi/features/movie/models/Movie.dart';
 class FilmList extends StatefulWidget {
   final Movie? selectedMovie;
 
-  FilmList({this.selectedMovie});
+  const FilmList({super.key, this.selectedMovie});
 
   @override
   _FilmListState createState() => _FilmListState();

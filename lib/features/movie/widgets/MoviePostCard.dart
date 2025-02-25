@@ -10,14 +10,14 @@ class MoviePostCard extends StatefulWidget {
   final MoviePost moviePost;
   final bool isOwnPost;
 
-  MoviePostCard({required this.moviePost, this.isOwnPost = false});
+  const MoviePostCard({super.key, required this.moviePost, this.isOwnPost = false});
 
   @override
   _MoviePostCardState createState() => _MoviePostCardState();
 }
 
 class _MoviePostCardState extends State<MoviePostCard> {
-  TextEditingController _contentController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
 
   @override
   void initState() {

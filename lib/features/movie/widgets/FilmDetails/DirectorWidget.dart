@@ -5,7 +5,7 @@ import 'package:film_atlasi/features/movie/screens/ActorMoviesPage.dart';
 class DirectorWidget extends StatelessWidget {
   final Actor director;
 
-  DirectorWidget({required this.director});
+  const DirectorWidget({super.key, required this.director});
 
   @override
   Widget build(BuildContext context) {

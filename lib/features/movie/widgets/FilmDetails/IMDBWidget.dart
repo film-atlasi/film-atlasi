@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class IMDBWidget extends StatelessWidget {
   final double voteAverage;
 
-  IMDBWidget({required this.voteAverage});
+  const IMDBWidget({super.key, required this.voteAverage});
 
   @override
   Widget build(BuildContext context) {

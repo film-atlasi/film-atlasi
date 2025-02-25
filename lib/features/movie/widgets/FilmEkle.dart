@@ -1,6 +1,4 @@
-import 'package:film_atlasi/features/movie/screens/AlintiEkle.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
-import 'package:film_atlasi/features/movie/widgets/FilmList.dart';
 import 'package:film_atlasi/features/movie/widgets/oyuncu_yonetmen_ara_widget.dart';
 import 'package:flutter/material.dart';
 

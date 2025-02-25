@@ -5,7 +5,7 @@ class MovieInfoWidget extends StatelessWidget {
   final String releaseDate;
   final List<int>? genreIds;
 
-  MovieInfoWidget({required this.releaseDate, required this.genreIds});
+  const MovieInfoWidget({super.key, required this.releaseDate, required this.genreIds});
 
   @override
   Widget build(BuildContext context) {

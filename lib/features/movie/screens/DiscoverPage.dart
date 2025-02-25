@@ -39,7 +39,7 @@ class DiscoverPage extends StatelessWidget {
 class Kesfet extends StatefulWidget {
   final MovieService movieService;
 
-  const Kesfet({Key? key, required this.movieService}) : super(key: key);
+  const Kesfet({super.key, required this.movieService});
 
   @override
   _Kesfet createState() => _Kesfet();
@@ -162,11 +162,11 @@ class ContentSection extends StatelessWidget {
   final MovieService movieService;
 
   const ContentSection({
-    Key? key,
+    super.key,
     required this.title,
     required this.movies,
     required this.movieService,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

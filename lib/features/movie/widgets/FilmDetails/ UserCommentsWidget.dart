@@ -6,7 +6,7 @@ import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
 class UserCommentsWidget extends StatelessWidget {
   final List<MoviePost> posts;
 
-  UserCommentsWidget({required this.posts});
+  const UserCommentsWidget({super.key, required this.posts});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class UserCommentsWidget extends StatelessWidget {
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

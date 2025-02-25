@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class CommentPage extends StatefulWidget {
   final String postId;
 
-  const CommentPage({Key? key, required this.postId}) : super(key: key);
+  const CommentPage({super.key, required this.postId});
 
   @override
   _CommentPageState createState() => _CommentPageState();
@@ -48,7 +48,7 @@ class _CommentPageState extends State<CommentPage> {
   }
 
   void _showEditDialog(String commentId, String currentText) {
-    TextEditingController _editController =
+    TextEditingController editController =
         TextEditingController(text: currentText);
 
     showDialog(
@@ -57,7 +57,7 @@ class _CommentPageState extends State<CommentPage> {
         return AlertDialog(
           title: const Text("Yorumu Düzenle"),
           content: TextField(
-            controller: _editController,
+            controller: editController,
             decoration: const InputDecoration(hintText: "Yeni yorumu yazın..."),
           ),
           actions: [
@@ -67,7 +67,7 @@ class _CommentPageState extends State<CommentPage> {
             ),
             TextButton(
               onPressed: () async {
-                await _updateComment(commentId, _editController.text.trim());
+                await _updateComment(commentId, editController.text.trim());
                 Navigator.pop(context);
               },
               child: const Text("Kaydet"),

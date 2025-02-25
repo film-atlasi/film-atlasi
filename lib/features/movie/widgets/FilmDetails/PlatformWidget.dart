@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class PlatformWidget extends StatelessWidget {
   final Map<String, String> watchProvidersWithIcons;
 
-  PlatformWidget({required this.watchProvidersWithIcons});
+  const PlatformWidget({super.key, required this.watchProvidersWithIcons});
 
   @override
   Widget build(BuildContext context) {

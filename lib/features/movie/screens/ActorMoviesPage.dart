@@ -8,7 +8,7 @@ class ActorMoviesPage extends StatefulWidget {
   final String actorName;
   final int actorId;
 
-  ActorMoviesPage({required this.actorName, required this.actorId});
+  const ActorMoviesPage({super.key, required this.actorName, required this.actorId});
 
   @override
   _ActorMoviesPageState createState() => _ActorMoviesPageState();

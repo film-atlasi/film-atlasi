@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Loginpage extends StatefulWidget {
-  const Loginpage({Key? key}) : super(key: key);
+  const Loginpage({super.key});
 
   @override
   State<Loginpage> createState() => _LoginpageState();
@@ -22,10 +22,11 @@ class _LoginpageState extends State<Loginpage> {
       GlobalKey<FormState>(); //form key oluşturuldu
   final firebaseAuth = FirebaseAuth.instance;
 
-  bool _obscurePassword = true; // Şifreyi gizlemek için kullanılan değişken
+  final bool _obscurePassword = true; // Şifreyi gizlemek için kullanılan değişken
   bool _isHovering = false; 
   // Butona fare ile üzerine gelindi mi kontrolü
- void initState() {
+ @override
+  void initState() {
     super.initState();
     _emailController.text = "aycaa@gmail.com";
     _passwordController.text = "hataylı";

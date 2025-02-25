@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
@@ -241,14 +243,6 @@ class _SignUpPageState extends State<SignUpPage> {
                           }
                         }
                       },
-                      child: Text(
-                        'Kaydol',
-                        style: TextStyle(
-                          color: _isHovering
-                              ? const Color.fromARGB(255, 0, 0, 0)
-                              : const Color.fromARGB(255, 255, 255, 255),
-                        ),
-                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isHovering
                             ? const Color.fromARGB(255, 255, 255, 255)
@@ -258,6 +252,14 @@ class _SignUpPageState extends State<SignUpPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(color: Colors.transparent),
+                        ),
+                      ),
+                      child: Text(
+                        'Kaydol',
+                        style: TextStyle(
+                          color: _isHovering
+                              ? const Color.fromARGB(255, 0, 0, 0)
+                              : const Color.fromARGB(255, 255, 255, 255),
                         ),
                       ),
                     ),
@@ -273,7 +275,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Widget _buildTextField(String hintText, TextEditingController controller,
       {bool obscureText = false}) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: TextField(
         controller: controller,

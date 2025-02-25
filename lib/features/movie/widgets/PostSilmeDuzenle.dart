@@ -6,9 +6,9 @@ class PostSilmeDuzenleme extends StatefulWidget {
   final MoviePost moviePost;
 
   const PostSilmeDuzenleme({
-    Key? key,
+    super.key,
     required this.moviePost,
-  }) : super(key: key);
+  });
 
   @override
   _PostSilmeDuzenlemeState createState() => _PostSilmeDuzenlemeState();

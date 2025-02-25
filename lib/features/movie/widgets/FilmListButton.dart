@@ -4,7 +4,7 @@ class AddToMyListButton extends StatefulWidget {
   final VoidCallback?
       onComplete; // Animasyon tamamlandığında çağrılacak bir callback
 
-  const AddToMyListButton({Key? key, this.onComplete}) : super(key: key);
+  const AddToMyListButton({super.key, this.onComplete});
 
   @override
   _AddToMyListButtonState createState() => _AddToMyListButtonState();

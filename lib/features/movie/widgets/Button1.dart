@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-ElevatedButton Button1(bool _isHovering, BuildContext context, Function cb) =>
+ElevatedButton Button1(bool isHovering, BuildContext context, Function cb) =>
     ElevatedButton(
       onPressed: () async {
         await cb();
@@ -8,14 +8,14 @@ ElevatedButton Button1(bool _isHovering, BuildContext context, Function cb) =>
       child: Text(
         'Giriş Yap',
         style: TextStyle(
-          color: _isHovering
+          color: isHovering
               ? const Color.fromARGB(255, 0, 0, 0)
               : const Color.fromARGB(255, 255, 255,
                   255), // Yazı rengi başlangıçta beyaz, fare ile üzerine gelindiğinde siyah olacak
         ),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: _isHovering
+        backgroundColor: isHovering
             ? const Color.fromARGB(255, 255, 255, 255)
             : const Color.fromARGB(255, 0, 0,
                 0), // Arka plan rengi fare ile üzerine gelindiğinde siyah

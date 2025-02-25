@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FilmListProfile extends StatefulWidget {
   final String userUid;
 
-  const FilmListProfile({Key? key, required this.userUid}) : super(key: key);
+  const FilmListProfile({super.key, required this.userUid});
 
   @override
   _FilmListProfileState createState() => _FilmListProfileState();

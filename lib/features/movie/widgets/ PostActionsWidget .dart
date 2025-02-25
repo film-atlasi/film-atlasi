@@ -9,11 +9,11 @@ class PostActionsWidget extends StatefulWidget {
   final int initialComments;
 
   const PostActionsWidget({
-    Key? key,
+    super.key,
     required this.postId,
     required this.initialLikes,
     required this.initialComments,
-  }) : super(key: key);
+  });
 
   @override
   _PostActionsWidgetState createState() => _PostActionsWidgetState();
@@ -119,7 +119,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
       builder: (context) {
         return AlertDialog(
           title: Text('Beğenenler'),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore

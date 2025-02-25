@@ -9,10 +9,11 @@ import 'package:film_atlasi/features/movie/widgets/FilmDetails/%20UserCommentsWi
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/DirectorWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/IMDBWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
-import 'package:film_atlasi/features/movie/widgets/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:flutter/material.dart';
+import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
@@ -27,6 +28,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   late Actor director =
       Actor(name: "Yönetmen Bilinmiyor", character: "", id: -1);
   Map<String, String> watchProvidersWithIcons = {};
+  int _selectedIndex = 0;
+  bool _mounted = true;
 
   @override
   void initState() {
@@ -35,19 +38,35 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     fetchWatchProviders();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   Future<void> fetchWatchProviders() async {
     final providers =
         await MovieService().getWatchProviders(int.parse(widget.movie.id));
-    setState(() {
-      watchProvidersWithIcons = providers;
-    });
+    if (_mounted) {
+      setState(() {
+        watchProvidersWithIcons = providers;
+      });
+    }
   }
 
   Future<void> getDirector() async {
     final dir = await ActorService.getDirector(widget.movie.id);
-    setState(() {
-      director = dir;
-    });
+    if (_mounted) {
+      setState(() {
+        director = dir;
+      });
+    }
   }
 
   Future<List<Actor>> fetchActors() async {
@@ -216,6 +235,10 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

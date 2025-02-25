@@ -7,6 +7,7 @@ import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
+import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 
 class UserPage extends StatefulWidget {
   final String userUid;
@@ -24,6 +25,7 @@ class _UserPageState extends State<UserPage>
   bool isFollowingUser = false;
   String? currentUserUid;
   bool followLoading = false;
+  int _selectedIndex = 2; // Hesabım sekmesi için 2
 
   FollowServices followServices = FollowServices();
 
@@ -92,6 +94,12 @@ class _UserPageState extends State<UserPage>
     }
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,6 +111,10 @@ class _UserPageState extends State<UserPage>
           : userData == null
               ? const Center(child: Text("Kullanıcı bilgileri bulunamadı."))
               : _buildProfileScreenContent(),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 

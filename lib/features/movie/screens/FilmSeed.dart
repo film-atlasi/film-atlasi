@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
 class FilmSeedPage extends StatefulWidget {
-  FilmSeedPage({super.key});
+  const FilmSeedPage({super.key});
 
   @override
   State<FilmSeedPage> createState() => _FilmSeedPageState();
@@ -16,69 +16,90 @@ class FilmSeedPage extends StatefulWidget {
 
 class _FilmSeedPageState extends State<FilmSeedPage> {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  bool _loading = false;
-
-  late List<MoviePost> moviePosts = [];
+  List<MoviePost> moviePosts = [];
+  bool _loading = true;
+  bool _mounted = true; // Widget'ın durumunu takip etmek için
 
   @override
   void initState() {
     super.initState();
-    _loading = true;
     fetchAllPosts();
-    _loading = false;
+  }
+
+  @override
+  void dispose() {
+    _mounted = false; // Widget dispose edildiğinde flag'i false yap
+    super.dispose();
   }
 
   Future<void> fetchAllPosts() async {
     try {
+      if (!_mounted) return; // Widget dispose edildiyse işlemi sonlandır
+
+      setState(() {
+        _loading = true;
+      });
+
+      // Firestore'dan posts koleksiyonunu çek
       QuerySnapshot postsSnapshot = await firestore
           .collection("posts")
           .orderBy('timestamp', descending: true)
           .get();
-      List<Map<String, dynamic>> posts = postsSnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-      Set<String> filmIds =
-          posts.map((post) => post['movie'] as String).toSet();
-      QuerySnapshot filmsSnapshot = await firestore
-          .collection('films')
-          .where(FieldPath.documentId, whereIn: filmIds.toList())
-          .get();
-      Map<String, Map<String, dynamic>> films = {
-        for (var doc in filmsSnapshot.docs)
-          doc.id: doc.data() as Map<String, dynamic>
-      };
-      Set<String> userIds = posts.map((post) => post['user'] as String).toSet();
-      QuerySnapshot usersSnapshot = await firestore
-          .collection('users')
-          .where(FieldPath.documentId, whereIn: userIds.toList())
-          .get();
 
-      Map<String, Map<String, dynamic>> users = {
-        for (var doc in usersSnapshot.docs)
-          doc.id: doc.data() as Map<String, dynamic>
-      };
+      // Eğer widget artık ağaçta değilse, işlemi sonlandır
+      if (!_mounted) return;
+
+      // Firestore'daki alan isimlerini kontrol et ve düzelt
+      List<MoviePost> fetchedPosts = [];
+
+      for (var doc in postsSnapshot.docs) {
+        // Eğer widget artık ağaçta değilse, döngüyü sonlandır
+        if (!_mounted) return;
+
+        var data = doc.data() as Map<String, dynamic>;
+
+        // Kullanıcı bilgilerini çek
+        var userDoc =
+            await firestore.collection('users').doc(data['user']).get();
+        var userData = userDoc.data() as Map<String, dynamic>?;
+
+        // Film bilgilerini çek
+        var movieDoc =
+            await firestore.collection('films').doc(data['movie']).get();
+        var movieData = movieDoc.data() as Map<String, dynamic>?;
+
+        if (userData != null && movieData != null) {
+          fetchedPosts.add(MoviePost(
+            postId: doc.id,
+            user: User.fromFirestore(userDoc),
+            movie: Movie.fromMap(movieData),
+            content: data['content'] ?? '',
+            likes: data['likes'] ?? 0,
+            comments: data['comments'] ?? 0,
+            isQuote: data['isQuote'] ?? false,
+            rating: (data['rating'] ?? 0).toDouble(),
+            timestamp: data['timestamp'] as Timestamp,
+          ));
+        }
+      }
+
+      // Son bir kez daha kontrol et
+      if (!_mounted) return;
 
       setState(() {
-        moviePosts = posts.map((post) {
-          String filmId = post['movie'];
-          String userId = post['user'];
-
-          return MoviePost(
-            postId: post["postId"],
-            user: User.fromMap(users[userId] ?? {}),
-            movie: Movie.fromMap(films[filmId] ?? {}),
-            likes: post["likes"],
-            comments: post["comments"],
-            content: post["content"],
-            isQuote: post["isQuote"] ?? false,
-            rating: (post["rating"] ?? 0)
-                .toDouble(), // ⭐️ Burada rating değerini alıyoruz!
-            timestamp: post["timestamp"],
-          );
-        }).toList();
+        moviePosts = fetchedPosts;
+        _loading = false;
       });
+
+      print("Çekilen post sayısı: ${moviePosts.length}");
     } catch (e) {
       print("Hata oluştu: $e");
+      // Hata durumunda da mounted kontrolü yap
+      if (!_mounted) return;
+
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -86,7 +107,11 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () => fetchAllPosts(),
+        onRefresh: () async {
+          // RefreshIndicator için de mounted kontrolü ekle
+          if (!_mounted) return;
+          await fetchAllPosts();
+        },
         child: _loading
             ? Center(
                 child: CircularProgressIndicator(),
@@ -96,11 +121,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                 itemBuilder: (context, index) {
                   final post = moviePosts[index];
                   return MoviePostCard(moviePost: post);
-                  // Film postlarını listeliyoruz
                 },
               ),
       ),
-      //  floatingActionButton: buildFloatingActionButton(context),
     );
   }
 

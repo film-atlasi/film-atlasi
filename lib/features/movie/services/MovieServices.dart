@@ -47,7 +47,7 @@ class MovieService {
 
     // Eğer TMDB'de fragman yoksa, IMDB'ye yönlendirebiliriz
     final imdbUrl = await getIMDBTrailer(movieId);
-    return imdbUrl ?? null;
+    return imdbUrl;
   }
 
   /// IMDB sayfasına yönlendirme için bir fonksiyon

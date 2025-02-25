@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 
 class TrailerScreen extends StatefulWidget {
   final String? trailerUrl;
   final Movie movie;
 
-  const TrailerScreen({Key? key, required this.trailerUrl, required this.movie})
-      : super(key: key);
+  const TrailerScreen(
+      {super.key, required this.trailerUrl, required this.movie});
 
   @override
   _TrailerScreenState createState() => _TrailerScreenState();
@@ -17,6 +18,7 @@ class TrailerScreen extends StatefulWidget {
 class _TrailerScreenState extends State<TrailerScreen> {
   YoutubePlayerController? _controller;
   bool isYouTubeVideo = false;
+  int _selectedIndex = 1; // kesfet sekmesi için 0
 
   @override
   void initState() {
@@ -46,6 +48,12 @@ class _TrailerScreenState extends State<TrailerScreen> {
         await launchUrl(url);
       }
     }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
@@ -138,6 +146,10 @@ class _TrailerScreenState extends State<TrailerScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

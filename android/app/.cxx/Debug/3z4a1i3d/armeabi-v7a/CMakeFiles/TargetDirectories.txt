@@ -1,0 +1,2 @@
+C:/Users/celal/Desktop/Github/film2/android/app/.cxx/Debug/3z4a1i3d/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/celal/Desktop/Github/film2/android/app/.cxx/Debug/3z4a1i3d/armeabi-v7a/CMakeFiles/rebuild_cache.dir
