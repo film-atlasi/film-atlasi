@@ -25,7 +25,10 @@ class PostServices {
         if (user != null && movie != null) {
           return MoviePost(
             postId: data['postId'],
-            user: user,
+            userId: data['userId'],
+            firstName: data['firstName'],
+            userPhotoUrl: data['userPhotoUrl'],
+            username: data['username'],
             movie: movie,
             content: data['content'] ?? '',
             likes: data['likes'] ?? 0,
@@ -53,6 +56,6 @@ class PostServices {
     if (currentUser == null) return false;
 
     final post = await getPostByUid(postUid);
-    return post != null && post.user.uid == currentUser.uid;
+    return post != null && post.userId == currentUser.uid;
   }
 }

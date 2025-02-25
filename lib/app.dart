@@ -1,6 +1,7 @@
 import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
 import 'package:film_atlasi/features/movie/screens/DiscoverPage.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
 import 'package:film_atlasi/features/user/screens/Profile.dart';
 import 'package:flutter/material.dart';
 
@@ -35,6 +36,20 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return FilmEkleWidget();
+            },
+          );
+        },
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        child: Icon(Icons.add),
       ),
     );
   }

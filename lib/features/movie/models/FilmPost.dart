@@ -2,12 +2,15 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:film_atlasi/features/movie/models/Movie.dart';
-import 'package:film_atlasi/features/user/models/User.dart';
 
 class MoviePost {
   final String postId;
-  final User user;
+  final String userId;
+  final String username;
+  final String firstName;
+  final String userPhotoUrl;
   final Movie movie;
   final int likes;
   final int comments;
@@ -15,41 +18,51 @@ class MoviePost {
   bool isQuote;
   final double rating; // ⭐️ Kullanıcının verdiği puan
   final Timestamp timestamp;
-
   MoviePost({
-    required this.user,
     required this.postId,
+    required this.userId,
+    required this.username,
+    required this.firstName,
+    required this.userPhotoUrl,
     required this.movie,
     required this.likes,
     required this.comments,
     required this.content,
+    required this.isQuote,
+    required this.rating,
     required this.timestamp,
-    required this.rating, // ⭐️ Yeni eklenen alan
-    this.isQuote = false,
   });
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'user': user.toMap(),
+      'postId': postId,
+      'userId': userId,
+      'username': username,
+      'firstName': firstName,
+      'userPhotoUrl': userPhotoUrl,
       'movie': movie.toMap(),
       'likes': likes,
-      'content': content,
       'comments': comments,
-      'rating': rating, // 🔥 Firestore'a yazarken kaydediyoruz
+      'content': content,
+      'isQuote': isQuote,
+      'rating': rating,
       'timestamp': timestamp,
     };
   }
 
   factory MoviePost.fromMap(Map<String, dynamic> map) {
     return MoviePost(
-      user: User.fromMap(map['user'] as Map<String, dynamic>),
       postId: map['postId'] as String,
+      userId: map['userId'] as String,
+      username: map['username'] as String,
+      firstName: map['firstName'] as String,
+      userPhotoUrl: map['userPhotoUrl'] as String,
       movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
       likes: map['likes'] as int,
       comments: map['comments'] as int,
       content: map['content'] as String,
-      rating: (map['rating'] ?? 0)
-          .toDouble(), // 🔥 Firestore'dan çekerken default 0 veriyoruz
+      isQuote: map['isQuote'] as bool,
+      rating: map['rating'] as double,
       timestamp: map['timestamp'] as Timestamp,
     );
   }

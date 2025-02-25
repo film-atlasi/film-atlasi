@@ -58,20 +58,18 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
 
         var data = doc.data() as Map<String, dynamic>;
 
-        // Kullanıcı bilgilerini çek
-        var userDoc =
-            await firestore.collection('users').doc(data['user']).get();
-        var userData = userDoc.data() as Map<String, dynamic>?;
-
         // Film bilgilerini çek
         var movieDoc =
             await firestore.collection('films').doc(data['movie']).get();
-        var movieData = movieDoc.data() as Map<String, dynamic>?;
+        var movieData = movieDoc.data();
 
-        if (userData != null && movieData != null) {
+        if (movieData != null) {
           fetchedPosts.add(MoviePost(
+            firstName: data['firstName'],
             postId: doc.id,
-            user: User.fromFirestore(userDoc),
+            userId: data['userId'],
+            username: data['username'],
+            userPhotoUrl: data['userPhotoUrl'],
             movie: Movie.fromMap(movieData),
             content: data['content'] ?? '',
             likes: data['likes'] ?? 0,
