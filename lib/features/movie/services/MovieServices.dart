@@ -242,4 +242,51 @@ class MovieService {
       throw Exception('Yakında çıkacak filmler alınamadı');
     }
   }
+
+  Future<List<Movie>> getHorrorMovies() async {
+    return await fetchMoviesByGenre(27); // 27 korku filmleri için genre ID
+  }
+
+  Future<List<Movie>> getClassicMovies() async {
+    // Klasik filmler için 1950-1980 arası filmler
+    return await fetchMoviesByYear(1950, 1980);
+  }
+
+  Future<List<Movie>> getLGBTQMovies() async {
+    // LGBTQ+ filmler için anahtar kelime araması
+    return await searchMovies("lgbtq");
+  }
+
+  Future<List<Movie>> fetchMoviesByGenre(int genreId) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/discover/movie?api_key=$apiKey&language=tr-TR&with_genres=$genreId&sort_by=popularity.desc'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Genre ID: $genreId için filmler alınamadı');
+    }
+  }
+
+  Future<List<Movie>> fetchMoviesByYear(int startYear, int endYear) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/discover/movie?api_key=$apiKey&language=tr-TR&primary_release_date.gte=$startYear-01-01&primary_release_date.lte=$endYear-12-31&sort_by=vote_average.desc'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception(
+          '$startYear-$endYear yılları arasındaki filmler alınamadı');
+    }
+  }
 }

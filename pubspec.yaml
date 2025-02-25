@@ -26,7 +26,8 @@ dependencies:
   firebase_storage: ^12.4.2
   image_picker: ^1.1.2
   youtube_player_flutter: ^9.1.1
-  persistent_bottom_nav_bar: ^6.2.1
+  flutter_staggered_animations: ^1.1.1
+
   
 dev_dependencies:
   flutter_test:
