@@ -11,7 +11,9 @@ class MoviePost {
   final String username;
   final String firstName;
   final String userPhotoUrl;
-  final Movie movie;
+  final String filmName;
+  final String filmId;
+  final String filmIcerik;
   final int likes;
   final int comments;
   String content;
@@ -24,7 +26,9 @@ class MoviePost {
     required this.username,
     required this.firstName,
     required this.userPhotoUrl,
-    required this.movie,
+    required this.filmName,
+    required this.filmId,
+    required this.filmIcerik,
     required this.likes,
     required this.comments,
     required this.content,
@@ -33,6 +37,29 @@ class MoviePost {
     required this.timestamp,
   });
 
+  factory MoviePost.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return MoviePost(
+      postId: data['postId'] as String,
+      userId: data['userId'] as String,
+      username: data['username'] as String,
+      firstName: data['firstName'] as String,
+      userPhotoUrl: data['userPhotoUrl'] as String,
+      likes: data['likes'] as int,
+      filmIcerik: data["filmIcerik"],
+      filmId: data['filmId'],
+      filmName: data['filmName'],
+      comments: data['comments'] as int,
+      content: data['content'] as String,
+      isQuote: data['isQuote'] as bool,
+      rating: data['rating'] as double,
+      timestamp: data['timestamp'] as Timestamp,
+    );
+  }
+
+  factory MoviePost.fromJson(String source) =>
+      MoviePost.fromMap(json.decode(source) as Map<String, dynamic>);
+
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'postId': postId,
@@ -40,7 +67,9 @@ class MoviePost {
       'username': username,
       'firstName': firstName,
       'userPhotoUrl': userPhotoUrl,
-      'movie': movie.toMap(),
+      'filmName': filmName,
+      'filmId': filmId,
+      'filmIcerik': filmIcerik,
       'likes': likes,
       'comments': comments,
       'content': content,
@@ -57,7 +86,9 @@ class MoviePost {
       username: map['username'] as String,
       firstName: map['firstName'] as String,
       userPhotoUrl: map['userPhotoUrl'] as String,
-      movie: Movie.fromMap(map['movie'] as Map<String, dynamic>),
+      filmName: map['filmName'] as String,
+      filmId: map['filmId'] as String,
+      filmIcerik: map['filmIcerik'] as String,
       likes: map['likes'] as int,
       comments: map['comments'] as int,
       content: map['content'] as String,
@@ -68,7 +99,4 @@ class MoviePost {
   }
 
   String toJson() => json.encode(toMap());
-
-  factory MoviePost.fromJson(String source) =>
-      MoviePost.fromMap(json.decode(source) as Map<String, dynamic>);
 }

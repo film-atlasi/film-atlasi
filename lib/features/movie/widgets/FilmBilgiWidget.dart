@@ -1,3 +1,5 @@
+import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
@@ -5,15 +7,91 @@ import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 
-class FilmBilgiWidget extends StatelessWidget {
-  final Movie movie;
+class FilmBilgiWidget extends StatefulWidget {
+  final String movieId;
   final String baseImageUrl;
 
   const FilmBilgiWidget(
-      {super.key, required this.movie, required this.baseImageUrl});
+      {super.key, required this.movieId, required this.baseImageUrl});
+
+  @override
+  State<FilmBilgiWidget> createState() => _FilmBilgiWidgetState();
+}
+
+class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
+  Movie? movie; // late yerine nullable tanımlandı
+  bool isLoading = true; // Yüklenme durumu eklendi
+
+  @override
+  void initState() {
+    super.initState();
+    fetchFilmData();
+  }
+
+  Future<void> fetchFilmData() async {
+    try {
+      final data = await MovieService().getMovieFromFireStore(widget.movieId);
+      if (mounted) {
+        setState(() {
+          movie = data;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+      print("Hata oluştu: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return SizedBox(
+        height: 180,
+        width: MediaQuery.of(context).size.width,
+        child: Row(
+          children: [
+            Expanded(
+                child: Container(
+              color: Colors.grey,
+            )),
+            Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Container(height: 10, color: Colors.grey),
+                      AddVerticalSpace(context, 0.02),
+                      Container(height: 5, color: Colors.grey),
+                      AddVerticalSpace(context, 0.01),
+                      Container(height: 5, color: Colors.grey),
+                      AddVerticalSpace(context, 0.01),
+                      Container(height: 5, color: Colors.grey),
+                      AddVerticalSpace(context, 0.03),
+                      Row(
+                        children: List.generate(
+                          4,
+                          (index) => Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CircleAvatar(
+                              backgroundColor: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ))
+          ],
+        ),
+      );
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -25,7 +103,7 @@ class FilmBilgiWidget extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => MovieDetailsPage(
-                  movie: movie,
+                  movie: movie!,
                 ),
               ),
             );
@@ -34,9 +112,9 @@ class FilmBilgiWidget extends StatelessWidget {
             width: 120,
             height: 180,
             color: Colors.red,
-            child: movie.posterPath.isNotEmpty
+            child: movie!.posterPath.isNotEmpty
                 ? Image.network(
-                    '$baseImageUrl${movie.posterPath}',
+                    '${widget.baseImageUrl}${movie!.posterPath}',
                     fit: BoxFit.cover,
                   )
                 : Center(
@@ -54,7 +132,7 @@ class FilmBilgiWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                movie.title,
+                movie!.title,
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 17,
@@ -62,7 +140,7 @@ class FilmBilgiWidget extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                movie.overview,
+                movie!.overview,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.white54, fontSize: 12),
@@ -76,7 +154,7 @@ class FilmBilgiWidget extends StatelessWidget {
                   children: [
                     FutureBuilder<List<Actor>>(
                       future: ActorService.fetchTopThreeActors(
-                          int.parse(movie.id), 5),
+                          int.parse(movie!.id), 5),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

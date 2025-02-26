@@ -23,6 +23,21 @@ class MovieService {
     }
   }
 
+  Future<Movie?> getMovieFromFireStore(String id) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final postsCollection = firestore.collection('films');
+      final docSnapshot = await postsCollection.doc(id).get();
+      if (docSnapshot.exists) {
+        return Movie.fromFirebase(docSnapshot);
+      } else {
+        throw Exception('Film bulunamadı');
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<String?> getMovieTrailer(int movieId) async {
     final response = await http.get(
       Uri.parse(

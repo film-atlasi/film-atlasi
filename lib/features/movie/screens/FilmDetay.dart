@@ -80,19 +80,22 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
 
     try {
       final querySnapshot = await firestore
-          .collection('posts')
-          .where('movie', isEqualTo: widget.movie.id)
+          .collection('films')
+          .doc(widget.movie.id)
+          .collection("posts")
           .orderBy('timestamp', descending: true)
           .get();
 
       for (var doc in querySnapshot.docs) {
         posts.add(MoviePost(
-          postId: doc['postId'],
+          postId: doc.id,
           userId: doc['userId'],
           firstName: doc['firstName'],
           userPhotoUrl: doc['userPhotoUrl'],
           username: doc['username'],
-          movie: widget.movie,
+          filmId: widget.movie.id,
+          filmName: widget.movie.title,
+          filmIcerik: widget.movie.title,
           content: doc['content'],
           likes: doc['likes'],
           comments: doc['comments'],

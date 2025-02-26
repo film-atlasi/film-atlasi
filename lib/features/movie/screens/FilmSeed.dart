@@ -41,10 +41,8 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
       });
 
       // Firestore'dan posts koleksiyonunu çek
-      QuerySnapshot postsSnapshot = await firestore
-          .collection("posts")
-          .orderBy('timestamp', descending: true)
-          .get();
+      QuerySnapshot postsSnapshot =
+          await firestore.collectionGroup("posts").get();
 
       // Eğer widget artık ağaçta değilse, işlemi sonlandır
       if (!_mounted) return;
@@ -62,6 +60,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
         var movieDoc =
             await firestore.collection('films').doc(data['movie']).get();
         var movieData = movieDoc.data();
+        var movie = Movie.fromFirebase(movieDoc);
 
         if (movieData != null) {
           fetchedPosts.add(MoviePost(
@@ -70,7 +69,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
             userId: data['userId'],
             username: data['username'],
             userPhotoUrl: data['userPhotoUrl'],
-            movie: Movie.fromMap(movieData),
+            filmId: movie.id,
+            filmName: movie.title,
+            filmIcerik: movie.overview,
             content: data['content'] ?? '',
             likes: data['likes'] ?? 0,
             comments: data['comments'] ?? 0,

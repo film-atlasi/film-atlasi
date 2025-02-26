@@ -76,7 +76,6 @@ class _IletipaylasState extends State<Iletipaylas> {
           "genre_ids": film.genreIds,
           "release_date": film.releaseDate,
           "vote_average": film.voteAverage,
-          "yildiz": _rating, // ⭐️ Kullanıcının verdiği puanı kaydediyoruz!
         });
       }
 
@@ -85,7 +84,6 @@ class _IletipaylasState extends State<Iletipaylas> {
 
       // **Postu Firestore'a ekle**
       Map<String, dynamic> postData = {
-        "postId": postRef.id,
         "userId": user.uid,
         "firstName": user.firstName,
         "username": user.userName,
@@ -101,7 +99,7 @@ class _IletipaylasState extends State<Iletipaylas> {
         "timestamp": FieldValue.serverTimestamp(),
       };
 
-      await postRef.set(postData);
+      await filmRef.collection("posts").add(postData);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('İnceleme paylaşıldı!')),
@@ -197,7 +195,7 @@ class _IletipaylasState extends State<Iletipaylas> {
             AddVerticalSpace(context, 0.01),
             const Divider(color: Color.fromARGB(255, 102, 102, 102)),
             FilmBilgiWidget(
-              movie: widget.movie,
+              movieId: widget.movie.id,
               baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
             ),
             AddVerticalSpace(context, 0.01),

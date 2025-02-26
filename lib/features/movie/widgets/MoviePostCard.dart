@@ -65,7 +65,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "- ${widget.moviePost.movie.title}",
+                    "- ${widget.moviePost.filmName}",
                     style: TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                 ] else ...[
@@ -74,7 +74,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       style: TextStyle(color: Colors.white)),
                   const SizedBox(height: 10),
                   FilmBilgiWidget(
-                    movie: widget.moviePost.movie,
+                    movieId: widget.moviePost.filmId,
                     baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
                   ),
                 ],

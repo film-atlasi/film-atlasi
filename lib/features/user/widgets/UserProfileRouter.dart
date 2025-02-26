@@ -9,10 +9,12 @@ class UserProfileRouter extends StatelessWidget {
   final String profilePhotoUrl;
   final String userId;
   final Widget? trailing;
+  final Widget? extraWidget;
 
   const UserProfileRouter(
       {super.key,
       required this.userId,
+      this.extraWidget,
       required this.title,
       this.subtitle,
       this.trailing,
@@ -38,7 +40,20 @@ class UserProfileRouter extends StatelessWidget {
         );
       },
       title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
+      subtitle: subtitle != null
+          ? extraWidget != null
+              ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    extraWidget!,
+                    SizedBox(
+                      height: 4,
+                    ),
+                    Text(subtitle!)
+                  ],
+                )
+              : Text(subtitle!)
+          : null,
       contentPadding: EdgeInsets.all(0),
       leading: CircleAvatar(
         // ignore: unnecessary_null_comparison
