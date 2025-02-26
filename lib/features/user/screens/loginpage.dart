@@ -126,7 +126,7 @@ class _LoginpageState extends State<Loginpage> {
                                   );
                                   print(
                                       'Giriş başarılı: ${userResult.user!.email}');
-                                  Navigator.push(
+                                  Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => FilmAtlasiApp()),
