@@ -15,8 +15,12 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
   @override
   void initState() {
     super.initState();
-    final userUid = FirebaseAuth.instance.currentUser?.uid ?? "";
-    _followingPosts = UserServices.getFollowingUsersPosts(userUid);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _followingPosts = UserServices.getFollowingUsersPosts(user.uid);
+    } else {
+      _followingPosts = Future.error("Kullanıcı oturumu açmamış.");
+    }
   }
 
   @override
@@ -30,7 +34,7 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
           } else if (snapshot.hasError) {
             return Center(child: Text("Bir hata oluştu: ${snapshot.error}"));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("Henüz kimseyi takip etmiyorsun."));
+            return Center(child: Text("Gösterilecek gönderi yok."));
           }
 
           final posts = snapshot.data!;

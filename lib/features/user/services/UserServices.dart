@@ -38,61 +38,48 @@ class UserServices {
   }
 
 //takip edilen kullanıcıları al
-static Future<List<String>> getFollowingUserIds(String userUid) async {
-  try {
-    final firestore = FirebaseFirestore.instance;
-    final followingCollection = firestore.collection('following');
+  static Future<List<String>> getFollowingUserIds(String userUid) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final followingCollection = firestore.collection('following');
 
-    // Kullanıcının takip ettiği kişileri al
-    final querySnapshot = await followingCollection
-        .doc(userUid)
-        .collection('userFollowings')
-        .get();
+      // Kullanıcının takip ettiği kişileri al
+      final querySnapshot = await followingCollection.doc(userUid).get();
 
-    // Takip edilen kullanıcıların UID'lerini bir liste olarak dönüyoruz
-    return querySnapshot.docs.map((doc) => doc.id).toList();
-  } catch (e) {
-    print('Takip edilen kullanıcılar alınamadı: $e');
-    return [];
-  }
-}
-
-//takip edilen kullanıcıların postlarını al
-static Future<List<MoviePost>> getFollowingUsersPosts(String userUid) async {
-  try {
-    final followingUserIds = await getFollowingUserIds(userUid);
-    
-    if (followingUserIds.isEmpty) {
-      return []; // Takip edilen kimse yoksa boş liste döndür
-    }
-
-    final firestore = FirebaseFirestore.instance;
-    final postsCollection = firestore.collection('posts');
-
-    // Takip edilen kişilerin paylaştığı postları al
-    final querySnapshot = await postsCollection
-        .where('user', whereIn: followingUserIds) // 🔥 Takip edilenlerin postları
-        .orderBy('timestamp', descending: true)
-        .get();
-
-    List<MoviePost> posts = [];
-    for (var doc in querySnapshot.docs) {
-      final post = await PostServices.getPostByUid(doc.id);
-      if (post != null) {
-        posts.add(post);
+      // Takip edilen kullanıcıların UID'lerini bir liste olarak dönüyoruz
+      Map<String, dynamic>? data = querySnapshot.data();
+      if (data != null && data["following"] is List) {
+        List<dynamic> followingList = data["following"];
+        List<String> followingUserIds = followingList.map((e) => e.toString()).toList();
+        return followingUserIds;
+      } else {
+        return [];
       }
+    } catch (e) {
+      print('Takip edilen kullanıcılar alınamadı: $e');
+      return [];
     }
-
-    return posts;
-  } catch (e) {
-    print('Takip edilen kullanıcıların postları alınamadı: $e');
-    return [];
   }
-}
 
+  // Takip edilen kullanıcıların postlarını al
+  static Future<List<MoviePost>> getFollowingUsersPosts(String userUid) async {
+    try {
+      final followingUserIds = await getFollowingUserIds(userUid);
 
+      if (followingUserIds.isEmpty) {
+        throw "Henüz kimseyi takip etmiyorsunuz.";
+      }
 
+      List<MoviePost> posts = [];
+      for (String id in followingUserIds) {
+        posts.addAll(await UserServices.getAllUsersPosts(id));
+      }
 
+      return posts;
+    } catch (e) {
+      throw 'Takip edilen kullanıcıların postları alınamadı: $e';
+    }
+  }
 
   static Future<List<MoviePost>> getAllUsersPosts(String userUid) async {
     try {
@@ -100,16 +87,20 @@ static Future<List<MoviePost>> getFollowingUsersPosts(String userUid) async {
       final userDoc = firestore.collection('users').doc(userUid);
 
       final querySnapshot = await userDoc
-          .collection("posts")
-          .orderBy('timestamp', descending: true)
-          .get();
-      print(querySnapshot.docs[0].data());
+        .collection("posts")
+        .orderBy('timestamp', descending: true)
+        .get();
+
+      if (querySnapshot.docs.isEmpty) {
+      return [];
+      }
+
       List<MoviePost> posts =
-          querySnapshot.docs.map((e) => MoviePost.fromFirestore(e)).toList();
+        querySnapshot.docs.map((e) => MoviePost.fromFirestore(e)).toList();
       return posts;
     } catch (e) {
       print('Error fetching user posts: $e');
-      throw e;
+      rethrow;
     }
   }
 
