@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -163,50 +165,39 @@ class _CommentPageState extends State<CommentPage> {
                 return ListView.builder(
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
-                    var commentData =
+                    var commentData = 
                         comments[index].data() as Map<String, dynamic>;
 
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: commentData['profilePhotoUrl'] !=
-                                    null &&
-                                commentData['profilePhotoUrl'].isNotEmpty
-                            ? NetworkImage(commentData[
-                                'profilePhotoUrl']) // 🔥 Profil fotoğrafını gösteriyoruz
-                            : null,
-                        child: commentData['profilePhotoUrl'] == null ||
-                                commentData['profilePhotoUrl'].isEmpty
-                            ? Text(commentData['userName'][0]
-                                .toUpperCase()) // Eğer profil fotoğrafı yoksa baş harfi göster
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: UserProfileRouter(
+                        userId: commentData["userId"],
+                        title: commentData["userName"],
+                        profilePhotoUrl: commentData["profilePhotoUrl"],
+                        subtitle: commentData["content"],
+                        trailing: commentData["userId"] == auth.currentUser?.uid
+                            ? PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _showEditDialog(
+                                        commentData["commentId"], commentData["content"]);
+                                  } else if (value == 'delete') {
+                                    _deleteComment(commentData["postId"]);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text('Düzenle'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('Sil'),
+                                  ),
+                                ],
+                              )
                             : null,
                       ),
-                      title: Text(
-                        commentData['userName'] ?? 'Anonim',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(commentData['content']),
-                      trailing: commentData['userId'] == auth.currentUser?.uid
-                          ? PopupMenuButton<String>(
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _showEditDialog(commentData['commentId'],
-                                      commentData['content']);
-                                } else if (value == 'delete') {
-                                  _deleteComment(commentData['commentId']);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('Düzenle'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Sil'),
-                                ),
-                              ],
-                            )
-                          : null, // Eğer yorum kullanıcının değilse, düzenleme/silme butonu göstermiyoruz.
                     );
                   },
                 );

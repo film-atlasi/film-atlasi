@@ -86,14 +86,12 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           .get();
 
       for (var doc in querySnapshot.docs) {
-        final userUid = doc['user'];
-        final user = await UserServices.getUserByUid(userUid);
-
-        if (user == null) continue;
-
         posts.add(MoviePost(
           postId: doc['postId'],
-          user: user,
+          userId: doc['userId'],
+          firstName: doc['firstName'],
+          userPhotoUrl: doc['userPhotoUrl'],
+          username: doc['username'],
           movie: widget.movie,
           content: doc['content'],
           likes: doc['likes'],

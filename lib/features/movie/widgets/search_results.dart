@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
@@ -14,17 +15,25 @@ class SearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: searchResults.length,
-      itemBuilder: (context, index) {
-        final result = searchResults[index];
-        if (result is Movie) {
-          return _buildMovieListTile(result, context);
-        } else if (result is User) {
-          return _buildUserListTile(result, context);
-        }
-        return Container();
-      },
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width / 25),
+      child: ListView.builder(
+        itemCount: searchResults.length,
+        itemBuilder: (context, index) {
+          final result = searchResults[index];
+          if (result is Movie) {
+            return _buildMovieListTile(result, context);
+          } else if (result is User) {
+            return UserProfileRouter(
+                userId: result.uid!,
+                title: result.firstName!,
+                subtitle: result.userName,
+                profilePhotoUrl: result.profilePhotoUrl!);
+          }
+          return Container();
+        },
+      ),
     );
   }
 
@@ -45,6 +54,7 @@ class SearchResults extends StatelessWidget {
             : movie.overview,
         style: const TextStyle(color: Colors.grey),
       ),
+      contentPadding: EdgeInsets.all(0),
       onTap: () {
         // 📌 Eğer mod "film_listesi" ise, aşağıdan modal açalım
         if (mode == "film_listesi") {

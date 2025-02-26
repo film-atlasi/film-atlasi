@@ -9,6 +9,7 @@ import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmListButton.dart';
+import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -52,6 +53,17 @@ class _IletipaylasState extends State<Iletipaylas> {
       String filmId = film.id.toString();
       DocumentReference filmRef = firestore.collection("films").doc(filmId);
 
+      DocumentSnapshot userSnapshot =
+          await firestore.collection("users").doc(currentUser.uid).get();
+      if (!userSnapshot.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kullanıcı bilgileri bulunamadı!')),
+        );
+        return;
+      }
+
+      User user = User.fromFirestore(userSnapshot);
+
       DocumentSnapshot filmSnapshot = await filmRef.get();
 
       if (!filmSnapshot.exists) {
@@ -74,7 +86,10 @@ class _IletipaylasState extends State<Iletipaylas> {
       // **Postu Firestore'a ekle**
       Map<String, dynamic> postData = {
         "postId": postRef.id,
-        "user": currentUser.uid,
+        "userId": user.uid,
+        "firstName": user.firstName,
+        "username": user.userName,
+        "userPhotoUrl": user.profilePhotoUrl,
         "movie": film.id,
         "content": _textEditingController.text, // Kullanıcının yorumu
         "isQuote": widget

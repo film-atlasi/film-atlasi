@@ -5,6 +5,7 @@ import 'package:film_atlasi/features/user/services/FollowServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
+import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
@@ -292,26 +293,11 @@ class _UserPageState extends State<UserPage>
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           User user = snapshot.data![index];
-                          return ListTile(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      UserPage(userUid: user.uid!),
-                                ),
-                              );
-                            },
-                            leading: CircleAvatar(
-                              backgroundImage: user.profilePhotoUrl != null
-                                  ? NetworkImage(user.profilePhotoUrl!)
-                                  : null,
-                              child: user.profilePhotoUrl == null
-                                  ? const Icon(Icons.person)
-                                  : null,
-                            ),
-                            title: Text("${user.firstName} ${user.lastName}"),
-                            subtitle: Text("@${user.userName}"),
+                          return UserProfileRouter(
+                            userId: user.uid!,
+                            title: user.userName!,
+                            profilePhotoUrl: user.profilePhotoUrl!,
+                            subtitle: user.firstName,
                           );
                         },
                       );
@@ -353,26 +339,11 @@ class _UserPageState extends State<UserPage>
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           User user = snapshot.data![index];
-                          return ListTile(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      UserPage(userUid: user.uid!),
-                                ),
-                              );
-                            },
-                            leading: CircleAvatar(
-                              backgroundImage: user.profilePhotoUrl != null
-                                  ? NetworkImage(user.profilePhotoUrl!)
-                                  : null,
-                              child: user.profilePhotoUrl == null
-                                  ? const Icon(Icons.person)
-                                  : null,
-                            ),
-                            title: Text("${user.firstName} ${user.lastName}"),
-                            subtitle: Text("@${user.userName}"),
+                          return UserProfileRouter(
+                            userId: user.uid!,
+                            title: user.userName!,
+                            profilePhotoUrl: user.profilePhotoUrl!,
+                            subtitle: user.firstName,
                           );
                         },
                       );

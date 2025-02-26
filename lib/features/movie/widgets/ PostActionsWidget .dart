@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
+import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -63,6 +64,8 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     final batch = _firestore.batch();
     final postRef = _firestore.collection('posts').doc(widget.postId);
     final likeRef = postRef.collection('likes').doc(user.uid);
+    final userRef = _firestore.collection('users').doc(user.uid);
+    final userDoc = await userRef.get();
 
     try {
       // Önce mevcut durumu kontrol et
@@ -82,8 +85,9 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
         // Beğeni ekle
         batch.set(likeRef, {
           'userId': user.uid,
-          'userName': user.displayName ?? 'Kullanıcı',
-          'timestamp': FieldValue.serverTimestamp()
+          'userName': userDoc["userName"] ?? 'Kullanıcı',
+          'timestamp': FieldValue.serverTimestamp(),
+          'profilePhotoUrl': userDoc["profilePhotoUrl"]
         });
         batch.update(postRef, {'likes': FieldValue.increment(1)});
 
@@ -143,12 +147,10 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
                   itemBuilder: (context, index) {
                     var likeData = snapshot.data!.docs[index].data()
                         as Map<String, dynamic>;
-                    return ListTile(
-                      leading: CircleAvatar(
-                        child: Icon(Icons.person),
-                      ),
-                      title: Text(likeData['userName'] ?? 'Kullanıcı'),
-                    );
+                    return UserProfileRouter(
+                        userId: likeData['userId'],
+                        title: likeData["userName"],
+                        profilePhotoUrl: likeData["profilePhotoUrl"]);
                   },
                 );
               },
