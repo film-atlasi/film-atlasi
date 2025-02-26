@@ -1,5 +1,6 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
+import 'package:film_atlasi/features/movie/screens/FollowingFeedPage.dart';
 import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomDrawer.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomTabBar.dart';
@@ -66,7 +67,7 @@ class AnasayfaState extends State<Anasayfa>
         controller: tabController,
         children: [
           FilmSeedPage(),
-          const Center(child: Text('Takipler İçeriği')),
+          FollowingFeedPage(),
           NewsScreen(),
         ],
       ),
