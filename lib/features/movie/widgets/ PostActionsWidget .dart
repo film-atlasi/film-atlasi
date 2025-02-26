@@ -6,15 +6,16 @@ import 'package:flutter/material.dart';
 
 class PostActionsWidget extends StatefulWidget {
   final String postId;
+  final String filmId;
   final int initialLikes;
   final int initialComments;
 
-  const PostActionsWidget({
-    super.key,
-    required this.postId,
-    required this.initialLikes,
-    required this.initialComments,
-  });
+  const PostActionsWidget(
+      {super.key,
+      required this.postId,
+      required this.initialLikes,
+      required this.initialComments,
+      required this.filmId});
 
   @override
   _PostActionsWidgetState createState() => _PostActionsWidgetState();
@@ -30,7 +31,12 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
   void initState() {
     super.initState();
     // _postStream değişkenini başlat
-    _postStream = _firestore.collection('posts').doc(widget.postId).snapshots();
+    _postStream = _firestore
+        .collection("films")
+        .doc(widget.filmId)
+        .collection('posts')
+        .doc(widget.postId)
+        .snapshots();
     _checkIfUserLiked();
   }
 
@@ -40,6 +46,8 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
 
     try {
       final likesSnapshot = await _firestore
+          .collection("films")
+          .doc(widget.filmId)
           .collection('posts')
           .doc(widget.postId)
           .collection('likes')
@@ -62,7 +70,8 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
 
     // Batch işlemi oluştur
     final batch = _firestore.batch();
-    final postRef = _firestore.collection('posts').doc(widget.postId);
+    final filmRef = _firestore.collection('films').doc(widget.filmId);
+    final postRef = filmRef.collection('posts').doc(widget.postId);
     final likeRef = postRef.collection('likes').doc(user.uid);
     final userRef = _firestore.collection('users').doc(user.uid);
     final userDoc = await userRef.get();
@@ -109,7 +118,10 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CommentPage(postId: widget.postId),
+        builder: (context) => CommentPage(
+          postId: widget.postId,
+          filmId: widget.filmId,
+        ),
       ),
     );
 
@@ -127,6 +139,8 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
             width: double.maxFinite,
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
+                  .collection("films")
+                  .doc(widget.filmId)
                   .collection('posts')
                   .doc(widget.postId)
                   .collection('likes')

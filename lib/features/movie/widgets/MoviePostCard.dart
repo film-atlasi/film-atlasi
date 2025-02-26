@@ -83,6 +83,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 Row(
                   children: [
                     PostActionsWidget(
+                      filmId: widget.moviePost.filmId,
                       postId: widget.moviePost.postId, // Firestore'daki post ID
                       initialLikes:
                           widget.moviePost.likes, // Mevcut beğeni sayısı

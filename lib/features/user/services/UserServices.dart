@@ -40,27 +40,19 @@ class UserServices {
   static Future<List<MoviePost>> getAllUsersPosts(String userUid) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final postsCollection = firestore.collection('posts');
+      final userDoc = firestore.collection('users').doc(userUid);
 
-      final querySnapshot = await postsCollection
-          .where('user', isEqualTo: userUid)
+      final querySnapshot = await userDoc
+          .collection("posts")
           .orderBy('timestamp', descending: true)
           .get();
-
-      final postUids = querySnapshot.docs.map((doc) => doc.id).toList();
-
-      List<MoviePost> posts = [];
-      for (String postUid in postUids) {
-        final post = await PostServices.getPostByUid(postUid);
-        if (post != null) {
-          posts.add(post);
-        }
-      }
-
+      print(querySnapshot.docs[0].data());
+      List<MoviePost> posts =
+          querySnapshot.docs.map((e) => MoviePost.fromFirestore(e)).toList();
       return posts;
     } catch (e) {
       print('Error fetching user posts: $e');
-      return [];
+      throw e;
     }
   }
 

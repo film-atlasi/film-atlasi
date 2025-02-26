@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CommentPage extends StatefulWidget {
   final String postId;
-
-  const CommentPage({super.key, required this.postId});
+  final String filmId;
+  const CommentPage({super.key, required this.postId, required this.filmId});
 
   @override
   _CommentPageState createState() => _CommentPageState();
@@ -21,6 +20,8 @@ class _CommentPageState extends State<CommentPage> {
   /// **Yorumları Firestore'dan çek**
   Stream<QuerySnapshot> getCommentsStream() {
     return firestore
+        .collection("films")
+        .doc(widget.filmId)
         .collection('posts')
         .doc(widget.postId)
         .collection('comments')
@@ -33,6 +34,8 @@ class _CommentPageState extends State<CommentPage> {
 
     try {
       await firestore
+          .collection("films")
+          .doc(widget.filmId)
           .collection('posts')
           .doc(widget.postId)
           .collection('comments')
@@ -83,8 +86,11 @@ class _CommentPageState extends State<CommentPage> {
   Future<void> _deleteComment(String commentId) async {
     try {
       // Firestore referansları
-      DocumentReference postRef =
-          firestore.collection('posts').doc(widget.postId);
+      DocumentReference postRef = firestore
+          .collection("films")
+          .doc(widget.filmId)
+          .collection('posts')
+          .doc(widget.postId);
       DocumentReference commentRef =
           postRef.collection('comments').doc(commentId);
 
@@ -123,6 +129,8 @@ class _CommentPageState extends State<CommentPage> {
         : ""; // 🔥 Profil fotoğrafını ekledik
 
     DocumentReference commentRef = firestore
+        .collection("films")
+        .doc(widget.filmId)
         .collection('posts')
         .doc(widget.postId)
         .collection('comments')
@@ -139,7 +147,12 @@ class _CommentPageState extends State<CommentPage> {
     });
 
     // **🔥 Firestore'daki "comments" alanını 1 artır**
-    await firestore.collection('posts').doc(widget.postId).update({
+    await firestore
+        .collection("films")
+        .doc(widget.filmId)
+        .collection('posts')
+        .doc(widget.postId)
+        .update({
       "comments": FieldValue.increment(1),
     });
 
@@ -165,7 +178,7 @@ class _CommentPageState extends State<CommentPage> {
                 return ListView.builder(
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
-                    var commentData = 
+                    var commentData =
                         comments[index].data() as Map<String, dynamic>;
 
                     return Padding(
@@ -179,10 +192,10 @@ class _CommentPageState extends State<CommentPage> {
                             ? PopupMenuButton<String>(
                                 onSelected: (value) {
                                   if (value == 'edit') {
-                                    _showEditDialog(
-                                        commentData["commentId"], commentData["content"]);
+                                    _showEditDialog(commentData["commentId"],
+                                        commentData["content"]);
                                   } else if (value == 'delete') {
-                                    _deleteComment(commentData["postId"]);
+                                    _deleteComment(commentData["commentId"]);
                                   }
                                 },
                                 itemBuilder: (context) => [

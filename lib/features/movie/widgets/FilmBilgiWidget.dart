@@ -30,7 +30,8 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
 
   Future<void> fetchFilmData() async {
     try {
-      final data = await MovieService().getMovieFromFireStore(widget.movieId);
+      var data = await MovieService().getMovieFromFireStore(widget.movieId);
+      data ??= await MovieService().getMovieDetails(int.parse(widget.movieId));
       if (mounted) {
         setState(() {
           movie = data;

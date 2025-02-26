@@ -1,19 +1,13 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_atlasi/features/movie/models/Actor.dart';
-import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
-import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
-import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
-import 'package:film_atlasi/features/movie/widgets/FilmListButton.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:auto_size_text/auto_size_text.dart'; // AutoSizeText kütüphanesini eklemeyi unutmayın!
 
 class Iletipaylas extends StatefulWidget {
   final Movie movie;
@@ -35,7 +29,6 @@ class _IletipaylasState extends State<Iletipaylas> {
   double _rating = 0.0;
   final TextEditingController _textEditingController = TextEditingController();
 
-  bool? _recommendation;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> submitForm() async {
@@ -53,8 +46,9 @@ class _IletipaylasState extends State<Iletipaylas> {
       String filmId = film.id.toString();
       DocumentReference filmRef = firestore.collection("films").doc(filmId);
 
-      DocumentSnapshot userSnapshot =
-          await firestore.collection("users").doc(currentUser.uid).get();
+      DocumentReference userDoc =
+          firestore.collection("users").doc(currentUser.uid);
+      DocumentSnapshot userSnapshot = await userDoc.get();
       if (!userSnapshot.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Kullanıcı bilgileri bulunamadı!')),
@@ -80,15 +74,34 @@ class _IletipaylasState extends State<Iletipaylas> {
       }
 
       // **Yeni Post için Firestore'da benzersiz bir ID oluştur**
-      DocumentReference postRef = firestore.collection("posts").doc();
+      firestore.collection("posts").doc();
 
       // **Postu Firestore'a ekle**
       Map<String, dynamic> postData = {
         "userId": user.uid,
+        "filmName": widget.movie.title,
+        "filmId": widget.movie.id,
+        "filmIcerik": widget.movie.overview,
         "firstName": user.firstName,
         "username": user.userName,
         "userPhotoUrl": user.profilePhotoUrl,
-        "movie": film.id,
+        "content": _textEditingController.text, // Kullanıcının yorumu
+        "isQuote": widget
+            .isFromQuote, // 🔥 Alıntı paylaşımı olup olmadığını işaretliyoruz
+        "likes": 0,
+        "comments": 0,
+        "rating": _rating, // 🔥 Burada puanı kaydediyoruz!
+        "likedUsers": [],
+        "timestamp": FieldValue.serverTimestamp(),
+      };
+      Map<String, dynamic> postDataForUserCollection = {
+        "userId": user.uid,
+        "filmName": widget.movie.title,
+        "filmId": widget.movie.id,
+        "filmIcerik": widget.movie.overview,
+        "firstName": user.firstName,
+        "username": user.userName,
+        "userPhotoUrl": user.profilePhotoUrl,
         "content": _textEditingController.text, // Kullanıcının yorumu
         "isQuote": widget
             .isFromQuote, // 🔥 Alıntı paylaşımı olup olmadığını işaretliyoruz
@@ -100,6 +113,8 @@ class _IletipaylasState extends State<Iletipaylas> {
       };
 
       await filmRef.collection("posts").add(postData);
+
+      await userDoc.collection("posts").add(postDataForUserCollection);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('İnceleme paylaşıldı!')),
