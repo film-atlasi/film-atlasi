@@ -11,6 +11,15 @@ class FilmKutusu extends StatefulWidget {
 }
 
 class _FilmKutusuState extends State<FilmKutusu> {
+
+  bool isCurrentUser = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isCurrentUser = UserServices.currentUserUid == widget.userUid;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(

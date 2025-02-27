@@ -3,6 +3,7 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/user/services/FollowServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
+import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
@@ -27,6 +28,7 @@ class _UserPageState extends State<UserPage>
   String? currentUserUid;
   bool followLoading = false;
   int _selectedIndex = 2; // Hesabım sekmesi için 2
+  bool isCurrentUser = false;
 
   FollowServices followServices = FollowServices();
 
@@ -34,6 +36,9 @@ class _UserPageState extends State<UserPage>
   void initState() {
     super.initState();
     currentUserUid = auth.FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserUid == widget.userUid) {
+      isCurrentUser = true;
+    }
     checkFollowStatus();
     _tabController =
         TabController(length: 3, vsync: this); // TabController length = 3
@@ -202,29 +207,56 @@ class _UserPageState extends State<UserPage>
                 ),
               ),
               Expanded(
-                  child: GestureDetector(
-                      onTap: toggleFollow,
-                      child: Container(
-                          decoration: BoxDecoration(
-                              color: !isFollowingUser
-                                  ? AppConstants.red
-                                  : Colors.transparent,
-                              border: isFollowingUser
-                                  ? Border.all(color: Colors.white)
-                                  : null,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(25))),
-                          height: MediaQuery.of(context).size.height / 25,
-                          width: MediaQuery.of(context).size.width,
-                          alignment: Alignment.center,
-                          child: followLoading
-                              ? CircularProgressIndicator()
-                              : Text(
-                                  isFollowingUser
-                                      ? "Takip Ediyorsun"
-                                      : "Takip Et",
-                                  style: TextStyle(color: Colors.white),
-                                ))))
+                  child: isCurrentUser
+                      ? GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditProfileScreen(
+                                    userData: userData!.toMap()),
+                              ),
+                            ).then((_) => _fetchUserData());
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey, // Buton rengi
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              "Düzenle",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: toggleFollow,
+                          child: Container(
+                              decoration: BoxDecoration(
+                                  color: !isFollowingUser
+                                      ? AppConstants.red
+                                      : Colors.transparent,
+                                  border: isFollowingUser
+                                      ? Border.all(color: Colors.white)
+                                      : null,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(25))),
+                              height: MediaQuery.of(context).size.height / 25,
+                              width: MediaQuery.of(context).size.width,
+                              alignment: Alignment.center,
+                              child: followLoading
+                                  ? CircularProgressIndicator()
+                                  : Text(
+                                      isFollowingUser
+                                          ? "Takip Ediyorsun"
+                                          : "Takip Et",
+                                      style: TextStyle(color: Colors.white),
+                                    ))))
             ],
           ),
           Row(

@@ -94,7 +94,7 @@ class MoviePost {
       comments: map['comments'] as int, //
       content: map['content'] as String, //
       isQuote: map['isQuote'] as bool, //
-      rating: map['rating'] as double, //
+      rating: (map['rating'] is int) ? (map['rating'] as int).toDouble() : map['rating'] as double, //
       timestamp: map['timestamp'] as Timestamp,
     );
   }

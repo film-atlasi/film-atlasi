@@ -54,6 +54,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
             .collection('films')
             .doc(movieId)
             .collection('posts')
+            .orderBy('timestamp', descending: true)
             .get(); // orderBy kullanmıyoruz, çünkü bazen indeks hatası verebilir
 
         allPosts.addAll(

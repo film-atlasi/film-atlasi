@@ -23,101 +23,108 @@ class _MoviePostCardState extends State<MoviePostCard> {
   final TextEditingController _contentController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    _contentController.text = widget.moviePost.content;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Card(
-          color: Colors.black,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                UserProfileRouter(
-                  title: widget.moviePost.firstName,
-                  profilePhotoUrl: widget.moviePost.userPhotoUrl,
-                  subtitle: widget.moviePost.username,
-                  userId: widget.moviePost.userId,
-                ),
-
-                const SizedBox(height: 10),
-
-                // ⭐️ Kullanıcının verdiği puanı gösteriyoruz
-                RatingDisplayWidget(rating: widget.moviePost.rating),
-
-                const SizedBox(height: 10),
-
-                // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek
-                if (widget.moviePost.isQuote) ...[
-                  Text(
-                    '"${widget.moviePost.content}"',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
+    return GestureDetector(
+      onLongPress: () {
+        if (widget.isOwnPost) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              content: PostSilmeDuzenleme(moviePost: widget.moviePost),
+            ),
+          );
+        }
+      },
+      child: Column(
+        children: [
+          Card(
+            color: Colors.black,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UserProfileRouter(
+                    title: widget.moviePost.firstName,
+                    profilePhotoUrl: widget.moviePost.userPhotoUrl,
+                    subtitle: widget.moviePost.username,
+                    userId: widget.moviePost.userId,
+                    
                   ),
-                  SizedBox(height: 5),
-                  Text(
-                    "- ${widget.moviePost.filmName}",
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                ] else ...[
-                  // Eğer normal post ise, film posteri ve detaylar gösterilecek
-                  Text(widget.moviePost.content,
-                      style: TextStyle(color: Colors.white)),
+
                   const SizedBox(height: 10),
-                  FilmBilgiWidget(
-                    movieId: widget.moviePost.filmId,
-                    baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
-                  ),
-                ],
-                AddVerticalSpace(context, 0.02),
-                // 🔥 Beğeni, Yorum, Kaydet İkonları
-                Row(
-                  children: [
-                    PostActionsWidget(
-                      filmId: widget.moviePost.filmId,
-                      postId: widget.moviePost.postId, // Firestore'daki post ID
-                      initialLikes:
-                          widget.moviePost.likes, // Mevcut beğeni sayısı
-                      initialComments:
-                          widget.moviePost.comments, // Mevcut yorum sayısı
+
+                  // ⭐️ Kullanıcının verdiği puanı gösteriyoruz
+                  RatingDisplayWidget(rating: widget.moviePost.rating),
+
+                  const SizedBox(height: 10),
+
+                  // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek
+                  if (widget.moviePost.isQuote) ...[
+                    Text(
+                      '"${widget.moviePost.content}"',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () {
-                        // Kaydet aksiyonu
-                      },
-                      icon: const Icon(Icons.bookmark_border,
-                          color: Colors.white),
+                    SizedBox(height: 5),
+                    Text(
+                      "- ${widget.moviePost.filmName}",
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                  ] else ...[
+                    // Eğer normal post ise, film posteri ve detaylar gösterilecek
+                    Text(widget.moviePost.content,
+                        style: TextStyle(color: Colors.white)),
+                    const SizedBox(height: 10),
+                    FilmBilgiWidget(
+                      movieId: widget.moviePost.filmId,
+                      baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
                     ),
                   ],
-                ),
-
-                // 🔥 Zaman damgasını beğeni & yorum butonlarının ALTINA ekledik
-                Padding(
-                  padding:
-                      const EdgeInsets.only(top: 6.0), // Hafif boşluk ekledik
-                  child: Text(
-                    _formatTimestamp(
-                        widget.moviePost.timestamp), // Tarih bilgisi
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                    textAlign: TextAlign.left,
+                  AddVerticalSpace(context, 0.02),
+                  // 🔥 Beğeni, Yorum, Kaydet İkonları
+                  Row(
+                    children: [
+                      PostActionsWidget(
+                        filmId: widget.moviePost.filmId,
+                        postId: widget.moviePost.postId, // Firestore'daki post ID
+                        initialLikes:
+                            widget.moviePost.likes, // Mevcut beğeni sayısı
+                        initialComments:
+                            widget.moviePost.comments, // Mevcut yorum sayısı
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          // Kaydet aksiyonu
+                        },
+                        icon: const Icon(Icons.bookmark_border,
+                            color: Colors.white),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+
+                  // 🔥 Zaman damgasını beğeni & yorum butonlarının ALTINA ekledik
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 6.0), // Hafif boşluk ekledik
+                    child: Text(
+                      _formatTimestamp(
+                          widget.moviePost.timestamp), // Tarih bilgisi
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        Divider(color: Colors.grey), // Çizgi ekleniyor
-      ],
+          Divider(color: Colors.grey), // Çizgi ekleniyor
+        ],
+      ),
     );
   }
 
