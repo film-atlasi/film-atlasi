@@ -19,6 +19,8 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   List<MoviePost> moviePosts = [];
   bool _loading = true;
   bool _mounted = true; // Widget'ın durumunu takip etmek için
+  bool isError = false;
+  String error;
 
   @override
   void initState() {
@@ -73,6 +75,8 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
 
     setState(() {
       _loading = false;
+     isError = true;
+     error = e.toString();
     });
   }
 }
@@ -90,7 +94,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : ListView.builder(
+            : isError ? Center(child: Text(error),) :ListView.builder(
                 itemCount: moviePosts.length,
                 itemBuilder: (context, index) {
                   final post = moviePosts[index];
