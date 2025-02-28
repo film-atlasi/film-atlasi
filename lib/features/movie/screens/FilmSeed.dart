@@ -32,54 +32,50 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
     super.dispose();
   }
 
-  Future<void> fetchAllPosts() async {
-    try {
-      if (!_mounted) return; // Widget dispose edildiyse işlemi sonlandır
+ Future<void> fetchAllPosts() async {
+  try {
+    if (!_mounted) return; // Widget dispose edildiyse işlemi sonlandır
 
-      setState(() {
-        _loading = true;
-      });
+    setState(() {
+      _loading = true;
+    });
 
-      // Eğer widget artık ağaçta değilse, işlemi sonlandır
-      if (!_mounted) return;
+    final moviesSnapshot = await firestore.collection('films').get();
 
-      final moviesSnapshot = await firestore.collection('films').get();
+    List<MoviePost> allPosts = [];
 
-      List<MoviePost> allPosts = [];
+    for (var movieDoc in moviesSnapshot.docs) {
+      final movieId = movieDoc.id;
 
-      for (var movieDoc in moviesSnapshot.docs) {
-        final movieId = movieDoc.id;
+      final querySnapshot = await firestore
+          .collection('films')
+          .doc(movieId)
+          .collection('posts')
+          .get(); // 🔥 OrderBy kaldırıldı!
 
-        final querySnapshot = await firestore
-            .collection('films')
-            .doc(movieId)
-            .collection('posts')
-            .orderBy('timestamp', descending: true)
-            .get(); // orderBy kullanmıyoruz, çünkü bazen indeks hatası verebilir
-
-        allPosts.addAll(
-            querySnapshot.docs.map((doc) => MoviePost.fromFirestore(doc)));
-      }
-
-      // Son bir kez daha kontrol et
-      if (!_mounted) return;
-
-      setState(() {
-        moviePosts = allPosts;
-        _loading = false;
-      });
-
-      print("Çekilen post sayısı: ${moviePosts.length}");
-    } catch (e) {
-      print("Hata oluştu: $e");
-      // Hata durumunda da mounted kontrolü yap
-      if (!_mounted) return;
-
-      setState(() {
-        _loading = false;
-      });
+      allPosts.addAll(querySnapshot.docs.map((doc) => MoviePost.fromFirestore(doc)));
     }
+
+    // 🔥 **Tüm postları timestamp'e göre sıralıyoruz**
+    allPosts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+    if (!_mounted) return;
+
+    setState(() {
+      moviePosts = allPosts;
+      _loading = false;
+    });
+
+    print("Çekilen post sayısı: ${moviePosts.length}");
+  } catch (e) {
+    print("Hata oluştu: $e");
+    if (!_mounted) return;
+
+    setState(() {
+      _loading = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -9,6 +9,7 @@ class UserProfileRouter extends StatelessWidget {
   final Widget? trailing;
   final Widget? extraWidget;
   final Function()? onLongPress;
+  final Function()? onTap;
 
   const UserProfileRouter(
       {super.key,
@@ -18,23 +19,25 @@ class UserProfileRouter extends StatelessWidget {
       this.subtitle,
       this.trailing,
       this.onLongPress,
-      required this.profilePhotoUrl});
+      required this.profilePhotoUrl,
+      this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       onLongPress: onLongPress,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) {
-            // ignore: unrelated_type_equality_checks
-            return UserPage(
-              userUid: userId,
+      onTap: onTap ??
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) {
+                // ignore: unrelated_type_equality_checks
+                return UserPage(
+                  userUid: userId,
+                );
+              }),
             );
-          }),
-        );
-      },
+          },
       title: Text(title),
       subtitle: subtitle != null
           ? extraWidget != null

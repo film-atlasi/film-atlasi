@@ -2,6 +2,7 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
 import 'package:film_atlasi/features/movie/screens/FollowingFeedPage.dart';
 import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
+import 'package:film_atlasi/features/movie/screens/notification_page.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomDrawer.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomTabBar.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
@@ -53,11 +54,13 @@ class AnasayfaState extends State<Anasayfa>
                       const FilmAraWidget(mode: "film_incele")),
             ),
           ),
-          IconButton(
+            IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {
-              print('Bildirimler tıklandı.');
-            },
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NotificationPage()),
+            ),
           ),
         ],
         bottom:

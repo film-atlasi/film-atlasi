@@ -75,7 +75,14 @@ class _UserPageState extends State<UserPage>
       await followServices.unfollowUser(currentUserUid!, widget.userUid);
     } else {
       //etmiyorsa etsin
-      await followServices.followUser(currentUserUid!, widget.userUid);
+      final currentUser = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserUid)
+          .get();
+      final currentUserName = currentUser.data()?['userName'];
+      final currentUserPhoto = currentUser.data()?["profilePhotoUrl"];
+      await followServices.followUser(
+          currentUserUid!, widget.userUid, currentUserName, currentUserPhoto);
     }
     checkFollowStatus();
   }

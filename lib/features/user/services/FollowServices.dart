@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 
 class FollowServices {
-  Future<void> followUser(String currentUserId, String targetUserId) async {
+  Future<void> followUser(String currentUserId, String targetUserId,
+      String currentUsername, String photo) async {
     ///Bu fonksiyon currentUser'in following_count unu artırır.
     ///Bu fonksiyon targetUser'in followers_count unu artırır.
     ///Bu fonksiyon following collection'unda currentUserId li dökmana targetUserId yi ekler.
@@ -39,6 +41,13 @@ class FollowServices {
       await firestore.collection('users').doc(currentUserId).update({
         'following': FieldValue.increment(1),
       });
+
+      await NotificationService().addNotification(
+          toUserId: targetUserId,
+          fromUserId: currentUserId,
+          fromUsername: currentUsername,
+          photo: photo,
+          eventType: "follow");
     } catch (e) {
       print("Hata oluştu takip ederken $e");
     }

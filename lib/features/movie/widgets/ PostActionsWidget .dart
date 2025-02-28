@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -99,6 +100,20 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
           'profilePhotoUrl': userDoc["profilePhotoUrl"]
         });
         batch.update(postRef, {'likes': FieldValue.increment(1)});
+
+//bildirim ekle begeni
+        final postOwner = await postRef.get();
+        final postOwnerId =
+            postOwner.data()?['userId']; // Post sahibinin UID’si
+        if (postOwnerId != null) {
+          await NotificationService().addNotification(
+              toUserId: postOwnerId,
+              fromUserId: user.uid,
+              fromUsername: userDoc["userName"] ?? "Bilinmeyen Kullanıcı",
+              eventType: "like",
+              filmId: widget.filmId,
+              photo: userDoc["profilePhotoUrl"]);
+        }
 
         if (mounted) {
           setState(() {

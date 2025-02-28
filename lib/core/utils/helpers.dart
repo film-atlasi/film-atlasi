@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,6 +25,28 @@ class Helpers {
     10752: "Savaş",
     37: "Western",
   };
+
+  // 🔥 Timestamp'i "x dakika önce" formatına çeviren fonksiyon
+  static String formatTimestamp(Timestamp timestamp) {
+    DateTime postTime = timestamp.toDate();
+    Duration difference = DateTime.now().difference(postTime);
+
+    if (difference.inSeconds < 60) {
+      return "${difference.inSeconds} saniye önce";
+    } else if (difference.inMinutes < 60) {
+      return "${difference.inMinutes} dakika önce";
+    } else if (difference.inHours < 24) {
+      return "${difference.inHours} saat önce";
+    } else if (difference.inDays < 7) {
+      return "${difference.inDays} gün önce";
+    } else if (difference.inDays < 30) {
+      return "${(difference.inDays / 7).floor()} hafta önce";
+    } else if (difference.inDays < 365) {
+      return "${(difference.inDays / 30).floor()} ay önce";
+    } else {
+      return "${(difference.inDays / 365).floor()} yıl önce";
+    }
+  }
 
   /// 🔄 Film Türlerini Dönüştürme
   static String getGenres(List<int>? genreIds) {

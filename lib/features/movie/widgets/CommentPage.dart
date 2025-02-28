@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -157,6 +158,25 @@ class _CommentPageState extends State<CommentPage> {
     });
 
     _commentController.clear();
+// 🔥 Bildirim ekle
+    final postOwnerId = (await firestore
+            .collection("films")
+            .doc(widget.filmId)
+            .collection("posts")
+            .doc(widget.postId)
+            .get())
+        .data()?['userId'];
+
+    if (postOwnerId != null) {
+      await NotificationService().addNotification(
+          toUserId: postOwnerId,
+          fromUserId: user.uid,
+          fromUsername: userDoc["userName"] ?? "Bilinmeyen Kullanıcı",
+          eventType: "comment",
+          filmId: widget.filmId,
+          postId: widget.postId,
+          photo: userDoc["profilePhotoUrl"]);
+    }
   }
 
   @override
