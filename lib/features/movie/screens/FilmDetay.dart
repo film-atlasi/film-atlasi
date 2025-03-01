@@ -1,18 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/movie/services/MovieServices.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmDetails/%20UserCommentsWidget.dart';
+import 'package:flutter/material.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
-import 'package:film_atlasi/features/movie/services/MovieServices.dart';
-import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
-import 'package:film_atlasi/features/movie/widgets/FilmDetails/%20UserCommentsWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/DirectorWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/IMDBWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
+import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
-import 'package:film_atlasi/features/user/services/UserServices.dart';
-import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 
 class MovieDetailsPage extends StatefulWidget {
@@ -30,34 +30,25 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   Map<String, String> watchProvidersWithIcons = {};
   int _selectedIndex = 0;
   bool _mounted = true;
+  Color? dominantColor = Colors.black; // 🎨 Renk paletini burada saklayacağız.
 
   @override
   void initState() {
     super.initState();
     getDirector();
     fetchWatchProviders();
+    extractDominantColor(); // 🖼 Poster'dan renk al
   }
 
-  @override
-  void dispose() {
-    _mounted = false;
-    super.dispose();
-  }
+  Future<void> extractDominantColor() async {
+    final PaletteGenerator paletteGenerator =
+        await PaletteGenerator.fromImageProvider(
+      NetworkImage('https://image.tmdb.org/t/p/w500${widget.movie.posterPath}'),
+    );
 
-  void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      dominantColor = paletteGenerator.darkMutedColor?.color ?? Colors.black;
     });
-  }
-
-  Future<void> fetchWatchProviders() async {
-    final providers =
-        await MovieService().getWatchProviders(int.parse(widget.movie.id));
-    if (_mounted) {
-      setState(() {
-        watchProvidersWithIcons = providers;
-      });
-    }
   }
 
   Future<void> getDirector() async {
@@ -69,9 +60,14 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     }
   }
 
-  Future<List<Actor>> fetchActors() async {
-    return await ActorService.fetchTopThreeActors(
-        int.parse(widget.movie.id), 10);
+  Future<void> fetchWatchProviders() async {
+    final providers =
+        await MovieService().getWatchProviders(int.parse(widget.movie.id));
+    if (_mounted) {
+      setState(() {
+        watchProvidersWithIcons = providers;
+      });
+    }
   }
 
   Future<List<MoviePost>> fetchMoviePosts() async {
@@ -111,10 +107,16 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     }
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 10, 6, 26),
+      backgroundColor: dominantColor ?? const Color.fromARGB(255, 10, 6, 26),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -141,7 +143,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🎬 Film Posteri
             Image.network(
               'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
               fit: BoxFit.cover,
@@ -149,19 +150,13 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                   const Icon(Icons.error, size: 100, color: Colors.red),
             ),
             const SizedBox(height: 16),
-
-            // 🎥 Yönetmen Bilgisi
             DirectorWidget(director: director),
             const SizedBox(height: 16),
-
-            // 📅 Yayınlanış Tarihi ve Tür Bilgisi
             MovieInfoWidget(
               releaseDate: widget.movie.releaseDate ?? '',
               genreIds: widget.movie.genreIds,
             ),
             const SizedBox(height: 16),
-
-            // 🌟 IMDb Puanı ve Listeye Ekle Butonu
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -170,22 +165,19 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               ],
             ),
             const SizedBox(height: 16),
-
-            // 📜 Film Konusu
             Text(
               widget.movie.overview,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-
-            // 🎭 Oyuncular Listesi
             const Text(
               "Oyuncular",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             FutureBuilder<List<Actor>>(
-              future: fetchActors(),
+              future: ActorService.fetchTopThreeActors(
+                  int.parse(widget.movie.id), 10),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -210,12 +202,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               },
             ),
             const SizedBox(height: 16),
-
-            // 📺 İzlenebilecek Platformlar
             PlatformWidget(watchProvidersWithIcons: watchProvidersWithIcons),
             const SizedBox(height: 16),
-
-            // 💬 Kullanıcı Yorumları
             FutureBuilder<List<MoviePost>>(
               future: fetchMoviePosts(),
               builder: (context, snapshot) {

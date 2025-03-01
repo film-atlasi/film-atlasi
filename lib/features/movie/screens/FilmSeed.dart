@@ -1,12 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
-import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
-import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
 import 'package:flutter/material.dart';
 
-// ignore: must_be_immutable
 class FilmSeedPage extends StatefulWidget {
   const FilmSeedPage({super.key});
 
@@ -15,110 +11,103 @@ class FilmSeedPage extends StatefulWidget {
 }
 
 class _FilmSeedPageState extends State<FilmSeedPage> {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  List<MoviePost> moviePosts = [];
-  bool _loading = true;
-  bool _mounted = true; // Widget'ın durumunu takip etmek için
-  bool isError = false;
-  String error;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<MoviePost> _moviePosts = []; // Post listesi
+  bool _isLoading = false; // Yükleme durumu
+  bool _hasMore = true; // Daha fazla veri var mı?
+  DocumentSnapshot? _lastDocument; // Son çekilen belge referansı
+  final int _postLimit = 5; // Her yüklemede kaç post çekilecek
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    fetchAllPosts();
+    _fetchPosts(); // İlk veri çekme işlemi
+    _scrollController.addListener(_onScroll); // Kaydırmayı dinle
   }
 
   @override
   void dispose() {
-    _mounted = false; // Widget dispose edildiğinde flag'i false yap
+    _scrollController.dispose();
     super.dispose();
   }
 
- Future<void> fetchAllPosts() async {
-  try {
-    if (!_mounted) return; // Widget dispose edildiyse işlemi sonlandır
+  /// **🔥 Firebase'den Lazy Load ile Postları Çekme**
+  Future<void> _fetchPosts() async {
+    if (_isLoading || !_hasMore) return; // Zaten yükleniyorsa çık
 
     setState(() {
-      _loading = true;
+      _isLoading = true;
     });
 
-    final moviesSnapshot = await firestore.collection('films').get();
+    try {
+      Query query = _firestore
+          .collectionGroup('posts') // 🔥 Tüm "posts" koleksiyonlarını al
+          .where("source", isEqualTo: "films")
+          .orderBy('timestamp', descending: true)
+          .limit(_postLimit);
 
-    List<MoviePost> allPosts = [];
+      if (_lastDocument != null) {
+        query = query.startAfterDocument(_lastDocument!);
+      }
 
-    for (var movieDoc in moviesSnapshot.docs) {
-      final movieId = movieDoc.id;
+      QuerySnapshot querySnapshot = await query.get();
 
-      final querySnapshot = await firestore
-          .collection('films')
-          .doc(movieId)
-          .collection('posts')
-          .get(); // 🔥 OrderBy kaldırıldı!
+      if (!mounted) return; // 🚀 **Sayfa kaldırıldıysa işlemi iptal et*
 
-      allPosts.addAll(querySnapshot.docs.map((doc) => MoviePost.fromFirestore(doc)));
+      if (querySnapshot.docs.isNotEmpty) {
+        _lastDocument = querySnapshot.docs.last; // Son dokümanı referans al
+        _moviePosts.addAll(
+            querySnapshot.docs.map((doc) => MoviePost.fromFirestore(doc)));
+      } else {
+        _hasMore = false; // Daha fazla veri yok
+      }
+    } catch (e) {
+      print("Hata oluştu: $e");
     }
 
-    // 🔥 **Tüm postları timestamp'e göre sıralıyoruz**
-    allPosts.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-
-    if (!_mounted) return;
+    if (!mounted) return; // 🚀 **Yine sayfa kaldırıldı mı kontrol et**
 
     setState(() {
-      moviePosts = allPosts;
-      _loading = false;
-    });
-
-    print("Çekilen post sayısı: ${moviePosts.length}");
-  } catch (e) {
-    print("Hata oluştu: $e");
-    if (!_mounted) return;
-
-    setState(() {
-      _loading = false;
-     isError = true;
-     error = e.toString();
+      _isLoading = false;
     });
   }
-}
+
+  /// **🔥 Aşağı kaydırma kontrolü**
+  void _onScroll() {
+    if (_isLoading || !_hasMore) return;
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      _fetchPosts(); // Kullanıcı en sona yaklaştığında yeni verileri getir
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
-          // RefreshIndicator için de mounted kontrolü ekle
-          if (!_mounted) return;
-          await fetchAllPosts();
+          _moviePosts.clear();
+          _lastDocument = null;
+          _hasMore = true;
+          await _fetchPosts();
         },
-        child: _loading
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : isError ? Center(child: Text(error),) :ListView.builder(
-                itemCount: moviePosts.length,
-                itemBuilder: (context, index) {
-                  final post = moviePosts[index];
-                  return MoviePostCard(moviePost: post);
-                },
-              ),
+        child: ListView.builder(
+          controller: _scrollController,
+          itemCount: _moviePosts.length + 1, // Yükleme göstergesi için +1
+          itemBuilder: (context, index) {
+            if (index == _moviePosts.length) {
+              return _isLoading
+                  ? Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : SizedBox();
+            }
+            return MoviePostCard(moviePost: _moviePosts[index]);
+          },
+        ),
       ),
     );
   }
-
-  // FloatingActionButton buildFloatingActionButton(BuildContext context) {
-  //   return FloatingActionButton(
-  //     shape: CircleBorder(),
-  //     onPressed: () {
-  //       showModalBottomSheet(
-  //         // Modal açılır
-  //         context: context, // Context
-  //         builder: (BuildContext context) {
-  //           // Modal içeriği
-  //           return FilmEkleWidget(); // Film ekleme widget'ı
-  //         },
-  //       );
-  //     },
-  //     child: Icon(Icons.add),
-  //   );
-  // }
 }
