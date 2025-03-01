@@ -111,6 +111,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
               fromUserId: user.uid,
               fromUsername: userDoc["userName"] ?? "Bilinmeyen Kullanıcı",
               eventType: "like",
+              postId: widget.postId,
               filmId: widget.filmId,
               photo: userDoc["profilePhotoUrl"]);
         }

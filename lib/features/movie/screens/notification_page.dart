@@ -1,10 +1,11 @@
 import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/screens/PostDetailPage.dart';
 import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
+import 'package:film_atlasi/features/user/screens/UserPage.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 
 class NotificationPage extends StatefulWidget {
   @override
@@ -19,6 +20,20 @@ class _NotificationPageState extends State<NotificationPage> {
     super.initState();
     currentUserId =
         FirebaseAuth.instance.currentUser?.uid; // Giriş yapan kullanıcı UID
+  }
+
+  //bildirim ikonları
+  Widget _getNotificationIcon(String eventType) {
+    switch (eventType) {
+      case "like":
+        return const Icon(Icons.favorite, color: Colors.red);
+      case "comment":
+        return const Icon(Icons.comment, color: Color.fromARGB(255, 255, 255, 255));
+      case "follow":
+        return const Icon(Icons.person_add, color: Color.fromARGB(255, 64, 55, 146));
+      default:
+        return const Icon(Icons.notifications, color: Colors.grey);
+    }
   }
 
   @override
@@ -59,44 +74,44 @@ class _NotificationPageState extends State<NotificationPage> {
                       String? postId = notif["postId"]!;
                       String? photo = notif["photo"];
 
-                      if (eventType == "follow") {
-                        return UserProfileRouter(
-                            subtitle:
-                                Helpers.formatTimestamp(notif["timestamp"]),
-                            userId: fromUserId,
-                            trailing: Icon(
-                              Icons.person,
-                            ),
-                            title: _getNotificationText(eventType, fromUser),
-                            profilePhotoUrl: photo!);
-                      } else if (eventType == "like") {
-                        return UserProfileRouter(
-                            subtitle:
-                                Helpers.formatTimestamp(notif["timestamp"]),
-                            trailing: Icon(Icons.favorite),
-                            userId: fromUserId,
-                            title: _getNotificationText(eventType, fromUser),
-                            profilePhotoUrl: photo!);
-                      } else {
-                        return UserProfileRouter(
-                            trailing: Icon(Icons.comment),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CommentPage(
-                                    filmId: filmId!,
-                                    postId: postId!,
-                                  ),
+                      return UserProfileRouter(
+                        subtitle: Helpers.formatTimestamp(notif["timestamp"]),
+                        userId: fromUserId,
+                        trailing: _getNotificationIcon(
+                            eventType), // 🔹 Event tipine göre ikon
+                        title: _getNotificationText(eventType, fromUser),
+                        profilePhotoUrl: photo!,
+                        onTap: () {
+                          if (eventType == "follow") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UserPage(
+                                  userUid: fromUserId,
                                 ),
-                              );
-                            },
-                            subtitle:
-                                Helpers.formatTimestamp(notif["timestamp"]),
-                            userId: fromUserId,
-                            title: _getNotificationText(eventType, fromUser),
-                            profilePhotoUrl: photo!);
-                      }
+                              ),
+                            );
+                          } else if (eventType == "like" ||
+                              eventType == "comment") {
+                            // Eğer postId veya filmId null ise fonksiyondan çık
+                            if (postId == null ||
+                                postId.isEmpty ||
+                                filmId == null ||
+                                filmId.isEmpty) {
+                              print("❌ Hata: Post veya Film ID eksik!");
+                              return null;
+                            }
+                            // 🔹 Post sayfasına git
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PostDetailPage(
+                                    postId: postId, filmId: filmId),
+                              ),
+                            );
+                          }
+                        },
+                      );
                     },
                   ),
                 );

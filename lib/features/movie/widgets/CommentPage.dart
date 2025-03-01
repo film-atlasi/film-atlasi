@@ -1,13 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Add this import for date formatting
 
 class CommentPage extends StatefulWidget {
   final String postId;
   final String filmId;
-  const CommentPage({super.key, required this.postId, required this.filmId});
+  final bool isAppBar;
+  const CommentPage(
+      {super.key,
+      required this.postId,
+      required this.filmId,
+      this.isAppBar = true});
 
   @override
   _CommentPageState createState() => _CommentPageState();
@@ -182,7 +189,7 @@ class _CommentPageState extends State<CommentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Yorumlar")),
+      appBar: widget.isAppBar ? AppBar(title: const Text("Yorumlar")) : null,
       body: Column(
         children: [
           Expanded(
@@ -200,10 +207,24 @@ class _CommentPageState extends State<CommentPage> {
                   itemBuilder: (context, index) {
                     var commentData =
                         comments[index].data() as Map<String, dynamic>;
+                    var timestamp = commentData["timestamp"] as Timestamp?;
+                    var formattedTime = timestamp != null
+                        ? Helpers.formatTimestamp(timestamp)
+                        : "Zaman bilgisi yok";
 
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: UserProfileRouter(
+                        extraWidget: Padding(
+                          padding: const EdgeInsets.only(bottom: 7),
+                          child: Text(
+                            formattedTime,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
                         userId: commentData["userId"],
                         title: commentData["userName"],
                         profilePhotoUrl: commentData["profilePhotoUrl"],

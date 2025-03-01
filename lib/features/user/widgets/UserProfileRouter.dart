@@ -10,6 +10,7 @@ class UserProfileRouter extends StatelessWidget {
   final Widget? extraWidget;
   final Function()? onLongPress;
   final Function()? onTap;
+  final bool selected;
 
   const UserProfileRouter(
       {super.key,
@@ -20,7 +21,7 @@ class UserProfileRouter extends StatelessWidget {
       this.trailing,
       this.onLongPress,
       required this.profilePhotoUrl,
-      this.onTap});
+      this.onTap, this.selected = false,});
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +40,8 @@ class UserProfileRouter extends StatelessWidget {
             );
           },
       title: Text(title),
+      selectedColor: Colors.grey[900],
+      selected: selected,
       subtitle: subtitle != null
           ? extraWidget != null
               ? Column(
