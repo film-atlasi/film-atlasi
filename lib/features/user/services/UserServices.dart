@@ -50,7 +50,8 @@ class UserServices {
       Map<String, dynamic>? data = querySnapshot.data();
       if (data != null && data["following"] is List) {
         List<dynamic> followingList = data["following"];
-        List<String> followingUserIds = followingList.map((e) => e.toString()).toList();
+        List<String> followingUserIds =
+            followingList.map((e) => e.toString()).toList();
         return followingUserIds;
       } else {
         return [];
@@ -61,21 +62,46 @@ class UserServices {
     }
   }
 
-  // Takip edilen kullanıcıların postlarını al
-  static Future<List<MoviePost>> getFollowingUsersPosts(String userUid) async {
+  static Future<Map<String, dynamic>> getFollowingUsersPostsLazy({
+    required String userUid,
+    required Map<String, DocumentSnapshot?>
+        lastDocuments, // 🔥 Kullanıcılara özel lastDocument takibi
+    int limit = 10,
+  }) async {
     try {
-      final followingUserIds = await getFollowingUserIds(userUid);
+      final firestore = FirebaseFirestore.instance;
+      List<String> followingUserIds = await getFollowingUserIds(userUid);
+      List<MoviePost> allPosts = [];
 
       if (followingUserIds.isEmpty) {
-        throw "Henüz kimseyi takip etmiyorsunuz.";
+        return {"posts": [], "lastDocuments": lastDocuments};
       }
 
-      List<MoviePost> posts = [];
-      for (String id in followingUserIds) {
-        posts.addAll(await UserServices.getAllUsersPosts(id));
+      for (String userId in followingUserIds) {
+        Query query = firestore
+            .collection('users')
+            .doc(userId)
+            .collection('posts')
+            .orderBy('timestamp', descending: true)
+            .limit(limit);
+
+        if (lastDocuments.containsKey(userId) &&
+            lastDocuments[userId] != null) {
+          query = query.startAfterDocument(lastDocuments[userId]!);
+        }
+
+        QuerySnapshot querySnapshot = await query.get();
+        if (querySnapshot.docs.isNotEmpty) {
+          lastDocuments[userId] =
+              querySnapshot.docs.last; // 🔥 Kullanıcıya özel pagination
+          List<MoviePost> userPosts = querySnapshot.docs
+              .map((doc) => MoviePost.fromFirestore(doc))
+              .toList();
+          allPosts.addAll(userPosts);
+        }
       }
 
-      return posts;
+      return {"posts": allPosts, "lastDocuments": lastDocuments};
     } catch (e) {
       throw 'Takip edilen kullanıcıların postları alınamadı: $e';
     }
@@ -87,16 +113,16 @@ class UserServices {
       final userDoc = firestore.collection('users').doc(userUid);
 
       final querySnapshot = await userDoc
-        .collection("posts")
-        .orderBy('timestamp', descending: true)
-        .get();
+          .collection("posts")
+          .orderBy('timestamp', descending: true)
+          .get();
 
       if (querySnapshot.docs.isEmpty) {
-      return [];
+        return [];
       }
 
       List<MoviePost> posts =
-        querySnapshot.docs.map((e) => MoviePost.fromFirestore(e)).toList();
+          querySnapshot.docs.map((e) => MoviePost.fromFirestore(e)).toList();
       return posts;
     } catch (e) {
       print('Error fetching user posts: $e');

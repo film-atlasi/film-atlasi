@@ -73,11 +73,11 @@ class _IletipaylasState extends State<Iletipaylas> {
         });
       }
 
-      // **Yeni Post için Firestore'da benzersiz bir ID oluştur**
-      firestore.collection("posts").doc();
-
+      String postId =
+          firestore.collection('posts').doc().id; // 🔥 Rastgele ID oluştur
       // **Postu Firestore'a ekle**
       Map<String, dynamic> postData = {
+        "postId": postId,
         "userId": user.uid,
         "filmName": widget.movie.title,
         "filmId": widget.movie.id,
@@ -93,8 +93,10 @@ class _IletipaylasState extends State<Iletipaylas> {
         "rating": _rating, // 🔥 Burada puanı kaydediyoruz!
         "likedUsers": [],
         "timestamp": FieldValue.serverTimestamp(),
+        "source": "films"
       };
       Map<String, dynamic> postDataForUserCollection = {
+        "postId": postId,
         "userId": user.uid,
         "filmName": widget.movie.title,
         "filmId": widget.movie.id,
@@ -110,11 +112,15 @@ class _IletipaylasState extends State<Iletipaylas> {
         "rating": _rating, // 🔥 Burada puanı kaydediyoruz!
         "likedUsers": [],
         "timestamp": FieldValue.serverTimestamp(),
+        "source": "users"
       };
 
-      await filmRef.collection("posts").add(postData);
+      await filmRef.collection("posts").doc(postId).set(postData);
 
-      await userDoc.collection("posts").add(postDataForUserCollection);
+      await userDoc
+          .collection("posts")
+          .doc(postId)
+          .set(postDataForUserCollection);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('İnceleme paylaşıldı!')),

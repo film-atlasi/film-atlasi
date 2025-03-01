@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:film_atlasi/features/movie/models/Movie.dart';
-
 class MoviePost {
   final String postId;
   final String userId;
@@ -94,7 +92,9 @@ class MoviePost {
       comments: map['comments'] as int, //
       content: map['content'] as String, //
       isQuote: map['isQuote'] as bool, //
-      rating: (map['rating'] is int) ? (map['rating'] as int).toDouble() : map['rating'] as double, //
+      rating: (map['rating'] is int)
+          ? (map['rating'] as int).toDouble()
+          : map['rating'] as double, //
       timestamp: map['timestamp'] as Timestamp,
     );
   }
