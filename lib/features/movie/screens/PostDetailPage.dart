@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
@@ -47,7 +48,39 @@ class _PostDetailPageState extends State<PostDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+   appBar: AppBar(
+  backgroundColor: Colors.black,
+  elevation: 0,
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    onPressed: () {
+      Navigator.pop(context);
+    },
+  ),
+  title: Align(
+    alignment: Alignment.centerLeft,
+    child: FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .doc(auth.FirebaseAuth.instance.currentUser?.uid) // 🔥 Şu an giriş yapan kullanıcıyı alıyoruz
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        var userData = snapshot.data!.data() as Map<String, dynamic>;
+        print("Giriş yapan kullanıcı: ${userData['userName']}");
+
+        return Text(
+          "@${userData['userName'] ?? 'Bilinmiyor'}", // 🔥 Kullanıcı adını gösteriyoruz
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+        );
+      },
+    ),
+  ),
+),
+
+
       body: Column(
         children: [
           Expanded(
