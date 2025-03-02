@@ -6,18 +6,19 @@ import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FollowingFeedPage extends StatefulWidget {
+  const FollowingFeedPage({super.key});
+
   @override
   _FollowingFeedPageState createState() => _FollowingFeedPageState();
 }
 
 class _FollowingFeedPageState extends State<FollowingFeedPage> {
   final ScrollController _scrollController = ScrollController();
-  List<MoviePost> _moviePosts = [];
-  Map<String, DocumentSnapshot?> _lastDocuments =
-      {}; // 🔥 Kullanıcı bazlı pagination
+  final List<MoviePost> _moviePosts = [];
+  Map<String, DocumentSnapshot?> _lastDocuments = {};
   bool _isLoading = false;
   bool _hasMore = true;
-  final int _postLimit = 5; // Her seferde çekilecek post sayısı
+  final int _postLimit = 5;
 
   @override
   void initState() {
@@ -28,13 +29,16 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
 
   @override
   void dispose() {
+    _scrollController
+        .removeListener(_onScroll); // ✅ Hata önlemek için listener kaldır
     _scrollController.dispose();
     super.dispose();
   }
 
   /// **🔥 Firebase'den Lazy Load ile Takip Edilen Kullanıcıların Postlarını Çek**
   Future<void> _fetchFollowingPosts() async {
-    if (_isLoading || !_hasMore) return;
+    if (!mounted || _isLoading || !_hasMore)
+      return; // ✅ Widget hala var mı kontrol et
 
     setState(() {
       _isLoading = true;
@@ -43,6 +47,7 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
           _hasMore = false;
@@ -52,7 +57,7 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
 
       var response = await UserServices.getFollowingUsersPostsLazy(
         userUid: user.uid,
-        lastDocuments: _lastDocuments, // 🔥 Kullanıcı bazlı pagination
+        lastDocuments: _lastDocuments,
         limit: _postLimit,
       );
 
@@ -60,12 +65,11 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
       Map<String, DocumentSnapshot?> newLastDocuments =
           response["lastDocuments"];
 
-      if (!mounted) return;
+      if (!mounted) return; // ✅ Widget kaldırılmışsa setState() çağırma
 
       setState(() {
         if (newPosts.isNotEmpty) {
-          _lastDocuments =
-              newLastDocuments; // ✅ Kullanıcı bazlı pagination devam ediyor
+          _lastDocuments = newLastDocuments;
           _moviePosts.addAll(newPosts);
         } else {
           _hasMore = false;
@@ -74,6 +78,7 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
       });
     } catch (e) {
       print("Hata oluştu: $e");
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -94,9 +99,12 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
-          _moviePosts.clear();
-          _lastDocuments.clear(); // 🔥 Kullanıcı bazlı pagination sıfırla
-          _hasMore = true;
+          if (!mounted) return;
+          setState(() {
+            _moviePosts.clear();
+            _lastDocuments.clear();
+            _hasMore = true;
+          });
           await _fetchFollowingPosts();
         },
         child: ListView.builder(

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
-import 'package:film_atlasi/features/movie/services/PostServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';

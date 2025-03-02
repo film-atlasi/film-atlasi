@@ -63,6 +63,8 @@ class DiscoverPage extends StatelessWidget {
 }
 
 class Kesfet extends StatefulWidget {
+  const Kesfet({super.key});
+
   @override
   _Kesfet createState() => _Kesfet();
 }
@@ -94,7 +96,7 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
     'LGBTQ+'
   ];
 
-  PageController _pageController = PageController(
+  final PageController _pageController = PageController(
     viewportFraction: 0.85,
     initialPage: 1,
   );
@@ -213,7 +215,7 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
               // Featured Movie Carousel - Modernize edilmiş
               FadeTransition(
                 opacity: _fadeAnimation,
-                child: Container(
+                child: SizedBox(
                   height: 380,
                   child: PageView.builder(
                     controller: _pageController,
@@ -273,7 +275,7 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
               SizedBox(height: 15),
 
               // Category Pills - Modern tasarım
-              Container(
+              SizedBox(
                 height: 36,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
@@ -364,7 +366,7 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
               SizedBox(height: 15),
 
               // Trending Movies Grid - Modern tasarım
-              Container(
+              SizedBox(
                 height: 200,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
@@ -394,8 +396,7 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
 class ModernFeaturedMovieCard extends StatelessWidget {
   final Movie movie;
 
-  const ModernFeaturedMovieCard({Key? key, required this.movie})
-      : super(key: key);
+  const ModernFeaturedMovieCard({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
@@ -569,8 +570,7 @@ class ModernFeaturedMovieCard extends StatelessWidget {
 class ModernTrendingMovieCard extends StatelessWidget {
   final Movie movie;
 
-  const ModernTrendingMovieCard({Key? key, required this.movie})
-      : super(key: key);
+  const ModernTrendingMovieCard({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
@@ -652,7 +652,7 @@ class ModernTrendingMovieCard extends StatelessWidget {
                         Icon(Icons.visibility, color: Colors.white70, size: 12),
                         SizedBox(width: 4),
                         Text(
-                          "${(movie.voteAverage * 100).toStringAsFixed(0)}",
+                          (movie.voteAverage * 100).toStringAsFixed(0),
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 11,
@@ -687,8 +687,7 @@ class ModernMovieSection extends StatelessWidget {
   final List<Movie> movies;
 
   const ModernMovieSection(
-      {Key? key, required this.title, required this.movies})
-      : super(key: key);
+      {super.key, required this.title, required this.movies});
 
   @override
   Widget build(BuildContext context) {
@@ -720,7 +719,7 @@ class ModernMovieSection extends StatelessWidget {
           ),
         ),
         SizedBox(height: 15),
-        Container(
+        SizedBox(
           height: 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,

@@ -4,7 +4,7 @@ import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Add this import for date formatting
+// Add this import for date formatting
 
 class CommentPage extends StatefulWidget {
   final String postId;

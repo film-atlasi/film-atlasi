@@ -8,6 +8,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationPage extends StatefulWidget {
+  const NotificationPage({super.key});
+
   @override
   _NotificationPageState createState() => _NotificationPageState();
 }

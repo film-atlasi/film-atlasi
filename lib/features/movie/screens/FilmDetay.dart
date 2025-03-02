@@ -29,7 +29,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       Actor(name: "Yönetmen Bilinmiyor", character: "", id: -1);
   Map<String, String> watchProvidersWithIcons = {};
   int _selectedIndex = 0;
-  bool _mounted = true;
+  final bool _mounted = true;
   Color? dominantColor = Colors.black; // 🎨 Renk paletini burada saklayacağız.
 
   @override

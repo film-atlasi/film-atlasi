@@ -5,15 +5,6 @@ ElevatedButton Button1(bool isHovering, BuildContext context, Function cb) =>
       onPressed: () async {
         await cb();
       },
-      child: Text(
-        'Giriş Yap',
-        style: TextStyle(
-          color: isHovering
-              ? const Color.fromARGB(255, 0, 0, 0)
-              : const Color.fromARGB(255, 255, 255,
-                  255), // Yazı rengi başlangıçta beyaz, fare ile üzerine gelindiğinde siyah olacak
-        ),
-      ),
       style: ElevatedButton.styleFrom(
         backgroundColor: isHovering
             ? const Color.fromARGB(255, 255, 255, 255)
@@ -23,6 +14,15 @@ ElevatedButton Button1(bool isHovering, BuildContext context, Function cb) =>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: const Color.fromARGB(255, 255, 255, 255)),
+        ),
+      ),
+      child: Text(
+        'Giriş Yap',
+        style: TextStyle(
+          color: isHovering
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : const Color.fromARGB(255, 255, 255,
+                  255), // Yazı rengi başlangıçta beyaz, fare ile üzerine gelindiğinde siyah olacak
         ),
       ),
     );

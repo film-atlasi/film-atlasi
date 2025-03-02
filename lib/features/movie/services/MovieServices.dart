@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
-import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:http/http.dart' as http;
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 
