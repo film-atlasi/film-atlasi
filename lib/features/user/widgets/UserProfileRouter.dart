@@ -11,17 +11,21 @@ class UserProfileRouter extends StatelessWidget {
   final Function()? onLongPress;
   final Function()? onTap;
   final bool selected;
+  final double padding;
 
-  const UserProfileRouter(
-      {super.key,
-      required this.userId,
-      this.extraWidget,
-      required this.title,
-      this.subtitle,
-      this.trailing,
-      this.onLongPress,
-      required this.profilePhotoUrl,
-      this.onTap, this.selected = false,});
+  const UserProfileRouter({
+    super.key,
+    required this.userId,
+    this.extraWidget,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.onLongPress,
+    required this.profilePhotoUrl,
+    this.onTap,
+    this.selected = false,
+    this.padding = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +44,10 @@ class UserProfileRouter extends StatelessWidget {
             );
           },
       title: Text(title),
-      selectedColor: Colors.grey[900],
+      selectedTileColor: Colors.grey[900],
+      selectedColor: Colors.white,
       selected: selected,
+      textColor: Colors.white70,
       subtitle: subtitle != null
           ? extraWidget != null
               ? Column(
@@ -56,14 +62,26 @@ class UserProfileRouter extends StatelessWidget {
                 )
               : Text(subtitle!)
           : null,
-      contentPadding: EdgeInsets.all(0),
-      leading: CircleAvatar(
-        // ignore: unnecessary_null_comparison
-        backgroundImage:
-            // ignore: unnecessary_null_comparison
-            profilePhotoUrl != null ? NetworkImage(profilePhotoUrl) : null,
-        backgroundColor: Colors.white,
-        radius: 20,
+      contentPadding: EdgeInsets.all(padding),
+      leading: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              // ignore: unrelated_type_equality_checks
+              return UserPage(
+                userUid: userId,
+              );
+            }),
+          );
+        },
+        child: CircleAvatar(
+          backgroundImage:
+              // ignore: unnecessary_null_comparison
+              profilePhotoUrl != null ? NetworkImage(profilePhotoUrl) : null,
+          backgroundColor: Colors.white,
+          radius: 20,
+        ),
       ),
       trailing: trailing,
     );

@@ -9,10 +9,8 @@ import 'package:film_atlasi/features/movie/services/ActorService.dart';
 
 class FilmBilgiWidget extends StatefulWidget {
   final String movieId;
-  final String baseImageUrl;
 
-  const FilmBilgiWidget(
-      {super.key, required this.movieId, required this.baseImageUrl});
+  const FilmBilgiWidget({super.key, required this.movieId});
 
   @override
   State<FilmBilgiWidget> createState() => _FilmBilgiWidgetState();
@@ -21,6 +19,7 @@ class FilmBilgiWidget extends StatefulWidget {
 class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
   Movie? movie; // late yerine nullable tanımlandı
   bool isLoading = true; // Yüklenme durumu eklendi
+  final String baseImageUrl = "https://image.tmdb.org/t/p/w500/";
 
   @override
   void initState() {
@@ -115,7 +114,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
             color: Colors.red,
             child: movie!.posterPath.isNotEmpty
                 ? Image.network(
-                    '${widget.baseImageUrl}${movie!.posterPath}',
+                    '$baseImageUrl${movie!.posterPath}',
                     fit: BoxFit.cover,
                   )
                 : Center(

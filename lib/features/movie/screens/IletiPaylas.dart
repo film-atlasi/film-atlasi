@@ -217,7 +217,6 @@ class _IletipaylasState extends State<Iletipaylas> {
             const Divider(color: Color.fromARGB(255, 102, 102, 102)),
             FilmBilgiWidget(
               movieId: widget.movie.id,
-              baseImageUrl: 'https://image.tmdb.org/t/p/w500/',
             ),
             AddVerticalSpace(context, 0.01),
             Text(

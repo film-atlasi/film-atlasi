@@ -24,11 +24,61 @@ class NotificationService {
         "filmId": filmId, // Posta bağlı bildirimler için
         "postId": postId,
         "photo": photo,
+        "read": false, // Okundu mu?
         "timestamp": FieldValue.serverTimestamp(), // Zaman damgası
       });
       print("✅ Bildirim başarıyla eklendi: $eventType");
     } catch (e) {
       print("🚨 Bildirim ekleme hatası: $e");
+    }
+  }
+
+  Future<void> markNotificationRead(
+      String userId, String notificationId) async {
+    try {
+      await _firestore
+          .collection("users")
+          .doc(userId)
+          .collection("notifications")
+          .doc(notificationId)
+          .update({"read": true});
+      print("✅ Bildirim okundu olarak işaretlendi");
+    } catch (e) {
+      print("🚨 Bildirim okundu olarak işaretlenemedi: $e");
+    }
+  }
+
+  Stream<bool> hasNewNotifications(String userId) {
+    return _firestore
+        .collection("users")
+        .doc(userId)
+        .collection("notifications")
+        .where("read", isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.isNotEmpty);
+  }
+
+  Stream<int> getUnreadNotificationCount(String userId) {
+    return _firestore
+        .collection("users")
+        .doc(userId)
+        .collection("notifications")
+        .where("read", isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+
+  Future<void> deleteNotification(String userId, String notificationId) async {
+    try {
+      await _firestore
+          .collection("users")
+          .doc(userId)
+          .collection("notifications")
+          .doc(notificationId)
+          .delete();
+      print("✅ Bildirim silindi");
+    } catch (e) {
+      print("🚨 Bildirim silinemedi: $e");
     }
   }
 }
