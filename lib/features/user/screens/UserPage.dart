@@ -6,6 +6,7 @@ import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
+import 'package:film_atlasi/features/user/widgets/FollowListWidget.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
@@ -29,6 +30,9 @@ class _UserPageState extends State<UserPage>
   bool followLoading = false;
   int _selectedIndex = 2; // Hesabım sekmesi için 2
   bool isCurrentUser = false;
+  int postCount = 0; // 🔥 Post sayısını saklayacak
+
+
 
   FollowServices followServices = FollowServices();
 
@@ -43,7 +47,33 @@ class _UserPageState extends State<UserPage>
     _tabController =
         TabController(length: 3, vsync: this); // TabController length = 3
     _fetchUserData();
+     _fetchPostCount(); // 🔥 Post sayısını çekiyoruz
   }
+
+  Future<void> _fetchPostCount() async {
+  int count = await getUserPostCount(widget.userUid);
+  setState(() {
+    postCount = count;
+  });
+}
+
+Future<int> getUserPostCount(String userId) async {
+  try {
+    final postSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('posts')
+        .get();
+
+    return postSnapshot.docs.length; // 🔥 Mevcut postları sayıyoruz
+  } catch (e) {
+    print("Post sayısı alınırken hata oluştu: $e");
+    return 0; // Eğer hata olursa 0 döndür
+  }
+}
+
+
+  
 
   @override
   void dispose() {
@@ -116,9 +146,24 @@ class _UserPageState extends State<UserPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-      ),
+  appBar: AppBar(
+  backgroundColor: Colors.black, // Arka planı siyah yap
+  elevation: 0, // Gölgeyi kaldır
+  leading: IconButton(
+   icon: const Icon(Icons.arrow_back, color: Colors.white),
+   onPressed: () {
+    Navigator.pop(context);
+   },
+  ),
+  title: Align(
+   alignment: Alignment.centerLeft, // Kullanıcı adını sola hizala
+   child: Text(
+    "${userData?.userName ?? ''}", // Kullanıcı adı buraya gelecek
+    style: const TextStyle(color: Colors.white, fontSize: 18),
+   ),
+  ),
+),
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : userData == null
@@ -269,7 +314,7 @@ class _UserPageState extends State<UserPage>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatItem("9", "Film"),
+              _buildStatItem(postCount.toString(), "Film"),
               _buildStatItem(userData!.following.toString(), "Takip Edilen"),
               _buildStatItem(userData!.followers.toString(), "Takipçi"),
             ],
@@ -305,48 +350,11 @@ class _UserPageState extends State<UserPage>
     );
   }
 
-  Future<dynamic> buildTakipciler() {
+ Future<dynamic> buildTakipciler() {
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Takipçiler"),
-              Expanded(
-                child: FutureBuilder<List<User>>(
-                  future: followServices.getFollowers(widget.userUid),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: const CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Text("Hata: ${snapshot.error}");
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text("Takipçi bulunamadı.");
-                    } else {
-                      return ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          User user = snapshot.data![index];
-                          return UserProfileRouter(
-                            userId: user.uid!,
-                            title: user.userName!,
-                            profilePhotoUrl: user.profilePhotoUrl!,
-                            subtitle: user.firstName,
-                          );
-                        },
-                      );
-                    }
-                  },
-                ),
-              )
-            ],
-          ),
-        );
+        return FollowListWidget(userUid: widget.userUid, isFollowers: true);
       },
     );
   }
@@ -355,44 +363,7 @@ class _UserPageState extends State<UserPage>
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Takip Edilenler"),
-              Expanded(
-                child: FutureBuilder<List<User>>(
-                  future: followServices.getFollowings(widget.userUid),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: const CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Text("Hata: ${snapshot.error}");
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text("Takip edilen kullanıcı bulunamadı.");
-                    } else {
-                      return ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          User user = snapshot.data![index];
-                          return UserProfileRouter(
-                            userId: user.uid!,
-                            title: user.userName!,
-                            profilePhotoUrl: user.profilePhotoUrl!,
-                            subtitle: user.firstName,
-                          );
-                        },
-                      );
-                    }
-                  },
-                ),
-              )
-            ],
-          ),
-        );
+        return FollowListWidget(userUid: widget.userUid, isFollowers: false);
       },
     );
   }
