@@ -2,7 +2,8 @@ import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
 import 'package:film_atlasi/features/movie/screens/DiscoverPage.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
-import 'package:film_atlasi/features/user/screens/Profile.dart';
+import 'package:film_atlasi/features/user/screens/UserPage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class FilmAtlasiApp extends StatefulWidget {
@@ -14,10 +15,15 @@ class FilmAtlasiApp extends StatefulWidget {
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   int _selectedIndex = 0;
+  final User? currentUser = FirebaseAuth.instance.currentUser;
   List<Widget> get _screens => [
         _selectedIndex == 0 ? Anasayfa() : Container(),
         _selectedIndex == 1 ? DiscoverPage() : Container(),
-        _selectedIndex == 2 ? ProfileScreen() : Container(),
+        _selectedIndex == 2
+            ? UserPage(
+                userUid: currentUser!.uid,
+              )
+            : Container(),
       ];
 
   void _onItemTapped(int index) {

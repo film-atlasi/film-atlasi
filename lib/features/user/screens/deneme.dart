@@ -124,11 +124,9 @@ class _UserPageState extends State<UserPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: !isCurrentUser
-          ? AppBar(
-              title: Text(userData?.userName ?? ""),
-            )
-          : null,
+      appBar: AppBar(
+        title: Text(userData?.userName ?? ""),
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : userData == null

@@ -25,9 +25,11 @@ class User {
   final String? city;
   final Timestamp? createdAt;
   final String? email;
+  int? posts;
 
   User(
       {this.uid,
+      this.posts,
       this.firstName,
       this.surname,
       this.userName,
@@ -103,6 +105,7 @@ class User {
     final data = doc.data() as Map<String, dynamic>;
     return User(
       uid: doc.id,
+      posts: data['posts'] ?? 0,
       userName: data['userName'] ?? '',
       firstName: data['firstName'] ?? '',
       email: data['email'] ?? '',
