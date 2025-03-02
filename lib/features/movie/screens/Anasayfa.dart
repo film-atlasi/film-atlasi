@@ -6,6 +6,7 @@ import 'package:film_atlasi/features/movie/screens/notification_page.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomDrawer.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomTabBar.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
+import 'package:film_atlasi/features/movie/widgets/Notifications/notificationButton.dart';
 import 'package:flutter/material.dart';
 
 class Anasayfa extends StatefulWidget {
@@ -54,14 +55,7 @@ class AnasayfaState extends State<Anasayfa>
                       const FilmAraWidget(mode: "film_incele")),
             ),
           ),
-            IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NotificationPage()),
-            ),
-          ),
+          NotificationsButton()
         ],
         bottom:
             CustomTabBar(tabController: tabController), // Yeni TabBar widget'ı

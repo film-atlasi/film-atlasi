@@ -131,14 +131,22 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
   }
 
   void _navigateToComments() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CommentPage(
-          postId: widget.postId,
-          filmId: widget.filmId,
-        ),
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Color(0xFF333333),
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
+      builder: (context) {
+        return Container(
+            padding: EdgeInsets.all(16.0),
+            child: CommentPage(
+              postId: widget.postId,
+              filmId: widget.filmId,
+              backgroundColor: Color(0xFF333333),
+            ));
+      },
     );
 
     // CommentPage'den döndükten sonra, eğer yeni yorum eklendiyse
