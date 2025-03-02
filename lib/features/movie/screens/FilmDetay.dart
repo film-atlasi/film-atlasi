@@ -13,7 +13,9 @@ import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.d
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
+
 import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
@@ -29,7 +31,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       Actor(name: "Yönetmen Bilinmiyor", character: "", id: -1);
   Map<String, String> watchProvidersWithIcons = {};
   int _selectedIndex = 0;
-  bool _mounted = true;
+  final bool _mounted = true;
+  bool isLoading = false;
   Color? dominantColor = Colors.black; // 🎨 Renk paletini burada saklayacağız.
 
   @override
@@ -38,6 +41,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     getDirector();
     fetchWatchProviders();
     extractDominantColor(); // 🖼 Poster'dan renk al
+    isLoading = true;
   }
 
   Future<void> extractDominantColor() async {
@@ -113,8 +117,10 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
+    bool _isImageLoaded = false;
     return Scaffold(
       backgroundColor: dominantColor ?? const Color.fromARGB(255, 10, 6, 26),
       appBar: AppBar(
@@ -143,11 +149,39 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.error, size: 100, color: Colors.red),
+            Stack(
+              children: [
+                // 📌 Shimmer sadece resim yüklenene kadar gösterilecek
+                if (!_isImageLoaded)
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[700]!,
+                    highlightColor: Colors.grey[500]!,
+                    child: Container(
+                      width: double.infinity,
+                      height: 500, // Fotoğrafın yükseklik değerini belirle
+                      color: Colors.grey[700], // Arka plan için bir renk
+                    ),
+                  ),
+
+                Image.network(
+                  'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
+                  fit: BoxFit.fitWidth,
+                  width: double.infinity,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) {
+                      // 📌 Eğer yükleme tamamlandıysa, shimmer'ı kaldır
+                      Future.delayed(Duration.zero, () {
+                        _isImageLoaded = true;
+                      });
+                      return child; // 🎯 Normal resmi göster
+                    } else {
+                      return const SizedBox(); // 📌 Resim yüklenirken Shimmer görünecek
+                    }
+                  },
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.error, size: 100, color: Colors.red),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             DirectorWidget(director: director),
@@ -224,10 +258,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
       ),
     );
   }

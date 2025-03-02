@@ -1,5 +1,4 @@
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
-import 'package:film_atlasi/features/movie/widgets/FilmDetails/IMDBWidget.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

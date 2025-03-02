@@ -3,7 +3,6 @@ import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore için gerekli
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

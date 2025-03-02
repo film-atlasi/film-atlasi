@@ -12,7 +12,7 @@ class FilmSeedPage extends StatefulWidget {
 
 class _FilmSeedPageState extends State<FilmSeedPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<MoviePost> _moviePosts = []; // Post listesi
+  final List<MoviePost> _moviePosts = []; // Post listesi
   bool _isLoading = false; // Yükleme durumu
   bool _hasMore = true; // Daha fazla veri var mı?
   DocumentSnapshot? _lastDocument; // Son çekilen belge referansı

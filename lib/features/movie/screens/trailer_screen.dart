@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/screens/IletiPaylas.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -139,6 +140,20 @@ class _TrailerScreenState extends State<TrailerScreen> {
                         widget.movie.voteAverage.toString(),
                         style: const TextStyle(fontSize: 18),
                       ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  Iletipaylas(movie: widget.movie),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.share, size: 24),
+                        tooltip: 'Paylaş',
+                      ),
                     ],
                   ),
                 ],
@@ -146,10 +161,6 @@ class _TrailerScreenState extends State<TrailerScreen> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
       ),
     );
   }

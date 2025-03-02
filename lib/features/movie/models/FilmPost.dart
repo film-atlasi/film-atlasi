@@ -50,7 +50,9 @@ class MoviePost {
       comments: data['comments'] as int,
       content: data['content'] as String,
       isQuote: data['isQuote'] as bool,
-      rating: data['rating'] as double,
+      rating: (data['rating'] is int)
+          ? (data['rating'] as int).toDouble()
+          : (data['rating'] as double? ?? 0.0),
       timestamp: data['timestamp'] as Timestamp,
     );
   }
@@ -114,7 +116,9 @@ class MoviePost {
       comments: data['comments'] as int,
       content: data['content'] as String,
       isQuote: data['isQuote'] as bool,
-      rating: data['rating'] as double,
+      rating: (data['rating'] is int)
+          ? (data['rating'] as int).toDouble()
+          : data['rating'] as double, //
       timestamp: data['timestamp'] as Timestamp,
     );
   }

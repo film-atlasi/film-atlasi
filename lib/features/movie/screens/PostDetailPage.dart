@@ -83,28 +83,25 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
       body: Column(
         children: [
-          Expanded(
-            child: FutureBuilder<MoviePost?>(
-              future: _postFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
+          FutureBuilder<MoviePost?>(
+            future: _postFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
 
-                if (!snapshot.hasData || snapshot.data == null) {
-                  return Center(child: Text("Gönderi bulunamadı."));
-                }
+              if (!snapshot.hasData || snapshot.data == null) {
+                return Center(child: Text("Gönderi bulunamadı."));
+              }
 
-                return SingleChildScrollView(
-                  child: MoviePostCard(moviePost: snapshot.data!),
-                );
-              },
-            ),
+              return MoviePostCard(moviePost: snapshot.data!);
+            },
           ),
           Expanded(
-              child: Center(
-            child: CommentPage(postId: widget.postId, filmId: widget.filmId, isAppBar: false),
-          ))
+              child: CommentPage(
+                  postId: widget.postId,
+                  filmId: widget.filmId,
+                  isAppBar: false))
         ],
       ),
     );
