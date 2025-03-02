@@ -13,7 +13,6 @@ import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.d
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
-import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final Movie movie;
@@ -224,10 +223,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
       ),
     );
   }

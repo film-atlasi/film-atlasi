@@ -3,7 +3,6 @@ import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/screens/trailer_screen.dart';
-import 'dart:math' as math;
 import 'package:flutter/services.dart';
 
 class DiscoverPage extends StatelessWidget {
@@ -137,10 +136,10 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
         movieService.getHorrorMovies(),
         movieService.getClassicMovies(),
         movieService.getLGBTQMovies(),
-      ]);
+    ]);
 
-      if (mounted) {
-        setState(() {
+    if (mounted) {
+      setState(() {
           featuredMovies = results[0].take(5).toList();
           trendingMovies = results[0];
           actionMovies = results[1];
@@ -149,7 +148,7 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
           classicMovies = results[4];
           lgbtqMovies = results[5];
           filteredMovies = trendingMovies; // Başlangıçta tüm filmler
-          isLoading = false;
+        isLoading = false;
         });
 
         // Veriler yüklendikten sonra animasyonu başlat
@@ -207,9 +206,9 @@ class _Kesfet extends State<Kesfet> with SingleTickerProviderStateMixin {
       physics: BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
-          child: Column(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+              children: [
               SizedBox(height: 100),
 
               // Featured Movie Carousel - Modernize edilmiş
@@ -700,9 +699,9 @@ class ModernMovieSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                title,
+            title,
                 style: TextStyle(
-                  color: Colors.white,
+              color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
@@ -762,17 +761,17 @@ class ModernMovieSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     child: Image.network(
                       'https://image.tmdb.org/t/p/w500${movies[index].posterPath}',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey[900],
                           child: Center(
                             child:
                                 Icon(Icons.broken_image, color: Colors.white54),
                           ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
                   ),
                 ),
               );

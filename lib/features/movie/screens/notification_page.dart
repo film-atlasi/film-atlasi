@@ -1,6 +1,5 @@
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/screens/PostDetailPage.dart';
-import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
 import 'package:film_atlasi/features/user/screens/UserPage.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:flutter/material.dart';
