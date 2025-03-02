@@ -28,6 +28,7 @@ dependencies:
   youtube_player_flutter: ^9.1.1
   flutter_staggered_animations: ^1.1.1
   palette_generator: ^0.3.3+6
+  shimmer: ^3.0.0
 
   
 dev_dependencies:

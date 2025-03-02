@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
-import 'package:film_atlasi/features/movie/services/notification_service..dart';
+import 'package:film_atlasi/features/movie/services/CommentServices.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +10,10 @@ class CommentPage extends StatefulWidget {
   final String postId;
   final String filmId;
   final bool isAppBar;
+  final Color backgroundColor;
   const CommentPage(
       {super.key,
+      this.backgroundColor = Colors.black,
       required this.postId,
       required this.filmId,
       this.isAppBar = true});
@@ -25,176 +27,29 @@ class _CommentPageState extends State<CommentPage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  /// **Yorumları Firestore'dan çek**
-  Stream<QuerySnapshot> getCommentsStream() {
-    return firestore
-        .collection("films")
-        .doc(widget.filmId)
-        .collection('posts')
-        .doc(widget.postId)
-        .collection('comments')
-        .orderBy('timestamp', descending: true)
-        .snapshots();
-  }
-
-  Future<void> _updateComment(String commentId, String newContent) async {
-    if (newContent.isEmpty) return;
-
-    try {
-      await firestore
-          .collection("films")
-          .doc(widget.filmId)
-          .collection('posts')
-          .doc(widget.postId)
-          .collection('comments')
-          .doc(commentId)
-          .update({"content": newContent});
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Yorum güncellendi!")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Hata: $e")),
-      );
-    }
-  }
-
-  void _showEditDialog(String commentId, String currentText) {
-    TextEditingController editController =
-        TextEditingController(text: currentText);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Yorumu Düzenle"),
-          content: TextField(
-            controller: editController,
-            decoration: const InputDecoration(hintText: "Yeni yorumu yazın..."),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("İptal"),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _updateComment(commentId, editController.text.trim());
-                Navigator.pop(context);
-              },
-              child: const Text("Kaydet"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _deleteComment(String commentId) async {
-    try {
-      // Firestore referansları
-      DocumentReference postRef = firestore
-          .collection("films")
-          .doc(widget.filmId)
-          .collection('posts')
-          .doc(widget.postId);
-      DocumentReference commentRef =
-          postRef.collection('comments').doc(commentId);
-
-      // Yorumu silme işlemi
-      await commentRef.delete();
-
-      // Yorum sayısını 1 azalt
-      await postRef.update({'comments': FieldValue.increment(-1)});
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Yorum silindi!")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Hata: $e")),
-      );
-    }
-  }
-
-  Future<void> addComment() async {
-    final user = auth.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Lütfen önce giriş yapın!")),
-      );
-      return;
-    }
-
-    if (_commentController.text.trim().isEmpty) return;
-
-    final userDoc = await firestore.collection('users').doc(user.uid).get();
-    String userName =
-        userDoc.exists ? userDoc['userName'] ?? "Anonim" : "Anonim";
-    String profilePhotoUrl = userDoc.exists
-        ? userDoc['profilePhotoUrl'] ?? ""
-        : ""; // 🔥 Profil fotoğrafını ekledik
-
-    DocumentReference commentRef = firestore
-        .collection("films")
-        .doc(widget.filmId)
-        .collection('posts')
-        .doc(widget.postId)
-        .collection('comments')
-        .doc();
-
-    await commentRef.set({
-      "commentId": commentRef.id,
-      "userId": user.uid,
-      "userName": userName,
-      "profilePhotoUrl":
-          profilePhotoUrl, // 🔥 Kullanıcının profil fotoğrafını Firestore’a kaydediyoruz
-      "content": _commentController.text.trim(),
-      "timestamp": FieldValue.serverTimestamp(),
-    });
-
-    // **🔥 Firestore'daki "comments" alanını 1 artır**
-    await firestore
-        .collection("films")
-        .doc(widget.filmId)
-        .collection('posts')
-        .doc(widget.postId)
-        .update({
-      "comments": FieldValue.increment(1),
-    });
-
-    _commentController.clear();
-// 🔥 Bildirim ekle
-    final postOwnerId = (await firestore
-            .collection("films")
-            .doc(widget.filmId)
-            .collection("posts")
-            .doc(widget.postId)
-            .get())
-        .data()?['userId'];
-
-    if (postOwnerId != null) {
-      await NotificationService().addNotification(
-          toUserId: postOwnerId,
-          fromUserId: user.uid,
-          fromUsername: userDoc["userName"] ?? "Bilinmeyen Kullanıcı",
-          eventType: "comment",
-          filmId: widget.filmId,
-          postId: widget.postId,
-          photo: userDoc["profilePhotoUrl"]);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final CommentServices commentServices = CommentServices(
+      filmId: widget.filmId,
+      postId: widget.postId,
+      context: context,
+      commentController: _commentController,
+      user: auth.currentUser,
+    );
+
     return Scaffold(
-      appBar: widget.isAppBar ? AppBar(title: const Text("Yorumlar")) : null,
+      appBar: widget.isAppBar
+          ? AppBar(
+              title: const Text("Yorumlar"),
+              backgroundColor: widget.backgroundColor,
+            )
+          : null,
+      backgroundColor: widget.backgroundColor,
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: getCommentsStream(),
+              stream: commentServices.getCommentsStream(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -233,10 +88,12 @@ class _CommentPageState extends State<CommentPage> {
                             ? PopupMenuButton<String>(
                                 onSelected: (value) {
                                   if (value == 'edit') {
-                                    _showEditDialog(commentData["commentId"],
+                                    commentServices.showEditDialog(
+                                        commentData["commentId"],
                                         commentData["content"]);
                                   } else if (value == 'delete') {
-                                    _deleteComment(commentData["commentId"]);
+                                    commentServices.deleteComment(
+                                        commentData["commentId"]);
                                   }
                                 },
                                 itemBuilder: (context) => [
@@ -272,7 +129,7 @@ class _CommentPageState extends State<CommentPage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: addComment,
+                  onPressed: commentServices.addComment,
                 ),
               ],
             ),
