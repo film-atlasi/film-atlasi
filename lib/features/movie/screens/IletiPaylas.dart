@@ -23,6 +23,10 @@ class Iletipaylas extends StatefulWidget {
   State<Iletipaylas> createState() => _IletipaylasState();
 }
 
+Future<void> _fetchUserData() async {
+  // Implement the logic to fetch user data and update the post count
+}
+
 const String baseImageUrl = 'https://image.tmdb.org/t/p/w500';
 
 class _IletipaylasState extends State<Iletipaylas> {
@@ -125,6 +129,7 @@ class _IletipaylasState extends State<Iletipaylas> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('İnceleme paylaşıldı!')),
       );
+       await _fetchUserData(); // **Post paylaşılınca post sayısını güncelle**
 
       Navigator.of(context)
           .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
@@ -256,6 +261,7 @@ class _IletipaylasState extends State<Iletipaylas> {
             await submitForm();
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('İnceleme paylaşıldı!')),
+              
             );
             Navigator.of(context)
                 .pushNamedAndRemoveUntil('/anasayfa', (route) => false);

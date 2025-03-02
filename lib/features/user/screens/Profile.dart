@@ -34,6 +34,18 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.dispose();
   }
 
+  Future<int> getPostCount(String userId) async {
+  final postsRef = FirebaseFirestore.instance.collection('users').doc(userId).collection('posts');
+
+  try {
+    final postSnapshot = await postsRef.get();
+    return postSnapshot.docs.length; // 🔥 Mevcut postları sayıyoruz
+  } catch (e) {
+    print("Post sayısı alınırken hata oluştu: $e");
+    return 0; // Eğer hata olursa 0 döndür
+  }
+}
+
   Future<void> _fetchUserData() async {
     try {
       final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
@@ -42,10 +54,12 @@ class _ProfileScreenState extends State<ProfileScreen>
             .collection('users')
             .doc(currentUser.uid)
             .get();
+            final postCount = await getPostCount(currentUser.uid); // 🔥 Post sayısını getir
 
         setState(() {
           userUid = currentUser.uid;
           userData = snapshot.exists ? snapshot.data() : null;
+             userData?['postCount'] = postCount; // 🔥 Post sayısını burada saklıyoruz
           isLoading = false;
         });
       }
@@ -233,9 +247,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildStatItem("9", "Film"),
-              _buildStatItem("2", "Takip Edilen"),
-              _buildStatItem("2", "Takipçi"),
+              _buildStatItem(userData?['postCount'].toString() ?? "0", "Gönderi"),
+              _buildStatItem(userData!['following'].toString(), "Takip Edilen"),
+              _buildStatItem(userData!['followers'].toString(), "Takipçi"),
             ],
           ),
         ],
