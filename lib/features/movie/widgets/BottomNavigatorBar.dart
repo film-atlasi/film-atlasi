@@ -19,18 +19,20 @@ class CustomBottomNavigationBar extends StatelessWidget {
       backgroundColor: Colors.black,
       selectedItemColor: const Color.fromARGB(255, 110, 5, 5),
       unselectedItemColor: Colors.grey,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: 'Ana Sayfa',
+          label: '',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.explore),
-          label: 'Keşfet',
+          label: '',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
-          label: 'Hesabım',
+          label: '',
         ),
       ],
     );

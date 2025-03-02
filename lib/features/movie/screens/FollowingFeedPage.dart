@@ -37,8 +37,9 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
 
   /// **🔥 Firebase'den Lazy Load ile Takip Edilen Kullanıcıların Postlarını Çek**
   Future<void> _fetchFollowingPosts() async {
-    if (!mounted || _isLoading || !_hasMore)
+    if (!mounted || _isLoading || !_hasMore) {
       return; // ✅ Widget hala var mı kontrol et
+    }
 
     setState(() {
       _isLoading = true;

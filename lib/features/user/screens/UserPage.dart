@@ -27,7 +27,6 @@ class _UserPageState extends State<UserPage>
   bool isFollowingUser = false;
   String? currentUserUid;
   bool followLoading = false;
-  int _selectedIndex = 2; // Hesabım sekmesi için 2
   bool isCurrentUser = false;
 
   FollowServices followServices = FollowServices();
@@ -107,12 +106,6 @@ class _UserPageState extends State<UserPage>
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,10 +117,6 @@ class _UserPageState extends State<UserPage>
           : userData == null
               ? const Center(child: Text("Kullanıcı bilgileri bulunamadı."))
               : _buildProfileScreenContent(),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
     );
   }
 

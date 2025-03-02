@@ -13,6 +13,7 @@ import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.d
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
+
 import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 import 'package:shimmer/shimmer.dart';
 
