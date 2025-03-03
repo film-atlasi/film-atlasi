@@ -15,9 +15,6 @@ class _SignUpPageState extends State<SignUpPage> {
   late String email;
   late String userName;
   late String name;
-  late String surName;
-  late String userJob;
-  late int age;
   late String password;
 
   final GlobalKey<FormState> formkey =
@@ -31,9 +28,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _cityController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _jobController = TextEditingController();
+  
   bool _isHovering = false;
 
   @override
@@ -48,7 +43,17 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         title: Text('Kayıt Ol'),
         backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white), // 🔙 Geri butonu
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Loginpage()),
+            ); // Login page'e geri dön
+          },
+        ),
       ),
+  
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -145,48 +150,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       userName = value!;
                     },
                   ),
-                  AddVerticalSpace(context, 0.02),
-                  TextFormField(
-                      style: TextStyle(color: Colors.white),
-                      controller: _cityController,
-                      decoration: InputDecoration(labelText: 'şehir'),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'şehir giriniz';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        userName = value!;
-                      }),
-                  AddVerticalSpace(context, 0.02),
-                  TextFormField(
-                      style: TextStyle(color: Colors.white),
-                      controller: _jobController,
-                      decoration: InputDecoration(labelText: 'meslek'),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'meslek giriniz';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        userName = value!;
-                      }),
-                  AddVerticalSpace(context, 0.02),
-                  TextFormField(
-                      style: TextStyle(color: Colors.white),
-                      controller: _ageController,
-                      decoration: InputDecoration(labelText: 'yaş'),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'yaş giriniz';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        userName = value!;
-                      }),
+                 
+                 
+                 
                   AddVerticalSpace(context, 0.01),
                   MouseRegion(
                     onEnter: (_) {
@@ -218,9 +184,6 @@ class _SignUpPageState extends State<SignUpPage> {
                               'email': email,
                               'userName': _userNameController.text,
                               'firstName': _firstNameController.text,
-                              'city': _cityController.text,
-                              'job': _jobController.text,
-                              'age': int.parse(_ageController.text),
                               'createdAt': FieldValue.serverTimestamp(),
                             });
 
