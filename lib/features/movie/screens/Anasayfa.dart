@@ -2,7 +2,6 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
 import 'package:film_atlasi/features/movie/screens/FollowingFeedPage.dart';
 import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
-import 'package:film_atlasi/features/movie/screens/notification_page.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomDrawer.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomTabBar.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
@@ -18,7 +17,6 @@ class Anasayfa extends StatefulWidget {
 
 class AnasayfaState extends State<Anasayfa>
     with SingleTickerProviderStateMixin {
-  final ScrollController _scrollController = ScrollController();
   late TabController tabController;
 
   @override
@@ -30,45 +28,55 @@ class AnasayfaState extends State<Anasayfa>
   @override
   void dispose() {
     tabController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppConstants.AppName.toUpperCase(),
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(color: AppConstants.red),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      const FilmAraWidget(mode: "film_incele")),
-            ),
-          ),
-          NotificationsButton()
-        ],
-        bottom:
-            CustomTabBar(tabController: tabController), // Yeni TabBar widget'ı
-      ),
-      body: TabBarView(
-        controller: tabController,
-        children: [
-          FilmSeedPage(),
-          FollowingFeedPage(),
-          NewsScreen(),
-        ],
-      ),
       drawer: const CustomDrawer(), // Drawer bileşeni burada çağrıldı.
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              title: Text(
+                AppConstants.AppName.toUpperCase(),
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(color: AppConstants.red),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.white),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const FilmAraWidget(mode: "film_incele")),
+                  ),
+                ),
+                NotificationsButton(),
+              ],
+              pinned: true, // Kaydırınca tamamen kaybolmasını sağlıyor
+              floating: true, // Aşağı kaydırınca tekrar görünmesini sağlar
+              snap: true, // Aşağı kaydırıldığında hızlıca geri gelmesini sağlar
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(50),
+                child: CustomTabBar(tabController: tabController),
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
+          controller: tabController,
+          children: [
+            FilmSeedPage(),
+            FollowingFeedPage(),
+            NewsScreen(),
+          ],
+        ),
+      ),
     );
   }
 }

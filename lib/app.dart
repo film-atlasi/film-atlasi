@@ -22,6 +22,7 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
         _selectedIndex == 2
             ? UserPage(
                 userUid: currentUser!.uid,
+                fromProfile: true,
               )
             : Container(),
       ];

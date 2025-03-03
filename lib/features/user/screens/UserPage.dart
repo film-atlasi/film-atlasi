@@ -3,17 +3,18 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/user/services/FollowServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
+import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:film_atlasi/features/user/widgets/FollowListWidget.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
-import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 
 class UserPage extends StatefulWidget {
   final String userUid;
-  const UserPage({super.key, required this.userUid});
+  final bool fromProfile;
+  const UserPage({super.key, required this.userUid, this.fromProfile = false});
 
   @override
   State<UserPage> createState() => _UserPageState();
@@ -27,7 +28,6 @@ class _UserPageState extends State<UserPage>
   bool isFollowingUser = false;
   String? currentUserUid;
   bool followLoading = false;
-  int _selectedIndex = 2;
   bool isCurrentUser = false;
 
   FollowServices followServices = FollowServices();
@@ -121,10 +121,27 @@ class _UserPageState extends State<UserPage>
     }
   }
 
+  Future<void> _updateProfilePhoto() async {
+    String? newPhotoUrl = await UserServices.uploadProfilePhoto(widget.userUid);
+
+    if (newPhotoUrl != null) {
+      setState(() {
+        userData!.profilePhotoUrl = newPhotoUrl;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profil fotoğrafı güncellendi!")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Fotoğraf yüklenirken hata oluştu!")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: !isCurrentUser
+      appBar: !widget.fromProfile
           ? AppBar(
               title: Text(userData?.userName ?? ""),
             )
@@ -187,7 +204,7 @@ class _UserPageState extends State<UserPage>
           clipBehavior: Clip.none,
           children: [
             Container(
-              height: 250,
+              height: MediaQuery.of(context).size.height / 4,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 image: userData!.coverPhotoUrl != null
@@ -210,15 +227,19 @@ class _UserPageState extends State<UserPage>
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white,
-                  backgroundImage: userData!.profilePhotoUrl != null
-                      ? NetworkImage(userData!.profilePhotoUrl!)
-                      : null,
-                  child: userData!.profilePhotoUrl == null
-                      ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                      : null,
+                child: GestureDetector(
+                  onTap: _updateProfilePhoto,
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.white,
+                    // ignore: unnecessary_null_comparison
+                    backgroundImage: userData!.profilePhotoUrl! != null
+                        ? NetworkImage(userData!.profilePhotoUrl!)
+                        : null,
+                    child: userData!.profilePhotoUrl == null
+                        ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                        : null,
+                  ),
                 ),
               ),
             ),

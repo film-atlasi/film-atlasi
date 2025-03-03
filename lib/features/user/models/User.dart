@@ -10,7 +10,7 @@ class User {
   final String? lastName;
   final String? surname;
   final String? userName;
-  final String? profilePhotoUrl;
+  String? profilePhotoUrl;
   final String? coverPhotoUrl;
   final String? job;
   final Movie? currentlyWatchingMovie;
