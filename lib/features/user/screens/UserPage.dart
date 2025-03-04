@@ -281,7 +281,7 @@ class _UserPageState extends State<UserPage>
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            EditProfileScreen(userData: userData!.toMap()),
+                            EditProfilePage(userMap: userData!.toMap(), userId: widget.userUid),
                       ),
                     ).then((_) => _fetchUserData());
                   },
