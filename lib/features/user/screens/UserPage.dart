@@ -8,6 +8,7 @@ import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:film_atlasi/features/user/widgets/FollowListWidget.dart';
+import 'package:film_atlasi/features/user/widgets/Kaydedilenler.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 
@@ -175,10 +176,14 @@ class _UserPageState extends State<UserPage>
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey,
                   indicatorColor: Colors.red,
-                  tabs: const [
+                  tabs: [
                     Tab(text: "Film Kutusu"),
                     Tab(text: "Film Listesi"),
-                    Tab(text: "Beğenilenler"),
+                    isCurrentUser
+                        ? Tab(
+                            text: "Kaydedilenler",
+                          )
+                        : Tab(text: "Beğenilenler"),
                   ],
                 ),
               ),
@@ -191,7 +196,7 @@ class _UserPageState extends State<UserPage>
         children: [
           FilmKutusu(userUid: widget.userUid),
           FilmListProfile(userUid: widget.userUid),
-          const Center(child: Text("Beğenilenler İçeriği")),
+          isCurrentUser ? const Kaydedilenler() : const Text("Beğenilenler"),
         ],
       ),
     );

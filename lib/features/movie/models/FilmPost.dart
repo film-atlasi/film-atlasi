@@ -14,11 +14,13 @@ class MoviePost {
   final String filmIcerik;
   final int likes;
   final int comments;
+  final DocumentSnapshot? documentSnapshot;
   String content;
   bool isQuote;
   final double rating; // ⭐️ Kullanıcının verdiği puan
   final Timestamp timestamp;
   MoviePost({
+    this.documentSnapshot,
     required this.postId,
     required this.userId,
     required this.username,
@@ -104,23 +106,23 @@ class MoviePost {
   factory MoviePost.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return MoviePost(
-      postId: doc.id,
-      userId: data['userId'] as String,
-      username: data['username'] as String,
-      firstName: data['firstName'] as String,
-      userPhotoUrl: data['userPhotoUrl'] as String,
-      filmName: data['filmName'] as String,
-      filmId: data['filmId'] as String,
-      filmIcerik: data['filmIcerik'] as String,
-      likes: data['likes'] as int,
-      comments: data['comments'] as int,
-      content: data['content'] as String,
-      isQuote: data['isQuote'] as bool,
-      rating: (data['rating'] is int)
-          ? (data['rating'] as int).toDouble()
-          : data['rating'] as double, //
-      timestamp: data['timestamp'] as Timestamp,
-    );
+        postId: doc.id,
+        userId: data['userId'] as String,
+        username: data['username'] as String,
+        firstName: data['firstName'] as String,
+        userPhotoUrl: data['userPhotoUrl'] as String,
+        filmName: data['filmName'] as String,
+        filmId: data['filmId'] as String,
+        filmIcerik: data['filmIcerik'] as String,
+        likes: data['likes'] as int,
+        comments: data['comments'] as int,
+        content: data['content'] as String,
+        isQuote: data['isQuote'] as bool,
+        rating: (data['rating'] is int)
+            ? (data['rating'] as int).toDouble()
+            : data['rating'] as double, //
+        timestamp: data['timestamp'] as Timestamp,
+        documentSnapshot: doc);
   }
 
   String toJson() => json.encode(toMap());
