@@ -34,7 +34,7 @@ class AnasayfaState extends State<Anasayfa>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const CustomDrawer(), // Drawer bileşeni burada çağrıldı.
+      drawer:  CustomDrawer(), // Drawer bileşeni burada çağrıldı.
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
