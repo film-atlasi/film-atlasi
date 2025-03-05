@@ -3,52 +3,67 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   /// **🔥 Karanlık Tema**
-  static ThemeData get darkTheme => ThemeData(
+  ///
+  /// - `brightness`: Karanlık
+  /// - `primaryColor`: Kırmızı
+  /// - `hintColor`: Beyaz
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+
+  final AppConstants appConstants;
+  const AppTheme(this.appConstants);
+
+  ThemeData get darkTheme => ThemeData(
         brightness: Brightness.dark,
-        primaryColor: AppConstants.primaryColor, // Kırmızı
+        primaryColor: appConstants.primaryColor, // Kırmızı
         hintColor: Colors.white,
-        drawerTheme: const DrawerThemeData(
-          backgroundColor: AppConstants.secondaryColor,
+        drawerTheme: DrawerThemeData(
+          backgroundColor: appConstants.secondaryColor,
         ),
-        scaffoldBackgroundColor: AppConstants.backgroundColor, // Siyah Arkaplan
+        scaffoldBackgroundColor: appConstants.backgroundColor, // Siyah Arkaplan
         bottomSheetTheme: BottomSheetThemeData(
-          backgroundColor: AppConstants.secondaryColor,
+          backgroundColor: appConstants.secondaryColor,
         ),
         textSelectionTheme: const TextSelectionThemeData(
           cursorColor: Colors.white,
           selectionColor: Colors.white,
-          selectionHandleColor: Colors.white,
+          selectionHandleColor: Colors.black,
         ),
-        bottomAppBarTheme: const BottomAppBarTheme(
-          color: AppConstants.bottomColor,
+
+        bottomAppBarTheme: BottomAppBarTheme(
+          color: appConstants.bottomColor,
         ),
-        cardTheme: const CardTheme(
-          color: AppConstants.backgroundColor,
+        cardTheme: CardTheme(
+          color: appConstants.backgroundColor,
         ),
-        dialogTheme: const DialogTheme(
-          backgroundColor: AppConstants.secondaryColor,
+        dialogTheme: DialogTheme(
+          backgroundColor: appConstants.secondaryColor,
         ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: AppConstants.primaryColor,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: appConstants.primaryColor,
         ),
         iconTheme: const IconThemeData(
           color: Colors.white,
         ),
-        inputDecorationTheme: const InputDecorationTheme(
-          hintStyle: TextStyle(color: AppConstants.textLightColor),
-          fillColor: AppConstants.secondaryColor,
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: TextStyle(color: appConstants.textLightColor),
+          fillColor: appConstants.secondaryColor,
           filled: true,
-          labelStyle: TextStyle(color: AppConstants.textLightColor),
+          labelStyle: TextStyle(color: appConstants.textLightColor),
           contentPadding: EdgeInsets.all(20),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppConstants.textLightColor),
+            borderSide: BorderSide(color: appConstants.textLightColor),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppConstants.bottomColor),
+            borderSide: BorderSide(color: appConstants.bottomColor),
           ),
         ),
-        snackBarTheme: const SnackBarThemeData(
-          backgroundColor: AppConstants.primaryColor,
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: appConstants.primaryColor,
           contentTextStyle: TextStyle(color: Colors.white),
         ),
         tabBarTheme: const TabBarTheme(
@@ -64,9 +79,9 @@ class AppTheme {
         ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.black,
-          primary: AppConstants.primaryColor,
-          secondary: AppConstants.secondaryColor,
-          surface: AppConstants.black,
+          primary: appConstants.primaryColor,
+          secondary: appConstants.secondaryColor,
+          surface: Colors.black,
           error: Colors.red,
           onPrimary: Colors.white,
           onSecondary: Colors.black,
@@ -76,7 +91,7 @@ class AppTheme {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppConstants.primaryColor,
+            backgroundColor: appConstants.primaryColor,
             padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -84,8 +99,19 @@ class AppTheme {
             ),
           ),
         ),
+        textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+          alignment: Alignment.center,
+          foregroundColor: appConstants.secondaryColor,
+          backgroundColor: appConstants.primaryColor,
+          padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+            side: BorderSide(color: appConstants.appBarColor),
+          ),
+        )),
         appBarTheme: AppBarTheme(
-          backgroundColor: AppConstants.secondaryColor,
+          backgroundColor: appConstants.secondaryColor,
           titleTextStyle: const TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -96,52 +122,52 @@ class AppTheme {
       );
 
   /// **🌞 Açık Tema**
-  static ThemeData get lightTheme => ThemeData(
+  ThemeData get lightTheme => ThemeData(
         brightness: Brightness.light,
-        primaryColor: AppConstants.primaryColor, // Kırmızı
+        primaryColor: appConstants.primaryColor, // Kırmızı
         hintColor: Colors.black,
-        drawerTheme: const DrawerThemeData(
-          backgroundColor: AppConstants.secondaryColor,
+        drawerTheme: DrawerThemeData(
+          backgroundColor: appConstants.secondaryColor,
         ),
         scaffoldBackgroundColor: Colors.white, // Açık arkaplan
         bottomSheetTheme: BottomSheetThemeData(
-          backgroundColor: AppConstants.secondaryColor,
+          backgroundColor: appConstants.secondaryColor,
         ),
         textSelectionTheme: const TextSelectionThemeData(
           cursorColor: Colors.black,
           selectionColor: Colors.black45,
           selectionHandleColor: Colors.black,
         ),
-        bottomAppBarTheme: const BottomAppBarTheme(
-          color: AppConstants.bottomColor,
+        bottomAppBarTheme: BottomAppBarTheme(
+          color: appConstants.bottomColor,
         ),
         cardTheme: const CardTheme(
           color: Colors.white,
         ),
-        dialogTheme: const DialogTheme(
-          backgroundColor: AppConstants.secondaryColor,
+        dialogTheme: DialogTheme(
+          backgroundColor: appConstants.secondaryColor,
         ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: AppConstants.primaryColor,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: appConstants.primaryColor,
         ),
         iconTheme: const IconThemeData(
           color: Colors.black,
         ),
-        inputDecorationTheme: const InputDecorationTheme(
-          hintStyle: TextStyle(color: AppConstants.textDarkGreyColor),
-          fillColor: AppConstants.textLightGreyColor,
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: TextStyle(color: appConstants.textLightColor),
+          fillColor: appConstants.secondaryColor,
           filled: true,
-          labelStyle: TextStyle(color: AppConstants.textDarkGreyColor),
+          labelStyle: TextStyle(color: appConstants.textLightColor),
           contentPadding: EdgeInsets.all(20),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppConstants.textDarkGreyColor),
+            borderSide: BorderSide(color: appConstants.textLightColor),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppConstants.bottomColor),
+            borderSide: BorderSide(color: appConstants.bottomColor),
           ),
         ),
-        snackBarTheme: const SnackBarThemeData(
-          backgroundColor: AppConstants.primaryColor,
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: appConstants.primaryColor,
           contentTextStyle: TextStyle(color: Colors.white),
         ),
         tabBarTheme: const TabBarTheme(
@@ -157,8 +183,8 @@ class AppTheme {
         ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.white,
-          primary: AppConstants.primaryColor,
-          secondary: AppConstants.secondaryColor,
+          primary: appConstants.primaryColor,
+          secondary: appConstants.secondaryColor,
           surface: Colors.white,
           error: Colors.red,
           onPrimary: Colors.white,
@@ -169,7 +195,7 @@ class AppTheme {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppConstants.primaryColor,
+            backgroundColor: appConstants.primaryColor,
             padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -177,6 +203,7 @@ class AppTheme {
             ),
           ),
         ),
+        cardColor: appConstants.scaffoldColor,
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.white,
           titleTextStyle: const TextStyle(

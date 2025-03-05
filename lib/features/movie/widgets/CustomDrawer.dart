@@ -1,9 +1,10 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/provider/ThemeProvider.dart';
 import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
@@ -17,17 +18,20 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context);
+    bool isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final AppConstants appConstants = AppConstants(context);
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: AppConstants.primaryColor,
+              color: appConstants.primaryColor,
             ),
             child: Text(
               'Menü',
-              style: TextStyle(color: AppConstants.textColor, fontSize: 24),
+              style: TextStyle(color: appConstants.textColor, fontSize: 24),
             ),
           ),
           _buildDrawerItem(
@@ -92,11 +96,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
               // Gizlilik işlemi
             },
           ),
-          _buildDrawerItem(
-            icon: Icons.palette,
-            title: 'Tema',
-            onTap: () {
-              // Tema işlemi
+          SwitchListTile(
+            title: const Text("Koyu Mod"),
+            value: isDarkMode,
+            onChanged: (value) {
+              themeProvider.toggleTheme(value);
             },
           ),
           _buildDrawerItem(

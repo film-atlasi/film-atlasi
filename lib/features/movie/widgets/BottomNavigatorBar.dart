@@ -13,13 +13,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
-      backgroundColor: AppConstants.backgroundColor,
-      selectedItemColor: AppConstants.buttonColor,
-      unselectedItemColor: AppConstants.textLightColor,
+      backgroundColor: appConstants.backgroundColor,
+      selectedItemColor: appConstants.buttonColor,
+      unselectedItemColor: appConstants.textLightColor,
       showSelectedLabels: false,
       showUnselectedLabels: false,
       items: const [

@@ -11,10 +11,8 @@ class CommentPage extends StatefulWidget {
   final String postId;
   final String filmId;
   final bool isAppBar;
-  final Color backgroundColor;
   const CommentPage(
       {super.key,
-      this.backgroundColor = AppConstants.backgroundColor,
       required this.postId,
       required this.filmId,
       this.isAppBar = true});
@@ -30,6 +28,7 @@ class _CommentPageState extends State<CommentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     final CommentServices commentServices = CommentServices(
       filmId: widget.filmId,
       postId: widget.postId,
@@ -42,10 +41,8 @@ class _CommentPageState extends State<CommentPage> {
       appBar: widget.isAppBar
           ? AppBar(
               title: const Text("Yorumlar"),
-              backgroundColor: widget.backgroundColor,
             )
           : null,
-      backgroundColor: widget.backgroundColor,
       body: Column(
         children: [
           Expanded(
@@ -76,7 +73,7 @@ class _CommentPageState extends State<CommentPage> {
                           child: Text(
                             formattedTime,
                             style: TextStyle(
-                              color: AppConstants.textLightColor,
+                              color: appConstants.textLightColor,
                               fontSize: 11,
                             ),
                           ),

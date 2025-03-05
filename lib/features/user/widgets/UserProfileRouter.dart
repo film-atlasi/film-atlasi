@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/user/screens/UserPage.dart';
 import 'package:flutter/material.dart';
 
@@ -29,6 +30,7 @@ class UserProfileRouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return ListTile(
       onLongPress: onLongPress,
       onTap: onTap ??
@@ -44,10 +46,10 @@ class UserProfileRouter extends StatelessWidget {
             );
           },
       title: Text(title),
-      selectedTileColor: Colors.grey[900],
-      selectedColor: Colors.white,
+      selectedTileColor: appConstants.secondaryColor,
+      selectedColor: appConstants.textColor,
       selected: selected,
-      textColor: Colors.white70,
+      textColor: appConstants.textColor,
       subtitle: subtitle != null
           ? extraWidget != null
               ? Column(
@@ -79,7 +81,7 @@ class UserProfileRouter extends StatelessWidget {
           backgroundImage:
               // ignore: unnecessary_null_comparison
               profilePhotoUrl != null ? NetworkImage(profilePhotoUrl) : null,
-          backgroundColor: Colors.white,
+          backgroundColor: appConstants.textColor,
           radius: 20,
         ),
       ),

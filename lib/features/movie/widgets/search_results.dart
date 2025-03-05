@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -15,6 +16,7 @@ class SearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Padding(
       padding: EdgeInsets.symmetric(
           horizontal: MediaQuery.of(context).size.width / 25),
@@ -23,7 +25,7 @@ class SearchResults extends StatelessWidget {
         itemBuilder: (context, index) {
           final result = searchResults[index];
           if (result is Movie) {
-            return _buildMovieListTile(result, context);
+            return _buildMovieListTile(result, context, appConstants);
           } else if (result is User) {
             return UserProfileRouter(
                 userId: result.uid!,
@@ -37,45 +39,47 @@ class SearchResults extends StatelessWidget {
     );
   }
 
-  ListTile _buildMovieListTile(Movie movie, BuildContext context) {
+  ListTile _buildMovieListTile(
+      Movie movie, BuildContext context, AppConstants appConstants) {
     return ListTile(
       leading: movie.posterPath.isNotEmpty
           ? Image.network(
               'https://image.tmdb.org/t/p/w92${movie.posterPath}',
               width: 50,
               errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.movie, color: Colors.white),
+                  Icon(Icons.movie, color: appConstants.textColor),
             )
-          : const Icon(Icons.movie, color: Colors.white),
-      title: Text(movie.title, style: const TextStyle(color: Colors.white)),
+          : Icon(Icons.movie, color: appConstants.textColor),
+      title: Text(movie.title, style: TextStyle(color: appConstants.textColor)),
       subtitle: Text(
         movie.overview.length > 50
             ? '${movie.overview.substring(0, 50)}...'
             : movie.overview,
-        style: const TextStyle(color: Colors.grey),
+        style: TextStyle(color: appConstants.textLightColor),
       ),
       contentPadding: EdgeInsets.all(0),
       onTap: () {
         // 📌 Eğer mod "film_listesi" ise, aşağıdan modal açalım
-     if (mode == "film_listesi") {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true, // 🔥 Sayfanın %80'ini kaplayacak şekilde
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.7, // 🔥 %80 oranında aç
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(14.0),
-          child: FilmList(selectedMovie: movie),
-        );
-      },
-    );
-  }else if (mode == "film_alinti") {
+        if (mode == "film_listesi") {
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: appConstants.backgroundColor,
+            isScrollControlled: true, // 🔥 Sayfanın %80'ini kaplayacak şekilde
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height *
+                  0.7, // 🔥 %80 oranında aç
+            ),
+            builder: (context) {
+              return Container(
+                padding: const EdgeInsets.all(14.0),
+                child: FilmList(selectedMovie: movie),
+              );
+            },
+          );
+        } else if (mode == "film_alinti") {
           // 🔥 Eğer alıntı paylaşımıysa
           Navigator.push(
             context,
@@ -98,23 +102,25 @@ class SearchResults extends StatelessWidget {
     );
   }
 
-  ListTile _buildUserListTile(User user, BuildContext context) {
+  ListTile _buildUserListTile(
+      User user, BuildContext context, AppConstants appConstants) {
     return ListTile(
       leading: user.profilePhotoUrl != null && user.profilePhotoUrl!.isNotEmpty
           ? CircleAvatar(
               backgroundImage: NetworkImage(
                   user.profilePhotoUrl!), // Kullanıcının profil fotoğrafı
             )
-          : const CircleAvatar(
-              backgroundColor:
-                  Colors.grey, // Fotoğraf yoksa sadece gri bir avatar
-              child: Icon(Icons.person, color: Colors.white), // Kullanıcı ikonu
+          : CircleAvatar(
+              backgroundColor: appConstants
+                  .textLightColor, // Fotoğraf yoksa sadece gri bir avatar
+              child: Icon(Icons.person,
+                  color: appConstants.textColor), // Kullanıcı ikonu
             ),
       title: Text(user.userName ?? "username",
-          style: const TextStyle(color: Colors.white)),
+          style: TextStyle(color: appConstants.textColor)),
       subtitle: Text(
         user.firstName ?? "first name",
-        style: const TextStyle(color: Colors.grey),
+        style: TextStyle(color: appConstants.textLightColor),
       ),
       onTap: () {
         Navigator.push(
