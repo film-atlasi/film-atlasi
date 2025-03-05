@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
@@ -16,9 +17,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.black,
-      selectedItemColor: const Color.fromARGB(255, 110, 5, 5),
-      unselectedItemColor: Colors.grey,
+      backgroundColor: AppConstants.backgroundColor,
+      selectedItemColor: AppConstants.buttonColor,
+      unselectedItemColor: AppConstants.textLightColor,
       showSelectedLabels: false,
       showUnselectedLabels: false,
       items: const [

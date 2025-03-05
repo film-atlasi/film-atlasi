@@ -1,9 +1,12 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
 import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
+import 'package:film_atlasi/features/user/services/KaydetServices.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,10 +23,23 @@ class MoviePostCard extends StatefulWidget {
 }
 
 class _MoviePostCardState extends State<MoviePostCard> {
-  final TextEditingController _contentController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Stream<DocumentSnapshot> isKaydedildi(String postId) {
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection("kaydedilenler")
+        .doc(postId)
+        .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final KaydetServices _kaydetServices = KaydetServices();
     return Container(
       child: GestureDetector(
         onLongPress: () {
@@ -39,7 +55,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
         child: Column(
           children: [
             Card(
-              color: Colors.black,
+              color: AppConstants.backgroundColor,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -50,28 +66,28 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       profilePhotoUrl: widget.moviePost.userPhotoUrl,
                       subtitle: widget.moviePost.username,
                       userId: widget.moviePost.userId,
-                      
                     ),
-      
+
                     const SizedBox(height: 10),
-      
+
                     // ⭐️ Kullanıcının verdiği puanı gösteriyoruz
-                 
       
+
                     // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek
                     if (widget.moviePost.isQuote) ...[
                       Text(
                         '"${widget.moviePost.content}"',
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
-                          color: Colors.white,
+                          color: AppConstants.textColor,
                           fontSize: 16,
                         ),
                       ),
                       SizedBox(height: 5),
                       Text(
                         "- ${widget.moviePost.filmName}",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        style: TextStyle(
+                            color: AppConstants.textLightColor, fontSize: 14),
                       ),
                     ] else ...[
 
@@ -80,7 +96,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                     const SizedBox(height: 10),
                       // Eğer normal post ise, film posteri ve detaylar gösterilecek
                       Text(widget.moviePost.content,
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: AppConstants.textColor)),
                       const SizedBox(height: 10),
                       FilmBilgiWidget(
                         movieId: widget.moviePost.filmId,
@@ -92,31 +108,54 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       children: [
                         PostActionsWidget(
                           filmId: widget.moviePost.filmId,
-                          postId: widget.moviePost.postId, // Firestore'daki post ID
+                          postId:
+                              widget.moviePost.postId, // Firestore'daki post ID
                           initialLikes:
                               widget.moviePost.likes, // Mevcut beğeni sayısı
                           initialComments:
                               widget.moviePost.comments, // Mevcut yorum sayısı
                         ),
                         const Spacer(),
-                        IconButton(
-                          onPressed: () {
-                            // Kaydet aksiyonu
+                        StreamBuilder(
+                          stream: isKaydedildi(widget.moviePost.postId),
+                          builder: (context, snapshot) {
+                            final bool kaydedildi =
+                                snapshot.hasData && snapshot.data!.exists;
+                            return IconButton(
+                              onPressed: () async {
+                                if (kaydedildi) {
+                                  await _kaydetServices.postKaydetKaldir(
+                                      widget.moviePost.postId, context);
+                                } else {
+                                  await _kaydetServices.postKaydet(
+                                      widget.moviePost.postId,
+                                      widget.moviePost.filmId,
+                                      context);
+                                }
+                              },
+                              icon: Icon(
+                                kaydedildi
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border,
+                                color: kaydedildi
+                                    ? AppConstants.textColor
+                                    : AppConstants.textLightColor,
+                              ),
+                            );
                           },
-                          icon: const Icon(Icons.bookmark_border,
-                              color: Colors.white),
                         ),
                       ],
                     ),
-      
+
                     // 🔥 Zaman damgasını beğeni & yorum butonlarının ALTINA ekledik
                     Padding(
-                      padding:
-                          const EdgeInsets.only(top: 6.0), // Hafif boşluk ekledik
+                      padding: const EdgeInsets.only(
+                          top: 6.0), // Hafif boşluk ekledik
                       child: Text(
                         _formatTimestamp(
                             widget.moviePost.timestamp), // Tarih bilgisi
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                        style: TextStyle(
+                            color: AppConstants.textLightColor, fontSize: 12),
                         textAlign: TextAlign.left,
                       ),
                     ),
@@ -124,7 +163,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 ),
               ),
             ),
-            Divider(color: Colors.grey), // Çizgi ekleniyor
+            Divider(color: AppConstants.textLightColor), // Çizgi ekleniyor
           ],
         ),
       ),

@@ -8,6 +8,7 @@ import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:film_atlasi/features/user/widgets/FollowListWidget.dart';
+import 'package:film_atlasi/features/user/widgets/Kaydedilenler.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 
@@ -162,6 +163,7 @@ class _UserPageState extends State<UserPage>
 
   Widget _buildUserProfile() {
     return NestedScrollView(
+      controller: ScrollController(),
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
           SliverAppBar(
@@ -175,16 +177,20 @@ class _UserPageState extends State<UserPage>
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(50),
               child: Container(
-                color: Colors.black,
+                color: AppConstants.appBarColor,
                 child: TabBar(
                   controller: _tabController,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: Colors.red,
-                  tabs: const [
+                  labelColor: AppConstants.textLightColor,
+                  unselectedLabelColor: AppConstants.textLightColor,
+                  indicatorColor: AppConstants.primaryColor,
+                  tabs: [
                     Tab(text: "Film Kutusu"),
                     Tab(text: "Film Listesi"),
-                    Tab(text: "Beğenilenler"),
+                    isCurrentUser
+                        ? Tab(
+                            text: "Kaydedilenler",
+                          )
+                        : Tab(text: "Beğenilenler"),
                   ],
                 ),
               ),
@@ -192,68 +198,76 @@ class _UserPageState extends State<UserPage>
           ),
         ];
       },
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          FilmKutusu(userUid: widget.userUid),
-          FilmListProfile(userUid: widget.userUid),
-          const Center(child: Text("Beğenilenler İçeriği")),
-        ],
-      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                FilmKutusu(userUid: widget.userUid),
+                FilmListProfile(userUid: widget.userUid),
+                isCurrentUser
+                    ? const Kaydedilenler()
+                    : const Text("Beğenilenler"),
+              ],
+            ),
     );
   }
 
   Widget _buildCoverPhoto() {
-    return Column(
-      children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height / 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                image: userData!.coverPhotoUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(userData!.coverPhotoUrl!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-            ),
-            Positioned(
-              bottom: MediaQuery.of(context).size.height * -0.03,
-              left: 0,
-              right: 0,
-              child: Container(
+    return Container(
+      color: AppConstants.appBarColor,
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height / 4,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.black,
-                    width: 4,
-                  ),
-                  shape: BoxShape.circle,
+                  color: AppConstants.textLightColor,
+                  image: userData!.coverPhotoUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(userData!.coverPhotoUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: GestureDetector(
-                  onTap: _updateProfilePhoto,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.white,
-                    // ignore: unnecessary_null_comparison
-                    backgroundImage: userData!.profilePhotoUrl! != null
-                        ? NetworkImage(userData!.profilePhotoUrl!)
-                        : null,
-                    child: userData!.profilePhotoUrl == null
-                        ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                        : null,
+              ),
+              Positioned(
+                bottom: MediaQuery.of(context).size.height * -0.03,
+                left: 0,
+                right: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppConstants.appBarColor,
+                      width: 4,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: GestureDetector(
+                    onTap: _updateProfilePhoto,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppConstants.textColor,
+                      // ignore: unnecessary_null_comparison
+                      backgroundImage: userData!.profilePhotoUrl! != null
+                            ? NetworkImage(userData!.profilePhotoUrl!)
+                          : null,
+                      child: userData!.profilePhotoUrl == null
+                          ? const Icon(Icons.person,
+                              size: 50, color: AppConstants.textLightColor)
+                          : null,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        AddVerticalSpace(context, 0.03),
-        _buildProfileAndStats(),
-      ],
+            ],
+          ),
+          AddVerticalSpace(context, 0.03),
+          _buildProfileAndStats(),
+        ],
+      ),
     );
   }
 
@@ -268,7 +282,7 @@ class _UserPageState extends State<UserPage>
           ),
           Text(
             "@${userData!.userName}",
-            style: const TextStyle(color: Colors.grey),
+            style: const TextStyle(color: AppConstants.textLightColor),
           ),
           const SizedBox(height: 10),
           Row(
@@ -290,32 +304,36 @@ class _UserPageState extends State<UserPage>
                             EditProfilePage(userMap: userData!.toMap(), userId: widget.userUid),
                       ),
                     ).then((_) => _fetchUserData());
+
+
                   },
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.grey, // Buton rengi
+                      color: AppConstants.textLightColor, // Buton rengi
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
                       "Düzenle",
                       style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                          color: AppConstants.textColor,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 )
               : ElevatedButton(
                   onPressed: toggleFollow,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isFollowingUser ? Colors.grey : AppConstants.red,
+                    backgroundColor: isFollowingUser
+                        ? AppConstants.textLightColor
+                        : AppConstants.primaryColor,
                   ),
                   child: followLoading
                       ? const CircularProgressIndicator()
                       : Text(
                           isFollowingUser ? "Takip Ediliyor" : "Takip Et",
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: AppConstants.textColor),
                         ),
                 ),
         ],
@@ -342,7 +360,8 @@ class _UserPageState extends State<UserPage>
           ),
           Text(
             label,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            style: const TextStyle(
+                fontSize: 14, color: AppConstants.textLightColor),
           ),
         ],
       ),

@@ -1,4 +1,3 @@
-import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
 import 'package:film_atlasi/features/movie/screens/FollowingFeedPage.dart';
 import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
@@ -39,16 +38,9 @@ class AnasayfaState extends State<Anasayfa>
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
-              title: Text(
-                AppConstants.AppName.toUpperCase(),
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(color: AppConstants.red),
-              ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.search, color: Colors.white),
+                  icon: const Icon(Icons.search),
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(

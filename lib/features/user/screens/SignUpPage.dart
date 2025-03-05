@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,19 +40,33 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 1, 2),
       appBar: AppBar(
         title: Text('Kayıt Ol'),
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white), // 🔙 Geri butonu
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Loginpage()),
-            ); // Login page'e geri dön
-          },
-        ),
+
+        centerTitle: true,
+        leading: SizedBox(),
+        actions: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Loginpage()),
+              );
+            },
+            child: Container(
+              width: 100,
+              height: 50,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(40),
+                color: AppConstants.backgroundColor,
+              ),
+              child: Text(
+                'Giriş Yap',
+              ),
+            ),
+          ),
+        ],
       ),
   
       body: SafeArea(
@@ -79,15 +94,9 @@ class _SignUpPageState extends State<SignUpPage> {
                   AddVerticalSpace(context, 0.1),
                   Text(
                     'Film Atlası\'na Hoşgeldiniz',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.normal,
-                    ),
                   ),
                   AddVerticalSpace(context, 0.02),
                   TextFormField(
-                    style: TextStyle(color: Colors.white),
                     controller: _emailController,
                     decoration: InputDecoration(labelText: 'Email'),
                     validator: (value) {
@@ -123,7 +132,6 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   AddVerticalSpace(context, 0.02),
                   TextFormField(
-                      style: TextStyle(color: Colors.white),
                       controller: _firstNameController,
                       decoration: InputDecoration(labelText: 'isim soyisim'),
                       validator: (value) {
@@ -137,7 +145,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       }),
                   AddVerticalSpace(context, 0.02),
                   TextFormField(
-                    style: TextStyle(color: Colors.white),
                     controller: _userNameController,
                     decoration: InputDecoration(labelText: 'Kullanıcı adı'),
                     validator: (value) {
@@ -150,9 +157,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       userName = value!;
                     },
                   ),
-                 
-                 
-                 
                   AddVerticalSpace(context, 0.01),
                   MouseRegion(
                     onEnter: (_) {
@@ -218,11 +222,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       child: Text(
                         'Kaydol',
-                        style: TextStyle(
-                          color: _isHovering
-                              ? const Color.fromARGB(255, 0, 0, 0)
-                              : const Color.fromARGB(255, 255, 255, 255),
-                        ),
                       ),
                     ),
                   ),

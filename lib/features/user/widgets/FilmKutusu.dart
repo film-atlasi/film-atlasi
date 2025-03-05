@@ -15,33 +15,21 @@ class FilmKutusu extends StatefulWidget {
 class _FilmKutusuState extends State<FilmKutusu> {
   bool isCurrentUser = false;
   List<dynamic> posts = [];
-  bool isLoading = false; // 🔥 Yeni verileri yüklerken animasyon gösterecek
-  DocumentSnapshot? lastDocument; // 🔥 Sayfa kaydırıldığında kaldığımız yer
-
-  final ScrollController _scrollController = ScrollController();
-  static const int _postLimit = 5; // 📌 Her seferde kaç post çekeceğiz?
+  bool isLoading = false;
+  DocumentSnapshot? lastDocument;
+  static const int _postLimit = 5;
 
   @override
   void initState() {
     super.initState();
     isCurrentUser = UserServices.currentUserUid == widget.userUid;
-    _loadInitialPosts(); // 📌 İlk verileri çekiyoruz
-
-    // 🔥 Lazy Load için scroll dinleyicisi ekliyoruz
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 300) {
-        _loadMorePosts(); // 📌 Kullanıcı en alta geldiğinde yeni postları yükle
-      }
-    });
+    _loadInitialPosts();
   }
 
   Future<void> _loadInitialPosts() async {
-    if (!mounted) return; // 🚀 **Yine sayfa kaldırıldı mı kontrol et**
+    if (!mounted) return;
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     var query = FirebaseFirestore.instance
         .collection("users")
@@ -55,20 +43,14 @@ class _FilmKutusuState extends State<FilmKutusu> {
     posts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
     lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
 
-    if (!mounted) return; // 🚀 **Yine sayfa kaldırıldı mı kontrol et**
-
-    setState(() {
-      isLoading = false;
-    });
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
   Future<void> _loadMorePosts() async {
     if (isLoading || lastDocument == null) return;
-    if (!mounted) return; // 🚀 **Yine sayfa kaldırıldı mı kontrol et**
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     var query = FirebaseFirestore.instance
         .collection("users")
@@ -85,43 +67,42 @@ class _FilmKutusuState extends State<FilmKutusu> {
       posts.addAll(newPosts);
       lastDocument = snapshot.docs.last;
     } else {
-      lastDocument = null; // 🔥 Daha fazla veri yoksa yükleme duracak
+      lastDocument = null;
     }
 
-    if (!mounted) return; // 🚀 **Yine sayfa kaldırıldı mı kontrol et**
-
-    setState(() {
-      isLoading = false;
-    });
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return posts.isEmpty && isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : ListView.builder(
-            controller: _scrollController,
-            itemCount: posts.length +
-                (isLoading
-                    ? 1
-                    : 0), // 🔥 Yükleme göstergesi için ekstra 1 ekliyoruz
-            itemBuilder: (context, index) {
-              if (index == posts.length) {
-                return const Center(
-                    child:
-                        CircularProgressIndicator()); // 📌 Lazy Load sırasında alt kısımda yükleme göstergesi
-              }
-              return MoviePostCard(
-                moviePost: posts[index],
-                isOwnPost: posts[index].userId == UserServices.currentUserUid,
-              );
-            },
-          );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollNotification) {
+        if (scrollNotification.metrics.pixels >= scrollNotification.metrics.maxScrollExtent - 300) {
+          _loadMorePosts();
+        }
+        return false;
+      },
+      child: CustomScrollView(
+        slivers: [
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (index == posts.length) {
+                  return isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : const SizedBox.shrink();
+                }
+                return MoviePostCard(
+                  moviePost: posts[index],
+                  isOwnPost: posts[index].userId == UserServices.currentUserUid,
+                );
+              },
+              childCount: posts.length + (isLoading ? 1 : 0),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

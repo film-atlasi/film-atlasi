@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -174,14 +175,14 @@ class _AddToListButtonState extends State<AddToListButton> {
     return ElevatedButton(
       onPressed: _showListSelectionDialog,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: AppConstants.highlightColor,
         padding:
             EdgeInsets.all(8), // Küçük padding, etrafındaki alanı küçültüyor
         minimumSize: Size(40, 40), // Butonun minimum boyutunu küçült
         shape: CircleBorder(), // Butonu yuvarlak hale getir
       ),
       child: Icon(Icons.playlist_add,
-          size: 20, color: Colors.white), // Sadece ikon
+          size: 20, color: AppConstants.textColor), // Sadece ikon
     );
   }
 }

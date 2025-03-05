@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/services/search_service.dart';
 import 'package:film_atlasi/features/movie/widgets/search_results.dart';
 import 'package:flutter/material.dart';
@@ -64,28 +65,34 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
     );
   }
 
-  Padding buildSearchTextField() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: TextField(
-        controller: _searchController,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: 'Film ara...',
-          hintStyle: const TextStyle(color: Colors.grey),
-          filled: true,
-          fillColor: Colors.grey[900],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(50),
-            borderSide: BorderSide.none,
-          ),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.search, color: Colors.grey),
-            onPressed: () => _searchMovies(_searchController.text),
-          ),
+  TextField buildSearchTextField() {
+    return TextField(
+      controller: _searchController,
+      style: const TextStyle(color: AppConstants.textColor),
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        hintText: 'Film ara...',
+        hintStyle: const TextStyle(color: AppConstants.textLightColor),
+        filled: true,
+        fillColor: AppConstants.bottomColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(50),
+          borderSide: BorderSide.none,
         ),
-        onChanged: _searchMovies,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(50),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(50),
+          borderSide: BorderSide.none,
+        ),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.search, color: AppConstants.textLightColor),
+          onPressed: () => _searchMovies(_searchController.text),
+        ),
       ),
+      onChanged: _searchMovies,
     );
   }
 }

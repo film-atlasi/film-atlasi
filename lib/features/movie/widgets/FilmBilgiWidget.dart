@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
@@ -57,7 +58,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
           children: [
             Expanded(
                 child: Container(
-              color: Colors.grey,
+              color: AppConstants.textLightColor,
             )),
             Expanded(
                 flex: 3,
@@ -65,13 +66,13 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Container(height: 10, color: Colors.grey),
+                      Container(height: 10, color: AppConstants.textLightColor),
                       AddVerticalSpace(context, 0.02),
-                      Container(height: 5, color: Colors.grey),
+                      Container(height: 5, color: AppConstants.textLightColor),
                       AddVerticalSpace(context, 0.01),
-                      Container(height: 5, color: Colors.grey),
+                      Container(height: 5, color: AppConstants.textLightColor),
                       AddVerticalSpace(context, 0.01),
-                      Container(height: 5, color: Colors.grey),
+                      Container(height: 5, color: AppConstants.textLightColor),
                       AddVerticalSpace(context, 0.03),
                       Row(
                         children: List.generate(
@@ -79,7 +80,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                           (index) => Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: CircleAvatar(
-                              backgroundColor: Colors.grey,
+                              backgroundColor: AppConstants.textLightColor,
                             ),
                           ),
                         ),
@@ -111,7 +112,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
           child: Container(
             width: 120,
             height: 180,
-            color: Colors.red,
+            color: AppConstants.primaryColor,
             child: movie!.posterPath.isNotEmpty
                 ? Image.network(
                     '$baseImageUrl${movie!.posterPath}',
@@ -133,8 +134,8 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
             children: [
               Text(
                 movie!.title,
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: AppConstants.textColor,
                     fontSize: 17,
                     fontWeight: FontWeight.bold),
               ),
@@ -143,7 +144,8 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                 movie!.overview,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white54, fontSize: 12),
+                style:
+                    TextStyle(color: AppConstants.textLightColor, fontSize: 12),
               ),
               const SizedBox(height: 20), // Konunun altında boşluk
               // Başrol Oyuncuları

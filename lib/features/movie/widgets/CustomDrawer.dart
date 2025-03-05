@@ -1,6 +1,8 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -19,13 +21,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
+          DrawerHeader(
             decoration: BoxDecoration(
-              color: Color.fromARGB(255, 110, 5, 5),
+              color: AppConstants.primaryColor,
             ),
             child: Text(
               'Menü',
-              style: TextStyle(color: Colors.white, fontSize: 24),
+              style: TextStyle(color: AppConstants.textColor, fontSize: 24),
             ),
           ),
           _buildDrawerItem(
