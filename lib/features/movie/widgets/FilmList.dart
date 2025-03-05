@@ -212,10 +212,9 @@ class _FilmListState extends State<FilmList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text("Listelerim", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.black,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator(color: Colors.white))
@@ -235,11 +234,11 @@ class _FilmListState extends State<FilmList> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.add, color: Colors.green),
+                                icon: Icon(Icons.add, color: const Color.fromARGB(255, 133, 129, 129)),
                                 onPressed: () => _addMovieToList(index),
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
+                                icon: Icon(Icons.delete, color: const Color.fromARGB(255, 105, 21, 15)),
                                 onPressed: () => _deleteList(index),
                               ),
                             ],
@@ -263,7 +262,7 @@ class _FilmListState extends State<FilmList> {
                                   ),
                                   trailing: IconButton(
                                     icon: Icon(Icons.remove_circle,
-                                        color: Colors.red),
+                                        color: const Color.fromARGB(255, 100, 15, 9)),
                                     onPressed: () =>
                                         _removeMovieFromList(index, movie),
                                   ),
@@ -274,15 +273,14 @@ class _FilmListState extends State<FilmList> {
                     }).toList(),
                   ),
                 ),
-                Divider(color: Colors.white),
                 Padding(
                   padding: EdgeInsets.all(10),
                   child: TextField(
                     controller: _listNameController,
                     style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'Yeni liste adı girin...',
-                      hintStyle: TextStyle(color: Colors.grey),
+                      hintText: 'Yeni liste...',
+                      hintStyle: TextStyle(color: const Color.fromARGB(255, 190, 189, 189)),
                       filled: true,
                       fillColor: Colors.grey[900],
                       border: OutlineInputBorder(
@@ -295,7 +293,7 @@ class _FilmListState extends State<FilmList> {
                 ElevatedButton(
                   onPressed: _createNewList,
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent),
+                      backgroundColor: const Color.fromARGB(255, 0, 0, 0)),
                   child: Text("Yeni Liste Oluştur"),
                 ),
               ],

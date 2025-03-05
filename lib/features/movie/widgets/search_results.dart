@@ -57,14 +57,25 @@ class SearchResults extends StatelessWidget {
       contentPadding: EdgeInsets.all(0),
       onTap: () {
         // 📌 Eğer mod "film_listesi" ise, aşağıdan modal açalım
-        if (mode == "film_listesi") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FilmList(selectedMovie: movie),
-            ),
-          );
-        } else if (mode == "film_alinti") {
+     if (mode == "film_listesi") {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true, // 🔥 Sayfanın %80'ini kaplayacak şekilde
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7, // 🔥 %80 oranında aç
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(14.0),
+          child: FilmList(selectedMovie: movie),
+        );
+      },
+    );
+  }else if (mode == "film_alinti") {
           // 🔥 Eğer alıntı paylaşımıysa
           Navigator.push(
             context,

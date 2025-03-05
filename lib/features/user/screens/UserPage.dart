@@ -139,7 +139,7 @@ class _UserPageState extends State<UserPage>
     }
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: !widget.fromProfile
@@ -147,11 +147,17 @@ class _UserPageState extends State<UserPage>
               title: Text(userData?.userName ?? ""),
             )
           : null,
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : userData == null
-              ? const Center(child: Text("Kullanıcı bilgileri bulunamadı."))
-              : _buildUserProfile(),
+      body: RefreshIndicator( // 🔥 AŞAĞI KAYDIRINCA SAYFA YENİLENECEK
+        onRefresh: () async {
+          await _fetchUserData();
+          await checkFollowStatus();
+        },
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : userData == null
+                ? const Center(child: Text("Kullanıcı bilgileri bulunamadı."))
+                : _buildUserProfile(),
+      ),
     );
   }
 
@@ -291,15 +297,15 @@ class _UserPageState extends State<UserPage>
           isCurrentUser
               ? GestureDetector(
                   onTap: () {
-                    if (userData != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditProfileScreen(userData: userData!.toMap()),
-                        ),
-                      ).then((_) => _fetchUserData());
-                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EditProfilePage(userMap: userData!.toMap(), userId: widget.userUid),
+                      ),
+                    ).then((_) => _fetchUserData());
+
+
                   },
                   child: Container(
                     padding:

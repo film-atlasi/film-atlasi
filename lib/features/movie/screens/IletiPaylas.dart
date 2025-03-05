@@ -225,7 +225,7 @@ class _IletipaylasState extends State<Iletipaylas> {
             ),
             AddVerticalSpace(context, 0.01),
             Text(
-              'Film hakkındaki düşünceleriniz:',
+              'Film hakkındaki düşünceleriniz film detaya eklenecektir.',
               style: textTheme.bodyMedium,
             ),
             AddVerticalSpace(context, 0.01),

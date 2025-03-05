@@ -1,115 +1,149 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class EditProfileScreen extends StatefulWidget {
-  final Map<String, dynamic> userData;
-  const EditProfileScreen({super.key, required this.userData});
+class EditProfilePage extends StatefulWidget {
+  final Map<String, dynamic> userMap;
+  final String userId;
+
+  const EditProfilePage({super.key, required this.userMap, required this.userId});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  _EditProfilePageState createState() => _EditProfilePageState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController firstNameController;
-  late TextEditingController lastNameController;
-  late TextEditingController userNameController;
-  late TextEditingController jobController;
-  late TextEditingController cityController;
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+
+  late TextEditingController _emailController;
+  late TextEditingController _userNameController;
+  late TextEditingController _firstNameController;
+  late TextEditingController _passwordController;
+
+  bool _isLoading = true;
+  bool _passwordChanged = false;
 
   @override
   void initState() {
     super.initState();
-    firstNameController =
-        TextEditingController(text: widget.userData['firstName']);
-    lastNameController =
-        TextEditingController(text: widget.userData['lastName']);
-    userNameController =
-        TextEditingController(text: widget.userData['userName']);
-    jobController = TextEditingController(text: widget.userData['job']);
-    cityController = TextEditingController(text: widget.userData['city']);
+    _initializeControllers();
   }
 
-  @override
-  void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
-    userNameController.dispose();
-    jobController.dispose();
-    cityController.dispose();
-    super.dispose();
+  void _initializeControllers() {
+    var userData = widget.userMap;
+    _emailController = TextEditingController(text: userData['email']);
+    _userNameController = TextEditingController(text: userData['userName']);
+    _firstNameController = TextEditingController(text: userData['firstName']);
+    _passwordController = TextEditingController();
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
-  Future<void> _updateUserData() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.userData['uid'])
-            .update({
-          'firstName': firstNameController.text,
-          'lastName': lastNameController.text,
-          'userName': userNameController.text,
-          'job': jobController.text,
-          'city': cityController.text,
-          'lastUpdated': FieldValue.serverTimestamp(),
-        });
+  Future<void> _updateUserProfile() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      await _firestore.collection('users').doc(widget.userId).update({
+        'email': _emailController.text.trim(),
+        'userName': _userNameController.text.trim(),
+        'firstName': _firstNameController.text.trim(),
+      });
 
+      // 🔥 Eğer şifre değiştiyse, şifreyi güncelle ve çıkış yap
+      if (_passwordChanged) {
+        await _auth.currentUser!.updatePassword(_passwordController.text.trim());
+
+        // Kullanıcıyı çıkış yapmaya zorla
+        await FirebaseAuth.instance.signOut();
+
+        // Kullanıcıyı giriş ekranına yönlendir
+        Navigator.pushNamedAndRemoveUntil(context, '/giris', (route) => false);
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profil başarıyla güncellendi!")),
+          const SnackBar(content: Text("Şifreniz değiştirildi. Lütfen tekrar giriş yapın.")),
         );
-        Navigator.pop(context); // Güncellemeden sonra geri dön
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Hata: $e")),
-        );
+        return;
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profil başarıyla güncellendi!")),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Hata: $e")),
+      );
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Profili Düzenle")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: firstNameController,
-                decoration: InputDecoration(labelText: "Ad"),
-                validator: (value) =>
-                    value!.isEmpty ? "Bu alan boş bırakılamaz" : null,
-              ),
-              TextFormField(
-                controller: lastNameController,
-                decoration: InputDecoration(labelText: "Soyad"),
-              ),
-              TextFormField(
-                controller: userNameController,
-                decoration: InputDecoration(labelText: "Kullanıcı Adı"),
-                validator: (value) =>
-                    value!.isEmpty ? "Bu alan boş bırakılamaz" : null,
-              ),
-              TextFormField(
-                controller: jobController,
-                decoration: InputDecoration(labelText: "Meslek"),
-              ),
-              TextFormField(
-                controller: cityController,
-                decoration: InputDecoration(labelText: "Şehir"),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _updateUserData,
-                child: const Text("Güncelle"),
-              ),
-            ],
-          ),
+      appBar: AppBar(
+        title: const Text("Profili Düzenle"),
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: "Email"),
+                      validator: (value) {
+                        if (value!.isEmpty) return "Email boş olamaz";
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _userNameController,
+                      decoration: const InputDecoration(labelText: "Kullanıcı Adı"),
+                      validator: (value) {
+                        if (value!.isEmpty) return "Kullanıcı adı boş olamaz";
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _firstNameController,
+                      decoration: const InputDecoration(labelText: "İsim Soyisim"),
+                      validator: (value) {
+                        if (value!.isEmpty) return "İsim boş olamaz";
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(labelText: "Yeni Şifre"),
+                      obscureText: true,
+                      onChanged: (value) {
+                        _passwordChanged = value.isNotEmpty;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _updateUserProfile,
+                      child: const Text("Güncelle"),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }

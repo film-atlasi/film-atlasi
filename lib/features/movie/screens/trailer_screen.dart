@@ -17,6 +17,9 @@ class TrailerScreen extends StatefulWidget {
 }
 
 class _TrailerScreenState extends State<TrailerScreen> {
+  Future<void> _refreshPage() async {
+    setState(() {});
+  }
   YoutubePlayerController? _controller;
   bool isYouTubeVideo = false;
   int _selectedIndex = 1; // kesfet sekmesi için 0
@@ -57,114 +60,118 @@ class _TrailerScreenState extends State<TrailerScreen> {
     });
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.movie.title)),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Filmin afişi
-            Container(
-              width: double.infinity,
-              height: 250,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                      'https://image.tmdb.org/t/p/original${widget.movie.posterPath}'),
-                  fit: BoxFit.cover,
+      body: RefreshIndicator( // 🔥 SAYFA AŞAĞI ÇEKİLİNCE YENİLEME
+        onRefresh: _refreshPage,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(), // Sayfa çekilebilir olsun
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Filmin afişi
+              Container(
+                width: double.infinity,
+                height: 250,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(
+                        'https://image.tmdb.org/t/p/original${widget.movie.posterPath}'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // Fragman oynatıcı veya IMDB butonu
-            if (isYouTubeVideo && _controller != null) ...[
-              Center(child: YoutubePlayer(controller: _controller!)),
-            ] else if (widget.trailerUrl != null) ...[
-              Center(
-                child: ElevatedButton(
-                  onPressed: _launchIMDB,
-                  child: const Text("IMDB'de İzle"),
+              // Fragman oynatıcı veya IMDB butonu
+              if (isYouTubeVideo && _controller != null) ...[
+                Center(child: YoutubePlayer(controller: _controller!)),
+              ] else if (widget.trailerUrl != null) ...[
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _launchIMDB,
+                    child: const Text("IMDB'de İzle"),
+                  ),
                 ),
-              ),
-            ] else ...[
+              ] else ...[
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      "Bu film için fragman bulunamadı.",
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 10),
+
+              // **Her durumda filmin içeriği burada olacak**
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    "Bu film için fragman bulunamadı.",
-                    style: TextStyle(
-                        fontSize: 18,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.movie.title,
+                      style: const TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      widget.movie.overview,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.yellow, size: 24),
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.movie.voteAverage.toString(),
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    Iletipaylas(movie: widget.movie),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.share, size: 24),
+                          tooltip: 'Paylaş',
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
-
-            const SizedBox(height: 10),
-
-            // **Her durumda filmin içeriği burada olacak**
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.movie.title,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    widget.movie.overview,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.yellow, size: 24),
-                      const SizedBox(width: 5),
-                      Text(
-                        widget.movie.voteAverage.toString(),
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  Iletipaylas(movie: widget.movie),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.share, size: 24),
-                        tooltip: 'Paylaş',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
-
+  
   @override
   void dispose() {
     _controller?.dispose();
