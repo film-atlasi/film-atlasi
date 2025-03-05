@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
@@ -133,7 +134,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
   void _navigateToComments() async {
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Color(0xFF333333),
+      backgroundColor: AppConstants.bottomColor,
       isScrollControlled: true,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -144,7 +145,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
             child: CommentPage(
               postId: widget.postId,
               filmId: widget.filmId,
-              backgroundColor: Color(0xFF333333),
+              backgroundColor: AppConstants.bottomColor,
             ));
       },
     );
@@ -222,19 +223,21 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
             children: [
               IconButton(
                 onPressed: null,
-                icon: Icon(Icons.favorite_border, color: Colors.grey),
+                icon: Icon(Icons.favorite_border,
+                    color: AppConstants.textLightColor),
               ),
-              Text('0', style: TextStyle(color: Colors.white)),
+              Text('0', style: TextStyle(color: AppConstants.textColor)),
               SizedBox(width: 20),
               IconButton(
                 onPressed: null,
-                icon: Icon(Icons.comment_outlined, color: Colors.grey),
+                icon: Icon(Icons.comment_outlined,
+                    color: AppConstants.textLightColor),
               ),
-              Text('0', style: TextStyle(color: Colors.white)),
+              Text('0', style: TextStyle(color: AppConstants.textColor)),
               SizedBox(width: 20),
               IconButton(
                 onPressed: null,
-                icon: Icon(Icons.share, color: Colors.grey),
+                icon: Icon(Icons.share, color: AppConstants.textLightColor),
               ),
             ],
           );
@@ -251,14 +254,14 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
               onPressed: _toggleLike,
               icon: Icon(
                 _isLiked ? Icons.favorite : Icons.favorite_border,
-                color: _isLiked ? Colors.red : Colors.white,
+                color: _isLiked ? Colors.red : AppConstants.textColor,
               ),
             ),
             GestureDetector(
               onTap: likeCount > 0 ? _showLikers : null,
               child: Text(
                 '$likeCount',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppConstants.textColor),
               ),
             ),
             SizedBox(width: 20),
@@ -266,18 +269,18 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
             // Yorum Butonu
             IconButton(
               onPressed: _navigateToComments,
-              icon: Icon(Icons.comment_outlined, color: Colors.white),
+              icon: Icon(Icons.comment_outlined, color: AppConstants.textColor),
             ),
             Text(
               '$commentCount',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: AppConstants.textColor),
             ),
             SizedBox(width: 20),
 
             // Paylaş Butonu
             IconButton(
               onPressed: _sharePost,
-              icon: Icon(Icons.share, color: Colors.white),
+              icon: Icon(Icons.share, color: AppConstants.textColor),
             ),
           ],
         );

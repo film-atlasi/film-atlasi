@@ -14,7 +14,6 @@ Future<void> main() async {
     );
 
     print("Firebas initiali application.");
-
   } catch (e) {
     print("Hata: $e");
   }
@@ -32,8 +31,9 @@ class Myapp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        darkTheme: AppTheme.darkTheme,
-        theme: AppTheme.darkTheme,
+        darkTheme: AppTheme.darkTheme, // Karanlık tema
+        themeMode: ThemeMode.dark, // Cihazın temasına göre belirler
+        theme: AppTheme.darkTheme, // Açık tema
         initialRoute: '/giris',
         routes: AppConstants.routes); //aaaa
   }

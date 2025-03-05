@@ -12,37 +12,27 @@ class FilmSeedPage extends StatefulWidget {
 
 class _FilmSeedPageState extends State<FilmSeedPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final List<MoviePost> _moviePosts = []; // Post listesi
-  bool _isLoading = false; // Yükleme durumu
-  bool _hasMore = true; // Daha fazla veri var mı?
-  DocumentSnapshot? _lastDocument; // Son çekilen belge referansı
-  final int _postLimit = 5; // Her yüklemede kaç post çekilecek
-  final ScrollController _scrollController = ScrollController();
+  final List<MoviePost> _moviePosts = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  DocumentSnapshot? _lastDocument;
+  final int _postLimit = 5;
 
   @override
   void initState() {
     super.initState();
-    _fetchPosts(); // İlk veri çekme işlemi
-    _scrollController.addListener(_onScroll); // Kaydırmayı dinle
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+    _fetchPosts();
   }
 
   /// **🔥 Firebase'den Lazy Load ile Postları Çekme**
   Future<void> _fetchPosts() async {
-    if (_isLoading || !_hasMore) return; // Zaten yükleniyorsa çık
+    if (_isLoading || !_hasMore) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       Query query = _firestore
-          .collectionGroup('posts') // 🔥 Tüm "posts" koleksiyonlarını al
+          .collectionGroup('posts')
           .where("source", isEqualTo: "films")
           .orderBy('timestamp', descending: true)
           .limit(_postLimit);
@@ -53,33 +43,22 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
 
       QuerySnapshot querySnapshot = await query.get();
 
-      if (!mounted) return; // 🚀 **Sayfa kaldırıldıysa işlemi iptal et*
+      if (!mounted) return;
 
       if (querySnapshot.docs.isNotEmpty) {
-        _lastDocument = querySnapshot.docs.last; // Son dokümanı referans al
+        _lastDocument = querySnapshot.docs.last;
         _moviePosts.addAll(
             querySnapshot.docs.map((doc) => MoviePost.fromFirestore(doc)));
       } else {
-        _hasMore = false; // Daha fazla veri yok
+        _hasMore = false;
       }
     } catch (e) {
       print("Hata oluştu: $e");
     }
 
-    if (!mounted) return; // 🚀 **Yine sayfa kaldırıldı mı kontrol et**
+    if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-    });
-  }
-
-  /// **🔥 Aşağı kaydırma kontrolü**
-  void _onScroll() {
-    if (_isLoading || !_hasMore) return;
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 300) {
-      _fetchPosts(); // Kullanıcı en sona yaklaştığında yeni verileri getir
-    }
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -92,20 +71,36 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
           _hasMore = true;
           await _fetchPosts();
         },
-        child: ListView.builder(
-          controller: _scrollController,
-          itemCount: _moviePosts.length + 1, // Yükleme göstergesi için +1
-          itemBuilder: (context, index) {
-            if (index == _moviePosts.length) {
-              return _isLoading
-                  ? Padding(
-                      padding: const EdgeInsets.all(18.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : SizedBox();
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            if (_hasMore &&
+                !_isLoading &&
+                scrollNotification.metrics.pixels >=
+                    scrollNotification.metrics.maxScrollExtent - 300) {
+              _fetchPosts();
             }
-            return MoviePostCard(moviePost: _moviePosts[index]);
+            return false;
           },
+          child: CustomScrollView(
+            slivers: [
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == _moviePosts.length) {
+                      return _isLoading
+                          ? const Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          : const SizedBox();
+                    }
+                    return MoviePostCard(moviePost: _moviePosts[index]);
+                  },
+                  childCount: _moviePosts.length + (_isLoading ? 1 : 0),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

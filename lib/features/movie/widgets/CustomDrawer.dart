@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -9,13 +10,13 @@ class CustomDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
+          DrawerHeader(
             decoration: BoxDecoration(
-              color: Color.fromARGB(255, 110, 5, 5),
+              color: AppConstants.primaryColor,
             ),
             child: Text(
               'Menü',
-              style: TextStyle(color: Colors.white, fontSize: 24),
+              style: TextStyle(color: AppConstants.textColor, fontSize: 24),
             ),
           ),
           _buildDrawerItem(

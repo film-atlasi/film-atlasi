@@ -1,4 +1,5 @@
 import 'package:film_atlasi/app.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,21 +21,20 @@ class _LoginpageState extends State<Loginpage> {
       GlobalKey<FormState>(); //form key oluşturuldu
   final firebaseAuth = FirebaseAuth.instance;
 
-  final bool _obscurePassword = true; // Şifreyi gizlemek için kullanılan değişken
-  bool _isHovering = false; 
+  final bool _obscurePassword =
+      true; // Şifreyi gizlemek için kullanılan değişken
+  bool _isHovering = false;
   // Butona fare ile üzerine gelindi mi kontrolü
- @override
+  @override
   void initState() {
     super.initState();
     _emailController.text = "sidar@gmail.com";
     _passwordController.text = "sidar123";
- }
-
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 1, 2),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -62,7 +62,6 @@ class _LoginpageState extends State<Loginpage> {
                       // Kullanıcı Adı TextField
                       AddVerticalSpace(context, 0.02),
                       TextFormField(
-                        style: TextStyle(color: Colors.white),
                         controller: _emailController,
                         decoration: InputDecoration(labelText: 'Email'),
                         validator: (value) {
@@ -139,7 +138,6 @@ class _LoginpageState extends State<Loginpage> {
                             },
                             child: Text(
                               'Giriş Yap',
-                              style: TextStyle(color: Colors.white),
                             ),
                           )),
 
@@ -152,8 +150,6 @@ class _LoginpageState extends State<Loginpage> {
                           children: [
                             Text(
                               'Hesabınız yok mu ?',
-                              style: TextStyle(
-                                  color: Colors.white), // Yazı rengi beyaz
                             ),
                             SizedBox(
                                 height:
@@ -164,16 +160,10 @@ class _LoginpageState extends State<Loginpage> {
                                 Navigator.pushReplacementNamed(
                                     context, '/kaydol');
                               },
-                              child: Text(
-                                '@kaydol',
-                                style: TextStyle(
-                                  color: Colors
-                                      .blue, // Kaydol yazısının rengi mavi
-                                  fontWeight:
-                                      FontWeight.bold, // Kalın yazı stili
-                                  fontSize: 14, // Yazı boyutu küçültüldü
-                                ),
-                              ),
+                              child: Text('@kaydol',
+                                  style: TextStyle(
+                                    color: AppConstants.highlightColor,
+                                  )),
                             ),
                           ],
                         ),

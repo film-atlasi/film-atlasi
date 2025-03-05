@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/services/CommentServices.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
@@ -13,7 +14,7 @@ class CommentPage extends StatefulWidget {
   final Color backgroundColor;
   const CommentPage(
       {super.key,
-      this.backgroundColor = Colors.black,
+      this.backgroundColor = AppConstants.backgroundColor,
       required this.postId,
       required this.filmId,
       this.isAppBar = true});
@@ -75,7 +76,7 @@ class _CommentPageState extends State<CommentPage> {
                           child: Text(
                             formattedTime,
                             style: TextStyle(
-                              color: Colors.grey,
+                              color: AppConstants.textLightColor,
                               fontSize: 11,
                             ),
                           ),

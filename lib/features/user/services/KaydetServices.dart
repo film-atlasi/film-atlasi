@@ -80,7 +80,7 @@ class KaydetServices {
   }
 
   Future<List<MoviePost>> getKaydedilenler(
-      {DocumentSnapshot? lastDoc, int limit = 3}) async {
+      {DocumentSnapshot? lastDoc, int limit = 10}) async {
     Query query = _firestore
         .collection("users")
         .doc(currentUserId)

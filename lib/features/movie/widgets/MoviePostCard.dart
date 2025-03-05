@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
@@ -54,7 +55,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
         child: Column(
           children: [
             Card(
-              color: Colors.black,
+              color: AppConstants.backgroundColor,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -80,19 +81,20 @@ class _MoviePostCardState extends State<MoviePostCard> {
                         '"${widget.moviePost.content}"',
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
-                          color: Colors.white,
+                          color: AppConstants.textColor,
                           fontSize: 16,
                         ),
                       ),
                       SizedBox(height: 5),
                       Text(
                         "- ${widget.moviePost.filmName}",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        style: TextStyle(
+                            color: AppConstants.textLightColor, fontSize: 14),
                       ),
                     ] else ...[
                       // Eğer normal post ise, film posteri ve detaylar gösterilecek
                       Text(widget.moviePost.content,
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: AppConstants.textColor)),
                       const SizedBox(height: 10),
                       FilmBilgiWidget(
                         movieId: widget.moviePost.filmId,
@@ -133,7 +135,9 @@ class _MoviePostCardState extends State<MoviePostCard> {
                                 kaydedildi
                                     ? Icons.bookmark
                                     : Icons.bookmark_border,
-                                color: kaydedildi ? Colors.white : Colors.grey,
+                                color: kaydedildi
+                                    ? AppConstants.textColor
+                                    : AppConstants.textLightColor,
                               ),
                             );
                           },
@@ -148,7 +152,8 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       child: Text(
                         _formatTimestamp(
                             widget.moviePost.timestamp), // Tarih bilgisi
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                        style: TextStyle(
+                            color: AppConstants.textLightColor, fontSize: 12),
                         textAlign: TextAlign.left,
                       ),
                     ),
@@ -156,7 +161,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 ),
               ),
             ),
-            Divider(color: Colors.grey), // Çizgi ekleniyor
+            Divider(color: AppConstants.textLightColor), // Çizgi ekleniyor
           ],
         ),
       ),
