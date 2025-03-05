@@ -56,9 +56,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                     const SizedBox(height: 10),
       
                     // ⭐️ Kullanıcının verdiği puanı gösteriyoruz
-                    RatingDisplayWidget(rating: widget.moviePost.rating),
-      
-                    const SizedBox(height: 10),
+                 
       
                     // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek
                     if (widget.moviePost.isQuote) ...[
@@ -76,6 +74,10 @@ class _MoviePostCardState extends State<MoviePostCard> {
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ] else ...[
+
+                         RatingDisplayWidget(rating: widget.moviePost.rating),
+      
+                    const SizedBox(height: 10),
                       // Eğer normal post ise, film posteri ve detaylar gösterilecek
                       Text(widget.moviePost.content,
                           style: TextStyle(color: Colors.white)),
@@ -84,7 +86,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                         movieId: widget.moviePost.filmId,
                       ),
                     ],
-                    AddVerticalSpace(context, 0.02),
+                    AddVerticalSpace(context, 0.01),
                     // 🔥 Beğeni, Yorum, Kaydet İkonları
                     Row(
                       children: [

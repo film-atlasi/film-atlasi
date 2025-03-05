@@ -30,6 +30,7 @@ class DiscoverProvider extends ChangeNotifier {
     fetchAllData();
   }
 
+
   Future<void> fetchAllData() async {
     try {
       isLoading = true;
