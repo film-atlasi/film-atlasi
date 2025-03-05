@@ -50,6 +50,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     if (isLoading) {
       return SizedBox(
         height: 180,
@@ -58,7 +59,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
           children: [
             Expanded(
                 child: Container(
-              color: AppConstants.textLightColor,
+              color: appConstants.textLightColor,
             )),
             Expanded(
                 flex: 3,
@@ -66,13 +67,13 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      Container(height: 10, color: AppConstants.textLightColor),
+                      Container(height: 10, color: appConstants.textLightColor),
                       AddVerticalSpace(context, 0.02),
-                      Container(height: 5, color: AppConstants.textLightColor),
+                      Container(height: 5, color: appConstants.textLightColor),
                       AddVerticalSpace(context, 0.01),
-                      Container(height: 5, color: AppConstants.textLightColor),
+                      Container(height: 5, color: appConstants.textLightColor),
                       AddVerticalSpace(context, 0.01),
-                      Container(height: 5, color: AppConstants.textLightColor),
+                      Container(height: 5, color: appConstants.textLightColor),
                       AddVerticalSpace(context, 0.03),
                       Row(
                         children: List.generate(
@@ -80,7 +81,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                           (index) => Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: CircleAvatar(
-                              backgroundColor: AppConstants.textLightColor,
+                              backgroundColor: appConstants.textLightColor,
                             ),
                           ),
                         ),
@@ -112,7 +113,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
           child: Container(
             width: 120,
             height: 180,
-            color: AppConstants.primaryColor,
+            color: appConstants.primaryColor,
             child: movie!.posterPath.isNotEmpty
                 ? Image.network(
                     '$baseImageUrl${movie!.posterPath}',
@@ -135,7 +136,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
               Text(
                 movie!.title,
                 style: TextStyle(
-                    color: AppConstants.textColor,
+                    color: appConstants.textColor,
                     fontSize: 17,
                     fontWeight: FontWeight.bold),
               ),
@@ -145,7 +146,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    TextStyle(color: AppConstants.textLightColor, fontSize: 12),
+                    TextStyle(color: appConstants.textLightColor, fontSize: 12),
               ),
               const SizedBox(height: 20), // Konunun altında boşluk
               // Başrol Oyuncuları

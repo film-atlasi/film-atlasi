@@ -172,17 +172,18 @@ class _AddToListButtonState extends State<AddToListButton> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return ElevatedButton(
       onPressed: _showListSelectionDialog,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppConstants.highlightColor,
+        backgroundColor: appConstants.highlightColor,
         padding:
             EdgeInsets.all(8), // Küçük padding, etrafındaki alanı küçültüyor
         minimumSize: Size(40, 40), // Butonun minimum boyutunu küçült
         shape: CircleBorder(), // Butonu yuvarlak hale getir
       ),
       child: Icon(Icons.playlist_add,
-          size: 20, color: AppConstants.textColor), // Sadece ikon
+          size: 20, color: appConstants.textColor), // Sadece ikon
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/notification_page.dart';
 import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +10,7 @@ class NotificationsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final NotificationService notificationService = NotificationService();
+    final AppConstants appConstants = AppConstants(context);
     final User? user = FirebaseAuth.instance.currentUser;
     return StreamBuilder<int>(
       stream: notificationService.getUnreadNotificationCount(user!.uid),
@@ -17,10 +19,8 @@ class NotificationsButton extends StatelessWidget {
         return Stack(
           children: [
             IconButton(
-              icon: Icon(
-                Icons.notifications,
-                color: hasNew ? Colors.red : Colors.white,
-              ),
+              icon: Icon(Icons.notifications,
+                  color: hasNew ? Colors.red : appConstants.textColor),
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => NotificationPage()),
@@ -42,8 +42,8 @@ class NotificationsButton extends StatelessWidget {
                   ),
                   child: Text(
                     snapshot.data! > 9 ? "9+" : snapshot.data.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: appConstants.textColor,
                       fontSize: 10,
                     ),
                     textAlign: TextAlign.center,

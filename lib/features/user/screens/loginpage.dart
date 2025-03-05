@@ -4,27 +4,22 @@ import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class Loginpage extends StatefulWidget {
-  const Loginpage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<Loginpage> createState() => _LoginpageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginpageState extends State<Loginpage> {
+class _LoginPageState extends State<LoginPage> {
   late String email;
   late String password;
   final formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final GlobalKey<FormState> formkey =
-      GlobalKey<FormState>(); //form key oluşturuldu
   final firebaseAuth = FirebaseAuth.instance;
+  bool _obscurePassword = true;
 
-  final bool _obscurePassword =
-      true; // Şifreyi gizlemek için kullanılan değişken
-  bool _isHovering = false;
-  // Butona fare ile üzerine gelindi mi kontrolü
   @override
   void initState() {
     super.initState();
@@ -34,146 +29,123 @@ class _LoginpageState extends State<Loginpage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 100),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 3),
-                child: Container(
-                  width: double.infinity,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: AssetImage('assets/images/logo2.png'),
-                        fit: BoxFit.cover),
-                  ),
-                ),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 1,
+              child: Center(
+                child: Text('Film Atlasidir', style: TextStyle(fontSize: 30)),
               ),
-              SizedBox(height: 100),
-              Padding(
+            ),
+            Expanded(
+              flex: 4,
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Form(
                   key: formKey,
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Kullanıcı Adı TextField
-                      AddVerticalSpace(context, 0.02),
                       TextFormField(
                         controller: _emailController,
-                        decoration: InputDecoration(labelText: 'Email'),
+                        decoration: const InputDecoration(labelText: 'Email'),
                         validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Bilgileri eksiksiz girininz';
+                          if (value == null || value.isEmpty) {
+                            return 'Bilgileri eksiksiz giriniz';
                           }
                           return null;
                         },
-                        onSaved: (value) {
-                          email = value!;
-                        },
+                        onSaved: (value) => email = value!,
                       ),
-                      AddVerticalSpace(context, 0.01),
+                      const SizedBox(height: 10),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: InputDecoration(labelText: 'Password'),
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ),
+                        obscureText: _obscurePassword,
                         validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Bilgileri eksiksiz girininiz';
+                          if (value == null || value.isEmpty) {
+                            return 'Bilgileri eksiksiz giriniz';
                           }
                           if (value.length < 6) {
-                            return 'too short';
+                            return 'Şifre çok kısa';
                           }
                           if (value.length > 15) {
-                            return 'too long';
+                            return 'Şifre çok uzun';
                           }
                           return null;
                         },
-                        onSaved: (value) {
-                          password = value!;
-                        },
-                        obscureText: true,
+                        onSaved: (value) => password = value!,
                       ),
-                      SizedBox(height: 20),
-
-                      // Giriş Yap Butonu
-                      MouseRegion(
-                          onEnter: (_) {
-                            setState(() {
-                              _isHovering =
-                                  true; // Fare butonun üzerine geldiğinde
-                            });
-                          },
-                          onExit: (_) {
-                            setState(() {
-                              _isHovering = false; // Fare butondan ayrıldığında
-                            });
-                          },
-                          child: TextButton(
-                            onPressed: () async {
-                              if (formKey.currentState != null &&
-                                  formKey.currentState!.validate()) {
-                                formKey.currentState!.save();
-                                try {
-                                  final userResult = await firebaseAuth
-                                      .signInWithEmailAndPassword(
-                                    email: email,
-                                    password: password,
-                                  );
-                                  print(
-                                      'Giriş başarılı: ${userResult.user!.email}');
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => FilmAtlasiApp()),
-                                  );
-                                } catch (e) {
-                                  print('Hata oluştu: $e');
-                                }
-                              } else {
-                                print(
-                                    "Form doğrulama başarısız veya form initialize edilmedi.");
-                              }
-                            },
-                            child: Text(
-                              'Giriş Yap',
-                            ),
-                          )),
-
-                      // Kaydol kısmı
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top:
-                                20), // Metni biraz daha aşağıya çekmek için boşluk ekledik
-                        child: Column(
-                          children: [
-                            Text(
-                              'Hesabınız yok mu ?',
-                            ),
-                            SizedBox(
-                                height:
-                                    8), // Hesabınız yok mu? ve Kaydol arasında boşluk ekledik
-                            GestureDetector(
-                              onTap: () {
-                                // Kaydol sayfasına yönlendirme işlemi
-                                Navigator.pushReplacementNamed(
-                                    context, '/kaydol');
-                              },
-                              child: Text('@kaydol',
-                                  style: TextStyle(
-                                    color: AppConstants.highlightColor,
-                                  )),
-                            ),
-                          ],
+                      const SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () async {
+                          if (formKey.currentState != null &&
+                              formKey.currentState!.validate()) {
+                            formKey.currentState!.save();
+                            try {
+                              final userResult =
+                                  await firebaseAuth.signInWithEmailAndPassword(
+                                email: email,
+                                password: password,
+                              );
+                              print(
+                                  'Giriş başarılı: ${userResult.user!.email}');
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => FilmAtlasiApp()),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text('Kullanıcı adı veya şifre hatalı'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          } else {
+                            print(
+                                "Form doğrulama başarısız veya form initialize edilmedi.");
+                          }
+                        },
+                        child: Text(
+                          'Giriş Yap',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text("Hesabın mı yok?"),
+                      GestureDetector(
+                        onTap: () =>
+                            Navigator.pushReplacementNamed(context, '/kaydol'),
+                        child: Text(
+                          '@kaydol',
+                          style: TextStyle(color: appConstants.highlightColor),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

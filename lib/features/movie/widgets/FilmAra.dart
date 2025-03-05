@@ -43,9 +43,10 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
       appBar: AppBar(
-        title: buildSearchTextField(),
+        title: buildSearchTextField(appConstants),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -65,16 +66,16 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
     );
   }
 
-  TextField buildSearchTextField() {
+  TextField buildSearchTextField(AppConstants appConstants) {
     return TextField(
       controller: _searchController,
-      style: const TextStyle(color: AppConstants.textColor),
+      style: TextStyle(color: appConstants.textColor),
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
         hintText: 'Film ara...',
-        hintStyle: const TextStyle(color: AppConstants.textLightColor),
+        hintStyle: TextStyle(color: appConstants.textLightColor),
         filled: true,
-        fillColor: AppConstants.bottomColor,
+        fillColor: appConstants.bottomColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(50),
           borderSide: BorderSide.none,
@@ -88,7 +89,7 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
           borderSide: BorderSide.none,
         ),
         suffixIcon: IconButton(
-          icon: const Icon(Icons.search, color: AppConstants.textLightColor),
+          icon: Icon(Icons.search, color: appConstants.textLightColor),
           onPressed: () => _searchMovies(_searchController.text),
         ),
       ),

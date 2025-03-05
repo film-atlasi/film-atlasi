@@ -139,15 +139,17 @@ class _UserPageState extends State<UserPage>
     }
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
       appBar: !widget.fromProfile
           ? AppBar(
               title: Text(userData?.userName ?? ""),
             )
           : null,
-      body: RefreshIndicator( // 🔥 AŞAĞI KAYDIRINCA SAYFA YENİLENECEK
+      body: RefreshIndicator(
+        // 🔥 AŞAĞI KAYDIRINCA SAYFA YENİLENECEK
         onRefresh: () async {
           await _fetchUserData();
           await checkFollowStatus();
@@ -156,12 +158,12 @@ class _UserPageState extends State<UserPage>
             ? const Center(child: CircularProgressIndicator())
             : userData == null
                 ? const Center(child: Text("Kullanıcı bilgileri bulunamadı."))
-                : _buildUserProfile(),
+                : _buildUserProfile(appConstants),
       ),
     );
   }
 
-  Widget _buildUserProfile() {
+  Widget _buildUserProfile(AppConstants appConstants) {
     return NestedScrollView(
       controller: ScrollController(),
       headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -172,17 +174,17 @@ class _UserPageState extends State<UserPage>
             floating: true,
             leading: SizedBox(),
             flexibleSpace: FlexibleSpaceBar(
-              background: _buildCoverPhoto(),
+              background: _buildCoverPhoto(appConstants),
             ),
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(50),
               child: Container(
-                color: AppConstants.appBarColor,
+                color: appConstants.appBarColor,
                 child: TabBar(
                   controller: _tabController,
-                  labelColor: AppConstants.textLightColor,
-                  unselectedLabelColor: AppConstants.textLightColor,
-                  indicatorColor: AppConstants.primaryColor,
+                  labelColor: appConstants.textLightColor,
+                  unselectedLabelColor: appConstants.textLightColor,
+                  indicatorColor: appConstants.primaryColor,
                   tabs: [
                     Tab(text: "Film Kutusu"),
                     Tab(text: "Film Listesi"),
@@ -213,18 +215,18 @@ class _UserPageState extends State<UserPage>
     );
   }
 
-  Widget _buildCoverPhoto() {
+  Widget _buildCoverPhoto(AppConstants appConstants) {
     return Container(
-      color: AppConstants.appBarColor,
+      color: appConstants.appBarColor,
       child: Column(
         children: [
           Stack(
             clipBehavior: Clip.none,
             children: [
               Container(
-                height: MediaQuery.of(context).size.height / 4,
+                height: MediaQuery.of(context).size.height / 5,
                 decoration: BoxDecoration(
-                  color: AppConstants.textLightColor,
+                  color: appConstants.textLightColor,
                   image: userData!.coverPhotoUrl != null
                       ? DecorationImage(
                           image: NetworkImage(userData!.coverPhotoUrl!),
@@ -240,8 +242,8 @@ class _UserPageState extends State<UserPage>
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AppConstants.appBarColor,
-                      width: 4,
+                      color: appConstants.appBarColor,
+                      width: 5,
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -249,14 +251,14 @@ class _UserPageState extends State<UserPage>
                     onTap: _updateProfilePhoto,
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundColor: AppConstants.textColor,
+                      backgroundColor: appConstants.textColor,
                       // ignore: unnecessary_null_comparison
                       backgroundImage: userData!.profilePhotoUrl! != null
-                            ? NetworkImage(userData!.profilePhotoUrl!)
+                          ? NetworkImage(userData!.profilePhotoUrl!)
                           : null,
                       child: userData!.profilePhotoUrl == null
-                          ? const Icon(Icons.person,
-                              size: 50, color: AppConstants.textLightColor)
+                          ? Icon(Icons.person,
+                              size: 50, color: appConstants.textLightColor)
                           : null,
                     ),
                   ),
@@ -264,84 +266,82 @@ class _UserPageState extends State<UserPage>
               ),
             ],
           ),
-          AddVerticalSpace(context, 0.03),
-          _buildProfileAndStats(),
+          AddVerticalSpace(context, 0.05),
+          _buildProfileAndStats(appConstants),
         ],
       ),
     );
   }
 
-  Widget _buildProfileAndStats() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text(
-            "${userData!.firstName} ${userData!.lastName ?? ''}",
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            "@${userData!.userName}",
-            style: const TextStyle(color: AppConstants.textLightColor),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatItem(userData!.posts.toString(), "Gönderi"),
-              _buildStatItem(userData!.following.toString(), "Takip Edilen"),
-              _buildStatItem(userData!.followers.toString(), "Takipçi"),
-            ],
-          ),
-          const SizedBox(height: 10),
-          isCurrentUser
-              ? GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            EditProfilePage(userMap: userData!.toMap(), userId: widget.userUid),
-                      ),
-                    ).then((_) => _fetchUserData());
-
-
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppConstants.textLightColor, // Buton rengi
-                      borderRadius: BorderRadius.circular(8),
+  Widget _buildProfileAndStats(AppConstants appConstants) {
+    return Column(
+      children: [
+        Text(
+          "${userData!.firstName} ${userData!.lastName ?? ''}",
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          "@${userData!.userName}",
+          style: TextStyle(color: appConstants.textLightColor, fontSize: 12),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildStatItem(
+                userData!.posts.toString(), "Gönderi", appConstants),
+            _buildStatItem(
+                userData!.following.toString(), "Takip Edilen", appConstants),
+            _buildStatItem(
+                userData!.followers.toString(), "Takipçi", appConstants),
+          ],
+        ),
+        const SizedBox(height: 10),
+        isCurrentUser
+            ? GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProfilePage(
+                          userMap: userData!.toMap(), userId: widget.userUid),
                     ),
-                    child: const Text(
-                      "Düzenle",
-                      style: TextStyle(
-                          color: AppConstants.textColor,
-                          fontWeight: FontWeight.bold),
-                    ),
+                  ).then((_) => _fetchUserData());
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: appConstants.textLightColor, // Buton rengi
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                )
-              : ElevatedButton(
-                  onPressed: toggleFollow,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isFollowingUser
-                        ? AppConstants.textLightColor
-                        : AppConstants.primaryColor,
+                  child: Text(
+                    "Düzenle",
+                    style: TextStyle(
+                        color: appConstants.textColor,
+                        fontWeight: FontWeight.bold),
                   ),
-                  child: followLoading
-                      ? const CircularProgressIndicator()
-                      : Text(
-                          isFollowingUser ? "Takip Ediliyor" : "Takip Et",
-                          style: const TextStyle(color: AppConstants.textColor),
-                        ),
                 ),
-        ],
-      ),
+              )
+            : ElevatedButton(
+                onPressed: toggleFollow,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isFollowingUser
+                      ? appConstants.textLightColor
+                      : appConstants.primaryColor,
+                ),
+                child: followLoading
+                    ? const CircularProgressIndicator()
+                    : Text(
+                        isFollowingUser ? "Takip Ediliyor" : "Takip Et",
+                        style: TextStyle(color: appConstants.textColor),
+                      ),
+              ),
+      ],
     );
   }
 
-  Widget _buildStatItem(String value, String label) {
+  Widget _buildStatItem(String value, String label, AppConstants appConstants) {
     return GestureDetector(
       onTap: label == "Takip Edilen"
           ? () {
@@ -360,8 +360,7 @@ class _UserPageState extends State<UserPage>
           ),
           Text(
             label,
-            style: const TextStyle(
-                fontSize: 14, color: AppConstants.textLightColor),
+            style: TextStyle(fontSize: 14, color: appConstants.textLightColor),
           ),
         ],
       ),

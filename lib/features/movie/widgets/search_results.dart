@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -15,6 +16,7 @@ class SearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     if (searchResults.isEmpty) {
       return const Center(
           child: Text('Sonuç bulunamadı',
@@ -76,6 +78,7 @@ class SearchResults extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildMoviePoster(Movie movie, BuildContext context) {
     return Card(
