@@ -62,48 +62,52 @@ class _KesfetWidgetState extends State<KesfetWidget>
           );
         }
 
-        return CustomScrollView(
-          physics: BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 100),
+          return RefreshIndicator( // 🔥 SAYFA AŞAĞI ÇEKİLİNCE YENİLEME
+          onRefresh: () async {
+            await provider.fetchAllData(); // Filmleri yeniden yükle
+          },
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 100),
 
-                  // Featured Movie Carousel - Modernize edilmiş
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SizedBox(
-                      height: 380,
-                      child: PageView.builder(
-                        controller: _pageController,
-                        itemCount: provider.featuredMovies.length,
-                        physics: BouncingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return AnimatedBuilder(
-                            animation: _pageController,
-                            builder: (context, child) {
-                              double value = 0;
-                              if (_pageController.position.haveDimensions) {
-                                value = index.toDouble() -
-                                    (_pageController.page ?? 0);
-                                value = (value * 0.03).clamp(-1, 1);
-                              }
-                              return Transform(
-                                transform: Matrix4.identity()
-                                  ..setEntry(3, 2, 0.001)
-                                  ..rotateY(value),
-                                alignment: Alignment.center,
-                                child: ModernFeaturedMovieCard(
-                                    movie: provider.featuredMovies[index]),
-                              );
-                            },
-                          );
-                        },
+                    // Featured Movie Carousel - Modernize edilmiş
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SizedBox(
+                        height: 380,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: provider.featuredMovies.length,
+                          physics: const BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return AnimatedBuilder(
+                              animation: _pageController,
+                              builder: (context, child) {
+                                double value = 0;
+                                if (_pageController.position.haveDimensions) {
+                                  value = index.toDouble() -
+                                      (_pageController.page ?? 0);
+                                  value = (value * 0.03).clamp(-1, 1);
+                                }
+                                return Transform(
+                                  transform: Matrix4.identity()
+                                    ..setEntry(3, 2, 0.001)
+                                    ..rotateY(value),
+                                  alignment: Alignment.center,
+                                  child: ModernFeaturedMovieCard(
+                                      movie: provider.featuredMovies[index]),
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  ),
 
                   SizedBox(height: 30),
 
@@ -251,6 +255,7 @@ class _KesfetWidgetState extends State<KesfetWidget>
               ),
             ),
           ],
+          ),
         );
       },
     );
