@@ -52,10 +52,11 @@ class AuthWrapper extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator()); // 🔄 Yüklenme animasyonu
+          return const Center(
+              child: CircularProgressIndicator()); // 🔄 Yüklenme animasyonu
         }
         if (snapshot.hasData) {
-          return  FilmAtlasiApp(); // ✅ Kullanıcı giriş yaptıysa ana sayfaya yönlendir
+          return FilmAtlasiApp(); // ✅ Kullanıcı giriş yaptıysa ana sayfaya yönlendir
         } else {
           return const Loginpage(); // ❌ Kullanıcı giriş yapmamışsa giriş sayfasına yönlendir
         }
