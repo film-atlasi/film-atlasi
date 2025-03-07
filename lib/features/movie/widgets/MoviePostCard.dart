@@ -4,6 +4,7 @@ import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart'
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
 import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/SpoilerWidget.dart';
 import 'package:film_atlasi/features/user/services/KaydetServices.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -71,7 +72,6 @@ class _MoviePostCardState extends State<MoviePostCard> {
                     const SizedBox(height: 10),
 
                     // ⭐️ Kullanıcının verdiği puanı gösteriyoruz
-      
 
                     // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek
                     if (widget.moviePost.isQuote) ...[
@@ -90,13 +90,14 @@ class _MoviePostCardState extends State<MoviePostCard> {
                             color: AppConstants.textLightColor, fontSize: 14),
                       ),
                     ] else ...[
+                      RatingDisplayWidget(rating: widget.moviePost.rating),
 
-                         RatingDisplayWidget(rating: widget.moviePost.rating),
-      
-                    const SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       // Eğer normal post ise, film posteri ve detaylar gösterilecek
-                      Text(widget.moviePost.content,
-                          style: TextStyle(color: AppConstants.textColor)),
+                      widget.moviePost.isSpoiler
+                          ? SpoilerWidget(content: widget.moviePost.content)
+                          : Text(widget.moviePost.content,
+                              style: TextStyle(color: AppConstants.textColor)),
                       const SizedBox(height: 10),
                       FilmBilgiWidget(
                         movieId: widget.moviePost.filmId,

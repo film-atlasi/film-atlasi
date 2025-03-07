@@ -103,6 +103,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           isQuote: doc["isQuote"] ?? false,
           rating: (doc["rating"] ?? 0).toDouble(),
           timestamp: doc['timestamp'] as Timestamp,
+          isSpoiler: doc['isSpoiler'] ?? false,
         ));
       }
       return posts;
