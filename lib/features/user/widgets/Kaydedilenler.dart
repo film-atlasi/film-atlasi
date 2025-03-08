@@ -26,16 +26,22 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
     _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _fetchKaydedilenler() async {
-    if (_isLoading || !_hasMore) return;
-    setState(() {
-      _isLoading = true;
-    });
+  /// **🔥 Kaydedilen postları getirir**
+  Future<void> _fetchKaydedilenler({bool isRefresh = false}) async {
+    if (_isLoading || (!_hasMore && !isRefresh)) return;
+
+    if (isRefresh) {
+      setState(() {
+        _kaydedilenler.clear();
+        _lastDoc = null;
+        _hasMore = true;
+      });
+    }
+
+    setState(() => _isLoading = true);
 
     final List<MoviePost> newKaydedilenler =
-        await _kaydetServices.getKaydedilenler(
-      lastDoc: _lastDoc,
-    );
+        await _kaydetServices.getKaydedilenler(lastDoc: _lastDoc);
 
     setState(() {
       _kaydedilenler.addAll(newKaydedilenler);
@@ -47,27 +53,33 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
     });
   }
 
+  /// **🔥 Sonsuz kaydırma için ek veri yükleme**
   void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 100) {
       _fetchKaydedilenler();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _kaydedilenler.isEmpty && _isLoading
-        ? Center(child: CircularProgressIndicator())
-        : ListView.builder(
-            controller: _scrollController,
-            itemCount: _kaydedilenler.length + (_hasMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == _kaydedilenler.length) {
-                return Center(child: CircularProgressIndicator());
-              }
-              return MoviePostCard(moviePost: _kaydedilenler[index]);
-            },
-          );
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _fetchKaydedilenler(isRefresh: true);
+      },
+      child: _kaydedilenler.isEmpty && _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              controller: _scrollController,
+              itemCount: _kaydedilenler.length + (_hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _kaydedilenler.length) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return MoviePostCard(moviePost: _kaydedilenler[index]);
+              },
+            ),
+    );
   }
 
   @override

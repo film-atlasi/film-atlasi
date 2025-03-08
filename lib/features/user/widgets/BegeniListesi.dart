@@ -27,9 +27,15 @@ class _BegeniListesiState extends State<BegeniListesi> {
     _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _fetchBegeniListesi() async {
-    if (_isLoading || !_hasMore) return;
+  Future<void> _fetchBegeniListesi({bool isRefresh = false}) async {
+    if (_isLoading) return;
     setState(() => _isLoading = true);
+
+    if (isRefresh) {
+      _begenilenler.clear();
+      _lastDoc = null;
+      _hasMore = true;
+    }
 
     try {
       Query query = _firestore
@@ -39,7 +45,7 @@ class _BegeniListesiState extends State<BegeniListesi> {
           .orderBy("timestamp", descending: true)
           .limit(10);
 
-      if (_lastDoc != null) {
+      if (_lastDoc != null && !isRefresh) {
         query = query.startAfterDocument(_lastDoc!);
       }
 
@@ -51,7 +57,6 @@ class _BegeniListesiState extends State<BegeniListesi> {
         String postId = doc['postId'];
         String filmId = doc['filmId'];
 
-        // 🎯 Film içindeki ilgili postu çekiyoruz
         DocumentSnapshot postSnapshot = await _firestore
             .collection("films")
             .doc(filmId)
@@ -82,11 +87,14 @@ class _BegeniListesiState extends State<BegeniListesi> {
       }
 
       setState(() {
-        _begenilenler.addAll(yeniBegenilenler);
-        _lastDoc =
-            querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
+        if (isRefresh) {
+          _begenilenler = yeniBegenilenler;
+        } else {
+          _begenilenler.addAll(yeniBegenilenler);
+        }
+        _lastDoc = querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
         _isLoading = false;
-        _hasMore = yeniBegenilenler.length == 5;
+        _hasMore = yeniBegenilenler.length == 10;
       });
     } catch (e) {
       print("🔥 Hata: Beğenilen postlar çekilemedi: $e");
@@ -95,26 +103,30 @@ class _BegeniListesiState extends State<BegeniListesi> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
       _fetchBegeniListesi();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _begenilenler.isEmpty && _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : ListView.builder(
-            controller: _scrollController,
-            itemCount: _begenilenler.length + (_hasMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == _begenilenler.length) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return MoviePostCard(moviePost: _begenilenler[index]);
-            },
-          );
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _fetchBegeniListesi(isRefresh: true);
+      },
+      child: _begenilenler.isEmpty && _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              controller: _scrollController,
+              itemCount: _begenilenler.length + (_hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _begenilenler.length) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return MoviePostCard(moviePost: _begenilenler[index]);
+              },
+            ),
+    );
   }
 
   @override

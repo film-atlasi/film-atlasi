@@ -12,42 +12,37 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-    print("Firebas initiali application.");
-  } catch (e) {
-    print("Hata: $e");
-  }
-
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => PageIndexProvider()),
-      ChangeNotifierProvider(
-        create: (context) => ThemeProvider(),
-      )
-    ],
-    child: const Myapp(),
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => PageIndexProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-class Myapp extends StatelessWidget {
-  const Myapp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context).themeMode;
     final AppConstants appConstants = AppConstants(context);
     final AppTheme appTheme = AppTheme(appConstants);
+
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: appTheme.lightTheme,
-        darkTheme: appTheme.darkTheme,
-        themeMode: themeProvider, // Cihazın temasına uyar
-        initialRoute: '/giris',
-        routes: AppConstants.routes); //aaaa
+      debugShowCheckedModeBanner: false,
+      theme: appTheme.lightTheme,
+      darkTheme: appTheme.darkTheme,
+      themeMode: themeProvider, // Cihazın temasına uyar
+      home: const AuthWrapper(), // ✅ Kullanıcı durumuna göre yönlendirme
+    );
   }
 }
 
@@ -60,14 +55,18 @@ class AuthWrapper extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-              child: CircularProgressIndicator()); // 🔄 Yüklenme animasyonu
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ); // 🔄 Yüklenme animasyonu
         }
-        if (snapshot.hasData) {
-          return FilmAtlasiApp(); // ✅ Kullanıcı giriş yaptıysa ana sayfaya yönlendir
-        } else {
-          return const LoginPage(); // ❌ Kullanıcı giriş yapmamışsa giriş sayfasına yönlendir
+
+        // ✅ Kullanıcı giriş yapmışsa Ana Sayfa'ya yönlendir
+        if (snapshot.hasData && FirebaseAuth.instance.currentUser != null) {
+          return FilmAtlasiApp();
         }
+
+        // ❌ Kullanıcı giriş yapmamışsa Giriş Sayfasına yönlendir
+        return const LoginPage();
       },
     );
   }
