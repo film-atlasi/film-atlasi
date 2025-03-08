@@ -1,6 +1,5 @@
 import 'package:film_atlasi/app.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
-import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -94,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                         onSaved: (value) => password = value!,
                       ),
                       const SizedBox(height: 20),
-                      TextButton(
+                      ElevatedButton(
                         onPressed: () async {
                           if (formKey.currentState != null &&
                               formKey.currentState!.validate()) {
@@ -128,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         child: Text(
                           'Giriş Yap',
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                       const SizedBox(height: 10),

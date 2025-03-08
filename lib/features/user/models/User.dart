@@ -106,7 +106,7 @@ class User {
     return User(
       uid: doc.id,
       posts: data['posts'] ?? 0,
-      userName: data['userName'] ?? '',
+      userName: data['userName'].toString().toLowerCase(),
       firstName: data['firstName'] ?? '',
       email: data['email'] ?? '',
       city: data['city'] ?? '',

@@ -188,9 +188,9 @@ class _SignUpPageState extends State<SignUpPage> {
                               'userName': _userNameController.text,
                               'firstName': _firstNameController.text,
                               'createdAt': FieldValue.serverTimestamp(),
+                              'profilePhotoUrl':
+                                  'https://firebasestorage.googleapis.com/v0/b/film-atlasi.firebasestorage.app/o/WhatsApp%20G%C3%B6rsel%202024-10-09%20saat%2023.52.23_68c44843.jpg?alt=media&token=ed77aa4f-505d-4fd4-902a-efc825ec463d',
                             });
-
-                            print("User data saved to Firestore successfully");
 
                             print(userResult.user!.uid);
                             Navigator.push(
@@ -229,26 +229,6 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(String hintText, TextEditingController controller,
-      {bool obscureText = false}) {
-    return SizedBox(
-      width: double.infinity,
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white, fontSize: 12),
-          border: UnderlineInputBorder(),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
-          ),
-        ),
-        style: TextStyle(color: Colors.white, fontSize: 12),
       ),
     );
   }

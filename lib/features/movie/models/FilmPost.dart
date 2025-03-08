@@ -114,7 +114,7 @@ class MoviePost {
         isSpoiler: data['isSpoiler'] as bool? ?? false,
         postId: doc.id,
         userId: data['userId'] as String,
-        username: data['username'] as String,
+        username: data['username'].toString().toLowerCase(),
         firstName: data['firstName'] as String,
         userPhotoUrl: data['userPhotoUrl'] as String,
         filmName: data['filmName'] as String,
