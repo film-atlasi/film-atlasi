@@ -3,6 +3,10 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/user/widgets/GoogleAuthButton.dart';
 
 class Loginpage extends StatefulWidget {
   const Loginpage({super.key});
@@ -39,34 +43,34 @@ class _LoginpageState extends State<Loginpage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 100),
+              const SizedBox(height: 100),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: Container(
                   width: double.infinity,
                   height: 300,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     image: DecorationImage(
                         image: AssetImage('assets/images/logo2.png'),
                         fit: BoxFit.cover),
                   ),
                 ),
               ),
-              SizedBox(height: 100),
+              const SizedBox(height: 50),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Form(
                   key: formKey,
                   child: Column(
                     children: [
-                      // Kullanıcı Adı TextField
+                      // Email ve şifre TextField'ları
                       AddVerticalSpace(context, 0.02),
                       TextFormField(
                         controller: _emailController,
-                        decoration: InputDecoration(labelText: 'Email'),
+                        decoration: const InputDecoration(labelText: 'Email'),
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return 'Bilgileri eksiksiz girininz';
+                            return 'Bilgileri eksiksiz giriniz';
                           }
                           return null;
                         },
@@ -77,96 +81,72 @@ class _LoginpageState extends State<Loginpage> {
                       AddVerticalSpace(context, 0.01),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: InputDecoration(labelText: 'Password'),
+                        decoration:
+                            const InputDecoration(labelText: 'Password'),
+                        obscureText: true,
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return 'Bilgileri eksiksiz girininiz';
+                            return 'Bilgileri eksiksiz giriniz';
                           }
-                          if (value.length < 6) {
-                            return 'too short';
-                          }
-                          if (value.length > 15) {
-                            return 'too long';
-                          }
+                          if (value.length < 6) return 'too short';
+                          if (value.length > 15) return 'too long';
                           return null;
                         },
                         onSaved: (value) {
                           password = value!;
                         },
-                        obscureText: true,
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                      // Giriş Yap Butonu
-                      MouseRegion(
-                          onEnter: (_) {
-                            setState(() {
-                              _isHovering =
-                                  true; // Fare butonun üzerine geldiğinde
-                            });
-                          },
-                          onExit: (_) {
-                            setState(() {
-                              _isHovering = false; // Fare butondan ayrıldığında
-                            });
-                          },
-                          child: TextButton(
-                            onPressed: () async {
-                              if (formKey.currentState != null &&
-                                  formKey.currentState!.validate()) {
-                                formKey.currentState!.save();
-                                try {
-                                  final userResult = await firebaseAuth
-                                      .signInWithEmailAndPassword(
-                                    email: email,
-                                    password: password,
-                                  );
-                                  print(
-                                      'Giriş başarılı: ${userResult.user!.email}');
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => FilmAtlasiApp()),
-                                  );
-                                } catch (e) {
-                                  print('Hata oluştu: $e');
-                                }
-                              } else {
-                                print(
-                                    "Form doğrulama başarısız veya form initialize edilmedi.");
-                              }
+                      // Email ile Giriş Yap Butonu
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            formKey.currentState!.save();
+                            try {
+                              await FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(
+                                email: email,
+                                password: password,
+                              );
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => FilmAtlasiApp()),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Giriş başarısız: $e')),
+                              );
+                            }
+                          }
+                        },
+                        child: const Text('Giriş Yap'),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // 🔥 Google ile Giriş Yap Butonu burada eklendi:
+                      const GoogleAuthButton(),
+
+                      const SizedBox(height: 30),
+
+                      // Kayıt ol linki
+                      Column(
+                        children: [
+                          const Text('Hesabınız yok mu?'),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushReplacementNamed(
+                                  context, '/kaydol');
                             },
-                            child: Text(
-                              'Giriş Yap',
-                            ),
-                          )),
-
-                      // Kaydol kısmı
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top:
-                                20), // Metni biraz daha aşağıya çekmek için boşluk ekledik
-                        child: Column(
-                          children: [
-                            Text(
-                              'Hesabınız yok mu ?',
-                            ),
-                            SizedBox(
-                                height:
-                                    8), // Hesabınız yok mu? ve Kaydol arasında boşluk ekledik
-                            GestureDetector(
-                              onTap: () {
-                                // Kaydol sayfasına yönlendirme işlemi
-                                Navigator.pushReplacementNamed(
-                                    context, '/kaydol');
-                              },
-                              child: Text('@kaydol',
-                                  style: TextStyle(
-                                    color: AppConstants.highlightColor,
-                                  )),
-                            ),
-                          ],
-                        ),
+                            child: Text('@kaydol',
+                                style: TextStyle(
+                                  color: AppConstants.highlightColor,
+                                )),
+                          ),
+                        ],
                       ),
                     ],
                   ),
