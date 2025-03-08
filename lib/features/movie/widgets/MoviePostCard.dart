@@ -42,32 +42,30 @@ class _MoviePostCardState extends State<MoviePostCard> {
   Widget build(BuildContext context) {
     final KaydetServices _kaydetServices = KaydetServices();
     final AppConstants appConstants = AppConstants(context);
-    return GestureDetector(
-      onLongPress: () {
-        if (widget.isOwnPost) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              content: PostSilmeDuzenleme(moviePost: widget.moviePost),
-            ),
-          );
-        }
-      },
-      child: Column(
-        children: [
-          Card(
-            color: appConstants.dialogColor,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UserProfileRouter(
-                    title: widget.moviePost.firstName,
-                    profilePhotoUrl: widget.moviePost.userPhotoUrl,
-                    subtitle: widget.moviePost.username,
-                    userId: widget.moviePost.userId,
-                  ),
+
+    return Container(
+      child: GestureDetector(
+        child: Column(
+          children: [
+            Card(
+              color: appConstants.backgroundColor,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    UserProfileRouter(
+                      title: widget.moviePost.firstName,
+                      profilePhotoUrl: widget.moviePost.userPhotoUrl,
+                      subtitle: widget.moviePost.username,
+                      userId: widget.moviePost.userId,
+                      trailing: widget.isOwnPost
+                          ? PostSilmeDuzenleme(
+                              moviePost: widget.moviePost,
+                              filmId: widget.moviePost.filmId)
+                          : null,
+                    ),
+
 
                   const SizedBox(height: 10),
 

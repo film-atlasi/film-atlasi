@@ -4,6 +4,7 @@ import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/user/services/FollowServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
+import 'package:film_atlasi/features/user/widgets/BegeniListesi.dart';
 import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
 import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
@@ -209,7 +210,7 @@ class _UserPageState extends State<UserPage>
                 FilmListProfile(userUid: widget.userUid),
                 isCurrentUser
                     ? const Kaydedilenler()
-                    : const Text("Beğenilenler"),
+                     : BegeniListesi(userUid: widget.userUid),
               ],
             ),
     );
@@ -384,4 +385,8 @@ class _UserPageState extends State<UserPage>
       },
     );
   }
+
+  
+
+
 }
