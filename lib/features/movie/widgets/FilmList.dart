@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/services/FilmListService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,6 +16,7 @@ class FilmList extends StatefulWidget {
 class _FilmListState extends State<FilmList> {
   final TextEditingController _listNameController = TextEditingController();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FilmListService filmListService = FilmListService();
   List<Map<String, dynamic>> _savedLists = [];
   bool isLoading = true;
 
@@ -70,27 +72,11 @@ class _FilmListState extends State<FilmList> {
         _savedLists.add(newList);
       });
 
-      saveListToFirestore(listName, newList["movies"]);
+      filmListService.saveListToFirestore(listName, newList["movies"]);
       _listNameController.clear();
 
       _showSnackbar("Yeni liste oluşturuldu: \"$listName\"");
     }
-  }
-
-  Future<void> saveListToFirestore(String listName, List<Movie> movies) async {
-    await firestore.collection("film_listeleri").doc(listName).set({
-      "name": listName,
-      "userId": FirebaseAuth.instance.currentUser?.uid ?? "",
-      "movies": movies
-          .map((movie) => {
-                "id": movie.id,
-                "title": movie.title,
-                "overview": movie.overview,
-                "posterPath": movie.posterPath,
-                "voteAverage": movie.voteAverage,
-              })
-          .toList(),
-    });
   }
 
   /// **Mevcut Listeye Film Ekleme**
@@ -110,31 +96,9 @@ class _FilmListState extends State<FilmList> {
       _savedLists[index]["movies"].add(widget.selectedMovie!);
     });
 
-    addMovieToFirestore(_savedLists[index]["name"], widget.selectedMovie!);
+    filmListService.addMovieToFirestore(
+        _savedLists[index]["name"], widget.selectedMovie!);
     _showSnackbar("Film \"${_savedLists[index]["name"]}\" listesine eklendi!");
-  }
-
-  Future<void> addMovieToFirestore(String listName, Movie movie) async {
-    DocumentReference listRef =
-        firestore.collection("film_listeleri").doc(listName);
-    DocumentSnapshot snapshot = await listRef.get();
-
-    if (snapshot.exists) {
-      List<dynamic> movieList = snapshot["movies"];
-
-      bool alreadyExists = movieList.any((m) => m["id"] == movie.id);
-      if (alreadyExists) return;
-
-      movieList.add({
-        "id": movie.id,
-        "title": movie.title,
-        "overview": movie.overview,
-        "posterPath": movie.posterPath,
-        "voteAverage": movie.voteAverage,
-      });
-
-      await listRef.update({"movies": movieList});
-    }
   }
 
   /// **Listeden Film Silme**
@@ -143,22 +107,9 @@ class _FilmListState extends State<FilmList> {
       _savedLists[listIndex]["movies"].remove(movie);
     });
 
-    removeMovieFromFirestore(_savedLists[listIndex]["name"], movie);
+    filmListService.removeMovieFromFirestore(
+        _savedLists[listIndex]["name"], movie);
     _showSnackbar("\"${movie.title}\" listeden kaldırıldı!");
-  }
-
-  Future<void> removeMovieFromFirestore(String listName, Movie movie) async {
-    DocumentReference listRef =
-        firestore.collection("film_listeleri").doc(listName);
-    DocumentSnapshot snapshot = await listRef.get();
-
-    if (snapshot.exists) {
-      List<dynamic> movieList = (snapshot["movies"] as List)
-          .where((m) => m["id"] != movie.id)
-          .toList();
-
-      await listRef.update({"movies": movieList});
-    }
   }
 
   /// **Listeyi Silme**
@@ -184,7 +135,7 @@ class _FilmListState extends State<FilmList> {
                   _savedLists.removeAt(index);
                 });
 
-                deleteListFromFirestore(listName);
+                filmListService.deleteListFromFirestore(listName);
                 Navigator.of(context).pop();
                 _showSnackbar("Liste silindi: \"$listName\"");
               },
@@ -193,10 +144,6 @@ class _FilmListState extends State<FilmList> {
         );
       },
     );
-  }
-
-  Future<void> deleteListFromFirestore(String listName) async {
-    await firestore.collection("film_listeleri").doc(listName).delete();
   }
 
   /// **Snackbar Geri Bildirim Mesajı**
@@ -214,10 +161,10 @@ class _FilmListState extends State<FilmList> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text("Listelerim", style: TextStyle(color: Colors.white)),
+        title: Text("Listelerim"),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.white))
+          ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Expanded(
@@ -225,20 +172,22 @@ class _FilmListState extends State<FilmList> {
                     children: _savedLists.map((list) {
                       int index = _savedLists.indexOf(list);
                       return Card(
-                        color: Colors.grey[900],
                         child: ExpansionTile(
                           title: Text(list["name"],
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 18)),
+                              style: TextStyle(fontSize: 18)),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.add, color: const Color.fromARGB(255, 133, 129, 129)),
+                                icon: Icon(Icons.add,
+                                    color: const Color.fromARGB(
+                                        255, 133, 129, 129)),
                                 onPressed: () => _addMovieToList(index),
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete, color: const Color.fromARGB(255, 105, 21, 15)),
+                                icon: Icon(Icons.delete,
+                                    color:
+                                        const Color.fromARGB(255, 105, 21, 15)),
                                 onPressed: () => _deleteList(index),
                               ),
                             ],
@@ -251,18 +200,18 @@ class _FilmListState extends State<FilmList> {
                                           "https://image.tmdb.org/t/p/w92${movie.posterPath}",
                                           width: 50,
                                           errorBuilder: (_, __, ___) =>
-                                              const Icon(Icons.movie,
-                                                  color: Colors.white),
+                                              const Icon(Icons.movie,),
                                         )
-                                      : const Icon(Icons.movie,
-                                          color: Colors.white),
+                                      : const Icon(
+                                          Icons.movie,
+                                        ),
                                   title: Text(
                                     movie.title,
-                                    style: TextStyle(color: Colors.white),
                                   ),
                                   trailing: IconButton(
                                     icon: Icon(Icons.remove_circle,
-                                        color: const Color.fromARGB(255, 100, 15, 9)),
+                                        color: const Color.fromARGB(
+                                            255, 100, 15, 9)),
                                     onPressed: () =>
                                         _removeMovieFromList(index, movie),
                                   ),
@@ -277,23 +226,14 @@ class _FilmListState extends State<FilmList> {
                   padding: EdgeInsets.all(10),
                   child: TextField(
                     controller: _listNameController,
-                    style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Yeni liste...',
-                      hintStyle: TextStyle(color: const Color.fromARGB(255, 190, 189, 189)),
                       filled: true,
-                      fillColor: Colors.grey[900],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
                     ),
                   ),
                 ),
                 ElevatedButton(
                   onPressed: _createNewList,
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 0, 0, 0)),
                   child: Text("Yeni Liste Oluştur"),
                 ),
               ],

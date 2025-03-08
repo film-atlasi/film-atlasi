@@ -94,7 +94,10 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                             )
                           : const SizedBox();
                     }
-                    return MoviePostCard(moviePost: _moviePosts[index]);
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: MoviePostCard(moviePost: _moviePosts[index]),
+                    );
                   },
                   childCount: _moviePosts.length + (_isLoading ? 1 : 0),
                 ),

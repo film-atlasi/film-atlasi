@@ -10,8 +10,14 @@ import 'package:film_atlasi/features/movie/services/ActorService.dart';
 
 class FilmBilgiWidget extends StatefulWidget {
   final String movieId;
+  final bool oyuncular;
+  final double posterHeight;
 
-  const FilmBilgiWidget({super.key, required this.movieId});
+  const FilmBilgiWidget(
+      {super.key,
+      required this.movieId,
+      this.oyuncular = true,
+      this.posterHeight = 180});
 
   @override
   State<FilmBilgiWidget> createState() => _FilmBilgiWidgetState();
@@ -53,8 +59,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
     final AppConstants appConstants = AppConstants(context);
     if (isLoading) {
       return SizedBox(
-        height: 180,
-        width: MediaQuery.of(context).size.width,
+        height: widget.posterHeight,
         child: Row(
           children: [
             Expanded(
@@ -74,18 +79,20 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                       Container(height: 5, color: appConstants.textLightColor),
                       AddVerticalSpace(context, 0.01),
                       Container(height: 5, color: appConstants.textLightColor),
-                      AddVerticalSpace(context, 0.03),
-                      Row(
-                        children: List.generate(
-                          4,
-                          (index) => Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CircleAvatar(
-                              backgroundColor: appConstants.textLightColor,
-                            ),
-                          ),
-                        ),
-                      )
+                      widget.oyuncular
+                          ? Row(
+                              children: List.generate(
+                                4,
+                                (index) => Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: CircleAvatar(
+                                    backgroundColor:
+                                        appConstants.textLightColor,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : SizedBox()
                     ],
                   ),
                 ))
@@ -110,14 +117,12 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
               ),
             );
           },
-          child: Container(
-            width: 120,
-            height: 180,
-            color: appConstants.primaryColor,
+          child: SizedBox(
+            height: widget.posterHeight,
             child: movie!.posterPath.isNotEmpty
                 ? Image.network(
                     '$baseImageUrl${movie!.posterPath}',
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fitHeight,
                   )
                 : Center(
                     child: Text(
@@ -149,37 +154,40 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
                     TextStyle(color: appConstants.textLightColor, fontSize: 12),
               ),
               const SizedBox(height: 20), // Konunun altında boşluk
+
               // Başrol Oyuncuları
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FutureBuilder<List<Actor>>(
-                      future: ActorService.fetchTopThreeActors(
-                          int.parse(movie!.id), 5),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        } else if (snapshot.hasError) {
-                          return Text('Bir hata oluştu.');
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return Text('Oyuncu bilgisi bulunamadı.');
-                        } else {
-                          final actors = snapshot.data!;
-                          return Row(
-                            children: actors.map((actor) {
-                              return OyuncuCircleAvatar(actor: actor);
-                            }).toList(),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              )
+              widget.oyuncular
+                  ? SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FutureBuilder<List<Actor>>(
+                            future: ActorService.fetchTopThreeActors(
+                                int.parse(movie!.id), 5),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Bir hata oluştu.');
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return Text('Oyuncu bilgisi bulunamadı.');
+                              } else {
+                                final actors = snapshot.data!;
+                                return Row(
+                                  children: actors.map((actor) {
+                                    return OyuncuCircleAvatar(actor: actor);
+                                  }).toList(),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                  : SizedBox()
             ],
           ),
         ),

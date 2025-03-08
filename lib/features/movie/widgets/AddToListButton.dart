@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/features/movie/services/FilmListService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -16,6 +17,7 @@ class AddToListButton extends StatefulWidget {
 class _AddToListButtonState extends State<AddToListButton> {
   List<Map<String, dynamic>> _savedLists = [];
   bool isLoading = true;
+  final FilmListService filmListService = FilmListService();
   final TextEditingController _listNameController = TextEditingController();
 
   @override
@@ -48,33 +50,10 @@ class _AddToListButtonState extends State<AddToListButton> {
 
   /// **Seçilen Listeye Film Ekle**
   void addMovieToList(String listName) async {
-    String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-    DocumentReference listRef =
-        FirebaseFirestore.instance.collection("film_listeleri").doc(listName);
-    DocumentSnapshot snapshot = await listRef.get();
+    filmListService.addMovieToFirestore(listName, widget.movie);
 
-    if (snapshot.exists) {
-      List<dynamic> movieList = snapshot["movies"];
-
-      bool alreadyExists = movieList.any((m) => m["id"] == widget.movie.id);
-      if (alreadyExists) {
-        Navigator.pop(context);
-        _showSnackbar("Bu film zaten \"$listName\" listesinde var!");
-        return;
-      }
-
-      movieList.add({
-        "id": widget.movie.id,
-        "title": widget.movie.title,
-        "overview": widget.movie.overview,
-        "posterPath": widget.movie.posterPath,
-        "voteAverage": widget.movie.voteAverage,
-      });
-
-      await listRef.update({"movies": movieList});
-      Navigator.pop(context);
-      _showSnackbar("Film \"$listName\" listesine eklendi!");
-    }
+    Navigator.pop(context);
+    _showSnackbar("Film \"$listName\" listesine eklendi!");
   }
 
   /// **Yeni Liste Oluştur ve Filmi Ekle**
@@ -82,23 +61,8 @@ class _AddToListButtonState extends State<AddToListButton> {
     String listName = _listNameController.text.trim();
     if (listName.isEmpty) return;
 
+    filmListService.createNewListAndAddMovie(listName, widget.movie);
     String userId = FirebaseAuth.instance.currentUser?.uid ?? "";
-    DocumentReference newListRef =
-        FirebaseFirestore.instance.collection("film_listeleri").doc(listName);
-
-    await newListRef.set({
-      "name": listName,
-      "userId": userId,
-      "movies": [
-        {
-          "id": widget.movie.id,
-          "title": widget.movie.title,
-          "overview": widget.movie.overview,
-          "posterPath": widget.movie.posterPath,
-          "voteAverage": widget.movie.voteAverage,
-        }
-      ],
-    });
 
     setState(() {
       _savedLists.add({"name": listName, "userId": userId, "movies": []});

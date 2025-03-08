@@ -28,6 +28,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late Stream<DocumentSnapshot> _postStream;
   bool _isLiked = false;
+  bool _isLikeLoading = false;
 
   @override
   void initState() {
@@ -70,6 +71,11 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     final user = _auth.currentUser;
     if (user == null) return;
 
+    setState(() {
+      _isLikeLoading = true;
+    });
+
+    // Batch işlemi oluştur
     final batch = _firestore.batch();
     final filmRef = _firestore.collection('films').doc(widget.filmId);
     final postRef = filmRef.collection('posts').doc(widget.postId);
@@ -130,6 +136,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
         if (mounted) {
           setState(() {
             _isLiked = true;
+            _isLikeLoading = false;
           });
         }
       }
@@ -214,13 +221,6 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     );
   }
 
-  void _sharePost() {
-    // Paylaşma mantığı burada
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Paylaşma özelliği yakında!')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final AppConstants appConstants = AppConstants(context);
@@ -243,11 +243,6 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
                     color: appConstants.textLightColor),
               ),
               Text('0', style: TextStyle(color: appConstants.textColor)),
-              SizedBox(width: 20),
-              IconButton(
-                onPressed: null,
-                icon: Icon(Icons.share, color: appConstants.textLightColor),
-              ),
             ],
           );
         }
@@ -260,7 +255,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
           children: [
             // Beğeni Butonu
             IconButton(
-              onPressed: _toggleLike,
+              onPressed: !_isLikeLoading ? _toggleLike : null,
               icon: Icon(
                 _isLiked ? Icons.favorite : Icons.favorite_border,
                 color: _isLiked ? Colors.red : appConstants.textColor,
@@ -285,12 +280,6 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
               style: TextStyle(color: appConstants.textColor),
             ),
             SizedBox(width: 20),
-
-            // Paylaş Butonu
-            IconButton(
-              onPressed: _sharePost,
-              icon: Icon(Icons.share, color: appConstants.textColor),
-            ),
           ],
         );
       },
