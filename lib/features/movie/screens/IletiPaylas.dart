@@ -71,7 +71,7 @@ class _IletipaylasState extends State<Iletipaylas> {
 
     String postId = firestore.collection('posts').doc().id;
 
-    Map<String, dynamic> postData = {
+    Map<String, dynamic> postDataForMovie = {
       "postId": postId,
       "userId": user.uid,
       "filmName": widget.movie.title,
@@ -87,10 +87,30 @@ class _IletipaylasState extends State<Iletipaylas> {
       "rating": _rating,
       "timestamp": FieldValue.serverTimestamp(),
       "isSpoiler": _isSpoiler,
+      "source": "films"
     };
 
-    await filmRef.collection("posts").doc(postId).set(postData);
-    await userDoc.collection("posts").doc(postId).set(postData);
+    Map<String, dynamic> postDataForUser = {
+      "postId": postId,
+      "userId": user.uid,
+      "filmName": widget.movie.title,
+      "filmId": filmId,
+      "filmIcerik": widget.movie.overview,
+      "firstName": user.firstName,
+      "username": user.userName,
+      "userPhotoUrl": user.profilePhotoUrl,
+      "content": _textEditingController.text,
+      "isQuote": widget.isFromQuote,
+      "likes": 0,
+      "comments": 0,
+      "rating": _rating,
+      "timestamp": FieldValue.serverTimestamp(),
+      "isSpoiler": _isSpoiler,
+      "source": "users"
+    };
+
+    await filmRef.collection("posts").doc(postId).set(postDataForMovie);
+    await userDoc.collection("posts").doc(postId).set(postDataForUser);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('İnceleme paylaşıldı!')),
