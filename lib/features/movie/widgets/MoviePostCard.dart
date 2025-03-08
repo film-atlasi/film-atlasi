@@ -14,19 +14,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MoviePostCard extends StatefulWidget {
   final MoviePost moviePost;
-  final bool isOwnPost;
 
-  const MoviePostCard(
-      {super.key, required this.moviePost, this.isOwnPost = false});
+  const MoviePostCard({super.key, required this.moviePost});
 
   @override
   _MoviePostCardState createState() => _MoviePostCardState();
 }
 
 class _MoviePostCardState extends State<MoviePostCard> {
+  bool isOwnPost = false;
   @override
   void initState() {
     super.initState();
+    if (widget.moviePost.userId == FirebaseAuth.instance.currentUser!.uid) {
+      isOwnPost = true;
+    }
   }
 
   Stream<DocumentSnapshot> isKaydedildi(String postId) {
@@ -40,32 +42,30 @@ class _MoviePostCardState extends State<MoviePostCard> {
 
   @override
   Widget build(BuildContext context) {
-    final KaydetServices _kaydetServices = KaydetServices();
+    final KaydetServices kaydetServices = KaydetServices();
     final AppConstants appConstants = AppConstants(context);
 
-    return Container(
-      child: GestureDetector(
-        child: Column(
-          children: [
-            Card(
-              color: appConstants.backgroundColor,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    UserProfileRouter(
-                      title: widget.moviePost.firstName,
-                      profilePhotoUrl: widget.moviePost.userPhotoUrl,
-                      subtitle: widget.moviePost.username,
-                      userId: widget.moviePost.userId,
-                      trailing: widget.isOwnPost
-                          ? PostSilmeDuzenleme(
-                              moviePost: widget.moviePost,
-                              filmId: widget.moviePost.filmId)
-                          : null,
-                    ),
-
+    return GestureDetector(
+      child: Column(
+        children: [
+          Card(
+            color: appConstants.dialogColor,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UserProfileRouter(
+                    title: widget.moviePost.firstName,
+                    profilePhotoUrl: widget.moviePost.userPhotoUrl,
+                    subtitle: widget.moviePost.username,
+                    userId: widget.moviePost.userId,
+                    trailing: isOwnPost
+                        ? PostSilmeDuzenleme(
+                            moviePost: widget.moviePost,
+                            filmId: widget.moviePost.filmId)
+                        : null,
+                  ),
 
                   const SizedBox(height: 10),
 
@@ -124,10 +124,10 @@ class _MoviePostCardState extends State<MoviePostCard> {
                           return IconButton(
                             onPressed: () async {
                               if (kaydedildi) {
-                                await _kaydetServices.postKaydetKaldir(
+                                await kaydetServices.postKaydetKaldir(
                                     widget.moviePost.postId, context);
                               } else {
-                                await _kaydetServices.postKaydet(
+                                await kaydetServices.postKaydet(
                                     widget.moviePost.postId,
                                     widget.moviePost.filmId,
                                     context);

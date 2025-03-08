@@ -46,7 +46,7 @@ class UserProfileRouter extends StatelessWidget {
             );
           },
       title: Text(title),
-      selectedTileColor: appConstants.secondaryColor,
+      selectedTileColor: appConstants.bottomAppBarColor,
       selectedColor: appConstants.textColor,
       selected: selected,
       textColor: appConstants.textColor,

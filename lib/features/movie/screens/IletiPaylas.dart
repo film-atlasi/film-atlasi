@@ -1,6 +1,5 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
@@ -9,6 +8,7 @@ import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 class Iletipaylas extends StatefulWidget {
   final Movie movie;
@@ -32,17 +32,45 @@ const String baseImageUrl = 'https://image.tmdb.org/t/p/w500';
 
 class _IletipaylasState extends State<Iletipaylas> {
   double _rating = 0.0;
-  bool _isSpoiler = false; // Kullanıcının spoiler seçeneğini takip edecek
+  bool _isSpoiler = false;
   final TextEditingController _textEditingController = TextEditingController();
   bool isLoading = false;
-
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Color dominantColorDark = Colors.grey; // Varsayılan renk
+  Color dominantColorLight = Colors.grey; // Varsayılan renk,
+  bool paletteDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    extractPaletteColor();
+  }
+
+  // **📌 Filmin Palet Renklerini Çıkar ve Firestore'a Kaydet**
+  Future<void> extractPaletteColor() async {
+    if (widget.movie.posterPath.isNotEmpty) {
+      try {
+        final PaletteGenerator paletteGenerator =
+            await PaletteGenerator.fromImageProvider(
+          NetworkImage(
+              'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}'),
+        );
+
+        setState(() {
+          dominantColorDark =
+              paletteGenerator.darkMutedColor?.color ?? Colors.black;
+          dominantColorLight =
+              paletteGenerator.lightMutedColor?.color ?? Colors.grey;
+          paletteDone = true;
+        });
+      } catch (e) {
+        print("Renk paleti çıkarılırken hata oluştu: $e");
+      }
+    }
+  }
 
   Future<void> submitForm() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
       final film = widget.movie;
       final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
 
@@ -80,6 +108,8 @@ class _IletipaylasState extends State<Iletipaylas> {
           "genre_ids": film.genreIds,
           "release_date": film.releaseDate,
           "vote_average": film.voteAverage,
+          "dominantColorDark": Helpers.colorToInt(dominantColorDark),
+          "dominantColorLight": Helpers.colorToInt(dominantColorLight),
         });
       }
 
@@ -151,11 +181,77 @@ class _IletipaylasState extends State<Iletipaylas> {
 
   @override
   Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: buildDetaylar(context),
+          children: [
+            // **📌 TextField En Üstte**
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  AutoSizeTextField(
+                    controller: _textEditingController,
+                    minFontSize: 20,
+                    maxLines: 7,
+                    style: const TextStyle(fontSize: 30),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(20),
+                      hintText: "Filmi nasıl buldunuz?",
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '5 üzerinden kaç verdiniz?',
+                    style: textTheme.bodyMedium,
+                  ),
+                  RatingBar.builder(
+                    initialRating: _rating,
+                    minRating: 1,
+                    direction: Axis.horizontal,
+                    allowHalfRating: true,
+                    itemCount: 5,
+                    itemBuilder: (context, _) => const Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                    onRatingUpdate: (rating) {
+                      setState(() {
+                        _rating = rating;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isSpoiler,
+                        onChanged: (value) {
+                          setState(() {
+                            _isSpoiler = value!;
+                          });
+                        },
+                      ),
+                      const Text("Spoiler içeriyor mu?",
+                          style: TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  AddToListButton(movie: widget.movie),
+                  const SizedBox(height: 20),
+                  buildPaylasButton(context),
+                ],
+              ),
+            ),
+            // **📌 FilmBilgiWidget En Altta**
+            FilmBilgiWidget(movieId: widget.movie.id),
+          ],
         ),
       ),
     );
@@ -278,30 +374,26 @@ class _IletipaylasState extends State<Iletipaylas> {
 
   Center buildPaylasButton(BuildContext context) {
     return Center(
-      child: isLoading
-          ? TextButton(
-              onPressed: null,
-              child: CircularProgressIndicator(
-                color: AppConstants(context).textColor,
-              ))
-          : TextButton(
-              onPressed: () async {
-                if (_rating > 0 && _textEditingController.text.isNotEmpty) {
-                  await submitForm();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('İnceleme paylaşıldı!')),
-                  );
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Lütfen tüm alanları doldurun!')),
-                  );
-                }
-              },
-              child: const Text('Paylaş'),
-            ),
+      child: ElevatedButton(
+        onPressed: () async {
+          if (_rating > 0 && _textEditingController.text.isNotEmpty) {
+            await submitForm();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('İnceleme paylaşıldı!')),
+            );
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Lütfen tüm alanları doldurun!')),
+            );
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+        ),
+        child: const Text('Paylaş'),
+      ),
     );
   }
 }

@@ -95,7 +95,6 @@ class _FilmKutusuState extends State<FilmKutusu> {
                 }
                 return MoviePostCard(
                   moviePost: posts[index],
-                  isOwnPost: posts[index].userId == UserServices.currentUserUid,
                 );
               },
               childCount: posts.length + (isLoading ? 1 : 0),

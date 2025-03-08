@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/movie/services/PostServices.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -95,6 +96,8 @@ class KaydetServices {
     final QuerySnapshot snapshot = await query.get();
     final List<MoviePost> kaydedilenler = [];
 
+    if (snapshot.docs.isEmpty) return kaydedilenler;
+
     for (final DocumentSnapshot doc in snapshot.docs) {
       final DocumentSnapshot filmDoc = await _firestore
           .collection("films")
@@ -102,6 +105,8 @@ class KaydetServices {
           .collection("posts")
           .doc(doc["postId"])
           .get();
+
+      final movie = PostServices.getPostByUid(doc["postId"]);
 
       final MoviePost film = MoviePost.fromDocument(filmDoc);
       kaydedilenler.add(film);

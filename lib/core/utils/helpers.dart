@@ -26,6 +26,14 @@ class Helpers {
     37: "Western",
   };
 
+  static int colorToInt(Color color) {
+    return int.parse('0xFF${color.value.toRadixString(16).substring(2)}');
+  }
+
+  static Color intToColor(int color) {
+    return Color(color);
+  }
+
   // 🔥 Timestamp'i "x dakika önce" formatına çeviren fonksiyon
   static String formatTimestamp(Timestamp timestamp) {
     DateTime postTime = timestamp.toDate();

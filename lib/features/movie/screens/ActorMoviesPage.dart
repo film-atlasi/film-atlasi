@@ -72,7 +72,6 @@ class _ActorMoviesPageState extends State<ActorMoviesPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.actorName} Filmleri'),
-        backgroundColor: Colors.black,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -80,7 +79,6 @@ class _ActorMoviesPageState extends State<ActorMoviesPage> {
               ? Center(
                   child: Text(
                     'Film bulunamadı',
-                    style: TextStyle(color: Colors.white),
                   ),
                 )
               : ListView.builder(
@@ -94,22 +92,17 @@ class _ActorMoviesPageState extends State<ActorMoviesPage> {
                     return ListTile(
                       leading: CachedNetworkImage(
                         imageUrl: '$baseImageUrl${movie.posterPath}',
-                        width: 50,
-                        height: 75,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fitHeight,
                         placeholder: (context, url) =>
                             CircularProgressIndicator(strokeWidth: 2),
                         errorWidget: (context, url, error) => CircleAvatar(),
                       ),
                       title: Text(
                         movie.title,
-                        style: TextStyle(color: Colors.white),
                       ),
                       subtitle: Text(
                         movie.overview,
                         maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.white70),
                       ),
                       onTap: () {
                         Navigator.push(

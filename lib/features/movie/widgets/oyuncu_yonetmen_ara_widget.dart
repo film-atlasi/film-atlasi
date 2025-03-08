@@ -63,18 +63,15 @@ class _OyuncuYonetmenAraWidgetState extends State<OyuncuYonetmenAraWidget> {
       padding: const EdgeInsets.all(16.0),
       child: TextField(
         controller: _searchController,
-        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: 'Oyuncu veya yönetmen ara...',
-          hintStyle: const TextStyle(color: Colors.grey),
           filled: true,
-          fillColor: Colors.grey[900],
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),
             borderSide: BorderSide.none,
           ),
           suffixIcon: IconButton(
-            icon: const Icon(Icons.search, color: Colors.grey),
+            icon: const Icon(Icons.search),
             onPressed: () => _searchPeople(_searchController.text),
           ),
         ),

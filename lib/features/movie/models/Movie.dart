@@ -1,4 +1,8 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:flutter/material.dart';
 
 class Movie {
   final String id; // Film ID'si
@@ -9,6 +13,8 @@ class Movie {
   final String? releaseDate; // Yayınlanış Tarihi
   final List<int>? genreIds; // Tür ID'leri (genre_ids)
   final List<String>? watchProviders; // 🔥 Yeni alan
+  final Color dominantColorDark;
+  final Color dominantColorLight; // 🎨 Renk paleti
   final Map<String, String>?
       watchProvidersWithIcons; // 🔥 Platform adı + İkon URL’si
 
@@ -22,6 +28,8 @@ class Movie {
     this.genreIds,
     this.watchProviders, // 🔥 Yeni alan
     this.watchProvidersWithIcons,
+    this.dominantColorDark = Colors.black,
+    this.dominantColorLight = Colors.grey, // 🎨 Renk paleti
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -68,6 +76,8 @@ class Movie {
       'genre_ids': genreIds,
       'watch_providers': watchProviders,
       'watch_providers_with_icons': watchProvidersWithIcons,
+      'dominantColorDark': Helpers.colorToInt(dominantColorDark),
+      'dominantColorLight': Helpers.colorToInt(dominantColorLight),
     };
   }
 
@@ -108,6 +118,8 @@ class Movie {
       watchProvidersWithIcons:
           (data['watch_providers_with_icons'] as Map<String, dynamic>?)
               ?.map((key, value) => MapEntry(key, value.toString())),
+      dominantColorDark: Helpers.intToColor(data['dominantColorDark']),
+      dominantColorLight: Helpers.intToColor(data['dominantColorLight']),
     );
   }
   Map<String, dynamic> toJson() {

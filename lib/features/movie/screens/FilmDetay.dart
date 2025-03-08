@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/provider/ThemeProvider.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
@@ -13,6 +14,7 @@ import 'package:film_atlasi/features/movie/widgets/FilmDetails/MovieInfoWidget.d
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
+import 'package:provider/provider.dart';
 
 import 'package:shimmer/shimmer.dart';
 
@@ -30,28 +32,12 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       Actor(name: "Yönetmen Bilinmiyor", character: "", id: -1);
   Map<String, String> watchProvidersWithIcons = {};
   bool isLoading = false;
-  Color? dominantColor = Colors.black; // 🎨 Renk paletini burada saklayacağız.
-
   @override
   void initState() {
     super.initState();
     getDirector();
     fetchWatchProviders();
-    extractDominantColor(); // 🖼 Poster'dan renk al
     isLoading = true;
-  }
-
-  Future<void> extractDominantColor() async {
-    final PaletteGenerator paletteGenerator =
-        await PaletteGenerator.fromImageProvider(
-      NetworkImage('https://image.tmdb.org/t/p/w500${widget.movie.posterPath}'),
-    );
-
-    if (mounted) {
-      setState(() {
-        dominantColor = paletteGenerator.darkMutedColor?.color ?? Colors.black;
-      });
-    }
   }
 
   Future<void> getDirector() async {
@@ -114,8 +100,11 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   @override
   Widget build(BuildContext context) {
     bool _isImageLoaded = false;
+    final ThemeMode themeMode = Provider.of<ThemeProvider>(context).themeMode;
     return Scaffold(
-      backgroundColor: dominantColor ?? const Color.fromARGB(255, 10, 6, 26),
+      backgroundColor: themeMode == ThemeMode.dark
+          ? widget.movie.dominantColorDark
+          : widget.movie.dominantColorLight,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
