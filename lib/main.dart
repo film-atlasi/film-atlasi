@@ -2,7 +2,7 @@ import 'package:film_atlasi/app.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/constants/AppTheme.dart';
 import 'package:film_atlasi/core/provider/PageIndexProvider.dart';
-import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
+import 'package:film_atlasi/core/provider/ThemeProvider.dart';
 import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:film_atlasi/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,7 +23,12 @@ Future<void> main() async {
   }
 
   runApp(MultiProvider(
-    providers: [ChangeNotifierProvider(create: (_) => PageIndexProvider())],
+    providers: [
+      ChangeNotifierProvider(create: (_) => PageIndexProvider()),
+      ChangeNotifierProvider(
+        create: (context) => ThemeProvider(),
+      )
+    ],
     child: const Myapp(),
   ));
 }
@@ -33,11 +38,14 @@ class Myapp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context).themeMode;
+    final AppConstants appConstants = AppConstants(context);
+    final AppTheme appTheme = AppTheme(appConstants);
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        darkTheme: AppTheme.darkTheme, // Karanlık tema
-        themeMode: ThemeMode.dark, // Cihazın temasına göre belirler
-        theme: AppTheme.darkTheme, // Açık tema
+        theme: appTheme.lightTheme,
+        darkTheme: appTheme.darkTheme,
+        themeMode: themeProvider, // Cihazın temasına uyar
         initialRoute: '/giris',
         routes: AppConstants.routes); //aaaa
   }
@@ -58,7 +66,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.hasData) {
           return FilmAtlasiApp(); // ✅ Kullanıcı giriş yaptıysa ana sayfaya yönlendir
         } else {
-          return const Loginpage(); // ❌ Kullanıcı giriş yapmamışsa giriş sayfasına yönlendir
+          return const LoginPage(); // ❌ Kullanıcı giriş yapmamışsa giriş sayfasına yönlendir
         }
       },
     );

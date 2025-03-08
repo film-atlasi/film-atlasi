@@ -41,6 +41,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
   @override
   Widget build(BuildContext context) {
     final KaydetServices _kaydetServices = KaydetServices();
+    final AppConstants appConstants = AppConstants(context);
     return Container(
       child: GestureDetector(
         onLongPress: () {
@@ -56,7 +57,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
         child: Column(
           children: [
             Card(
-              color: AppConstants.backgroundColor,
+              color: appConstants.backgroundColor,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -79,7 +80,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                         '"${widget.moviePost.content}"',
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
-                          color: AppConstants.textColor,
+                          color: appConstants.textColor,
                           fontSize: 16,
                         ),
                       ),
@@ -87,17 +88,18 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       Text(
                         "- ${widget.moviePost.filmName}",
                         style: TextStyle(
-                            color: AppConstants.textLightColor, fontSize: 14),
+                            color: appConstants.textLightColor, fontSize: 14),
                       ),
                     ] else ...[
                       RatingDisplayWidget(rating: widget.moviePost.rating),
 
                       const SizedBox(height: 10),
-                      // Eğer normal post ise, film posteri ve detaylar gösterilecek
+                      // Eğer normal post ise, film posteri ve
                       widget.moviePost.isSpoiler
                           ? SpoilerWidget(content: widget.moviePost.content)
                           : Text(widget.moviePost.content,
                               style: TextStyle(color: AppConstants.textColor)),
+
                       const SizedBox(height: 10),
                       FilmBilgiWidget(
                         movieId: widget.moviePost.filmId,
@@ -139,8 +141,8 @@ class _MoviePostCardState extends State<MoviePostCard> {
                                     ? Icons.bookmark
                                     : Icons.bookmark_border,
                                 color: kaydedildi
-                                    ? AppConstants.textColor
-                                    : AppConstants.textLightColor,
+                                    ? appConstants.textColor
+                                    : appConstants.textLightColor,
                               ),
                             );
                           },
@@ -156,7 +158,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                         _formatTimestamp(
                             widget.moviePost.timestamp), // Tarih bilgisi
                         style: TextStyle(
-                            color: AppConstants.textLightColor, fontSize: 12),
+                            color: appConstants.textLightColor, fontSize: 12),
                         textAlign: TextAlign.left,
                       ),
                     ),
@@ -164,7 +166,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                 ),
               ),
             ),
-            Divider(color: AppConstants.textLightColor), // Çizgi ekleniyor
+            Divider(color: appConstants.textLightColor), // Çizgi ekleniyor
           ],
         ),
       ),

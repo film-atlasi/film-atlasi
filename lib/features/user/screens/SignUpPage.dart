@@ -29,7 +29,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
-  
+
   bool _isHovering = false;
 
   @override
@@ -39,10 +39,10 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Kayıt Ol'),
-
         centerTitle: true,
         leading: SizedBox(),
         actions: [
@@ -50,7 +50,7 @@ class _SignUpPageState extends State<SignUpPage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Loginpage()),
+                MaterialPageRoute(builder: (context) => LoginPage()),
               );
             },
             child: Container(
@@ -59,7 +59,7 @@ class _SignUpPageState extends State<SignUpPage> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(40),
-                color: AppConstants.backgroundColor,
+                color: appConstants.backgroundColor,
               ),
               child: Text(
                 'Giriş Yap',
@@ -68,7 +68,6 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         ],
       ),
-  
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -197,7 +196,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => Loginpage()),
+                                  builder: (context) => LoginPage()),
                             );
                           } catch (e) {
                             print('Error: $e');
