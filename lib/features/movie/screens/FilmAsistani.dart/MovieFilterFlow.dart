@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:flutter/material.dart';
@@ -66,13 +67,13 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: appConstants.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: Colors.white, size: 28),
+          icon: Icon(Icons.close, size: 28),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -88,10 +89,10 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
               controller: _pageController,
               physics: NeverScrollableScrollPhysics(),
               children: [
-                _buildSortSelection(),
-                _buildGenreSelection(),
-                _buildYearSelection(),
-                _buildImdbSelection(),
+                _buildSortSelection(appConstants),
+                _buildGenreSelection(appConstants),
+                _buildYearSelection(appConstants),
+                _buildImdbSelection(appConstants),
               ],
             ),
           ),
@@ -111,9 +112,10 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ElevatedButton(
+                    TextButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[800], // Butonun rengi
+                        backgroundColor:
+                            appConstants.backgroundColor, // Butonun rengi
                         padding: EdgeInsets.symmetric(
                             horizontal: 20, vertical: 15), // Boyut büyütüldü
                         shape: RoundedRectangleBorder(
@@ -121,16 +123,15 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
                         ),
                       ),
                       onPressed: _previousStep,
-                      child: Text(
-                        "← Önceki Soru",
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white), // Yazı boyutu büyütüldü
-                      ),
+                      child: _currentStep > 0
+                          ? Text("← Önceki", // Yazı boyutu büyütüldü
+                              style: TextStyle(
+                                color: appConstants.textLightColor,
+                              ))
+                          : SizedBox(),
                     ),
-                    ElevatedButton(
+                    TextButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent, // Butonun rengi
                         padding: EdgeInsets.symmetric(
                             horizontal: 20, vertical: 15), // Boyut büyütüldü
                         shape: RoundedRectangleBorder(
@@ -139,10 +140,10 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
                       ),
                       onPressed: _nextStep,
                       child: Text(
-                        _currentStep < 3 ? "Sonraki Soru →" : "Filmleri Getir",
+                        _currentStep < 3 ? "Sonraki →" : "Filmleri Getir",
                         style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white), // Yazı boyutu büyütüldü
+                          color: appConstants.textColor,
+                        ), // Yazı boyutu büyütüldü
                       ),
                     ),
                   ],
@@ -155,92 +156,95 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
     );
   }
 
-  Widget _buildSortSelection() {
+  Widget _buildSortSelection(AppConstants appConstants) {
     return _buildQuestionPage(
-      icon: Icons.bar_chart,
-      question: "Neye göre sıralansın?",
-      options: {
-        "popularity.desc": "Popülerlik",
-        "release_date.desc": "Yeni Çıkanlar",
-        "vote_count.desc": "En Çok Oy Alanlar",
-        "vote_average.desc": "Puan (Yüksekten Düşüğe)"
-      },
-      onSelect: (value) {
-        selectedSort = value;
-        _nextStep();
-      },
-    );
+        icon: Icons.bar_chart,
+        question: "Neye göre sıralansın?",
+        options: {
+          "popularity.desc": "Popülerlik",
+          "release_date.desc": "Yeni Çıkanlar",
+          "vote_count.desc": "En Çok Oy Alanlar",
+          "vote_average.desc": "Puan (Yüksekten Düşüğe)"
+        },
+        onSelect: (value) {
+          selectedSort = value;
+          _nextStep();
+        },
+        appConstants: appConstants);
   }
 
-  Widget _buildGenreSelection() {
+  Widget _buildGenreSelection(AppConstants appConstants) {
     return _buildQuestionPage(
-      icon: Icons.movie,
-      question: "Nasıl şeyler olsun?",
-      options: {
-        "28": "Aksiyon/Macera",
-        "35": "Komedi",
-        "18": "Drama",
-        "27": "Gerilim/Korku",
-        "14": "Fantastik" // Yeni eklenen seçenek
-      },
-      onSelect: (value) {
-        selectedGenre = value;
-        _nextStep();
-      },
-    );
+        icon: Icons.movie,
+        question: "Nasıl şeyler olsun?",
+        options: {
+          "28": "Aksiyon/Macera",
+          "35": "Komedi",
+          "18": "Drama",
+          "27": "Gerilim/Korku",
+          "14": "Fantastik" // Yeni eklenen seçenek
+        },
+        onSelect: (value) {
+          selectedGenre = value;
+          _nextStep();
+        },
+        appConstants: appConstants);
   }
 
-  Widget _buildYearSelection() {
+  Widget _buildYearSelection(AppConstants appConstants) {
     return _buildQuestionPage(
-      icon: Icons.date_range,
-      question: "Hangi yıllardan olsun?",
-      options: {
-        "2022": "Yeni Çıkanlar (Son 2 Yıl)",
-        "2010": "2010'lu Yıllar",
-        "2000": "2000'li Yıllar",
-        "1999": "Klasikler (2000 Öncesi)"
-      },
-      onSelect: (value) {
-        selectedYear = int.parse(value);
-        _nextStep();
-      },
-    );
+        icon: Icons.date_range,
+        question: "Hangi yıllardan olsun?",
+        options: {
+          "2022": "Yeni Çıkanlar (Son 2 Yıl)",
+          "2010": "2010'lu Yıllar",
+          "2000": "2000'li Yıllar",
+          "1999": "Klasikler (2000 Öncesi)"
+        },
+        onSelect: (value) {
+          selectedYear = int.parse(value);
+          _nextStep();
+        },
+        appConstants: appConstants);
   }
 
-  Widget _buildImdbSelection() {
+  Widget _buildImdbSelection(AppConstants appConstants) {
     return _buildQuestionPage(
-      icon: Icons.star,
-      question: "IMDb puanı nasıl olsun?",
-      options: {
-        "8.0": "En iyiler (8+)",
-        "7.0": "İyi Olanlar (7+)",
-        "6.0": "Ortalama Üstü (6+)",
-        "0": "Farketmez"
-      },
-      onSelect: (value) {
-        imdbRating = double.parse(value);
-        _nextStep();
-      },
-    );
+        icon: Icons.star,
+        question: "IMDb puanı nasıl olsun?",
+        options: {
+          "8.0": "En iyiler (8+)",
+          "7.0": "İyi Olanlar (7+)",
+          "6.0": "Ortalama Üstü (6+)",
+          "0": "Farketmez"
+        },
+        onSelect: (value) {
+          imdbRating = double.parse(value);
+          _nextStep();
+        },
+        appConstants: appConstants);
   }
 
-  Widget _buildQuestionPage({
-    required IconData icon,
-    required String question,
-    required Map<String, String> options,
-    required Function(String) onSelect,
-  }) {
+  Widget _buildQuestionPage(
+      {required IconData icon,
+      required String question,
+      required Map<String, String> options,
+      required Function(String) onSelect,
+      required AppConstants appConstants}) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 50, color: Colors.white),
+            Icon(
+              icon,
+              size: 50,
+            ),
             SizedBox(height: 20),
             Text(
               question,
-              style: TextStyle(color: Colors.white, fontSize: 22),
+              style: TextStyle(fontSize: 22),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 30),
@@ -249,7 +253,7 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[850],
+                    backgroundColor: appConstants.cardColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -260,12 +264,13 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       entry.value,
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextStyle(
+                          color: appConstants.textColor, fontSize: 18),
                     ),
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -301,11 +306,11 @@ class MovieResultsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text("Önerilen Filmler"),
-        backgroundColor: Colors.black,
+        centerTitle: true,
       ),
       body: ListView.builder(
         itemCount: movies.length,
@@ -323,7 +328,7 @@ class MovieResultsPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey[900], // Koyu arka plan
+                color: appConstants.dialogColor, // Koyu arka plan
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -367,7 +372,6 @@ class MovieResultsPage extends StatelessWidget {
                                   Text(
                                     movie.title,
                                     style: TextStyle(
-                                      color: Colors.white,
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -380,7 +384,8 @@ class MovieResultsPage extends StatelessWidget {
                                   // Tür & Yıl - Güncellenmiş kısım
                                   Text(
                                     "$genreText • ${movie.releaseDate?.split("-")[0] ?? 'Bilinmiyor'}",
-                                    style: TextStyle(color: Colors.grey[400]),
+                                    style: TextStyle(
+                                        color: appConstants.textLightColor),
                                   ),
 
                                   SizedBox(height: 5),
@@ -389,12 +394,12 @@ class MovieResultsPage extends StatelessWidget {
                                   Row(
                                     children: [
                                       Icon(Icons.star,
-                                          color: Colors.yellow, size: 18),
+                                          color: Colors.amber, size: 18),
                                       SizedBox(width: 5),
                                       Text(
                                         "${movie.voteAverage}/10",
                                         style: TextStyle(
-                                          color: Colors.yellow,
+                                          color: Colors.amberAccent,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -406,7 +411,8 @@ class MovieResultsPage extends StatelessWidget {
                                   // Açıklama
                                   Text(
                                     movie.overview,
-                                    style: TextStyle(color: Colors.grey[400]),
+                                    style: TextStyle(
+                                        color: appConstants.dividerColor),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
