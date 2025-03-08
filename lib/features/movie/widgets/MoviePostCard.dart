@@ -4,6 +4,7 @@ import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart'
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
 import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/SpoilerWidget.dart';
 import 'package:film_atlasi/features/user/services/KaydetServices.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -93,9 +94,12 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       RatingDisplayWidget(rating: widget.moviePost.rating),
 
                       const SizedBox(height: 10),
-                      // Eğer normal post ise, film posteri ve detaylar gösterilecek
-                      Text(widget.moviePost.content,
-                          style: TextStyle(color: appConstants.textColor)),
+                      // Eğer normal post ise, film posteri ve
+                      widget.moviePost.isSpoiler
+                          ? SpoilerWidget(content: widget.moviePost.content)
+                          : Text(widget.moviePost.content,
+                              style: TextStyle(color: AppConstants.textColor)),
+
                       const SizedBox(height: 10),
                       FilmBilgiWidget(
                         movieId: widget.moviePost.filmId,

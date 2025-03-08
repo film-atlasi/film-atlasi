@@ -39,6 +39,7 @@ class PostServices {
             rating: (data['rating'] ?? 0)
                 .toDouble(), // ⭐️ Firestore'dan rating çekiyoruz!
             timestamp: data['timestamp'] as Timestamp,
+            isSpoiler: data['isSpoiler'] ?? false,
           );
         } else {
           return null;

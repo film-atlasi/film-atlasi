@@ -31,6 +31,7 @@ const String baseImageUrl = 'https://image.tmdb.org/t/p/w500';
 
 class _IletipaylasState extends State<Iletipaylas> {
   double _rating = 0.0;
+  bool _isSpoiler = false; // Kullanıcının spoiler seçeneğini takip edecek
   final TextEditingController _textEditingController = TextEditingController();
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -97,7 +98,8 @@ class _IletipaylasState extends State<Iletipaylas> {
         "rating": _rating, // 🔥 Burada puanı kaydediyoruz!
         "likedUsers": [],
         "timestamp": FieldValue.serverTimestamp(),
-        "source": "films"
+        "source": "films",
+        "isSpoiler": _isSpoiler,
       };
       Map<String, dynamic> postDataForUserCollection = {
         "postId": postId,
@@ -116,7 +118,8 @@ class _IletipaylasState extends State<Iletipaylas> {
         "rating": _rating, // 🔥 Burada puanı kaydediyoruz!
         "likedUsers": [],
         "timestamp": FieldValue.serverTimestamp(),
-        "source": "users"
+        "source": "users",
+        "isSpoiler": _isSpoiler,
       };
 
       await filmRef.collection("posts").doc(postId).set(postData);
@@ -129,7 +132,7 @@ class _IletipaylasState extends State<Iletipaylas> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('İnceleme paylaşıldı!')),
       );
-       await _fetchUserData(); // **Post paylaşılınca post sayısını güncelle**
+      await _fetchUserData(); // **Post paylaşılınca post sayısını güncelle**
 
       Navigator.of(context)
           .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
@@ -217,6 +220,22 @@ class _IletipaylasState extends State<Iletipaylas> {
                 });
               },
             ),
+            const SizedBox(height: 10), // Araya biraz boşluk ekliyoruz
+            Row(
+              children: [
+                Checkbox(
+                  value: _isSpoiler,
+                  onChanged: (value) {
+                    setState(() {
+                      _isSpoiler = value!;
+                    });
+                  },
+                ),
+                const Text("Spoiler içeriyor mu?",
+                    style: TextStyle(fontSize: 16)),
+              ],
+            ),
+            const SizedBox(height: 10), // Yorum alanı ile arasına boşluk koy
             SizedBox(height: 10),
             AddVerticalSpace(context, 0.01),
             const Divider(color: Color.fromARGB(255, 102, 102, 102)),
@@ -260,7 +279,6 @@ class _IletipaylasState extends State<Iletipaylas> {
             await submitForm();
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('İnceleme paylaşıldı!')),
-              
             );
             Navigator.of(context)
                 .pushNamedAndRemoveUntil('/anasayfa', (route) => false);

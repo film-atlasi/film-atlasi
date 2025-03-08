@@ -31,7 +31,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       Actor(name: "Yönetmen Bilinmiyor", character: "", id: -1);
   Map<String, String> watchProvidersWithIcons = {};
   int _selectedIndex = 0;
-  final bool _mounted = true;
   bool isLoading = false;
   Color? dominantColor = Colors.black; // 🎨 Renk paletini burada saklayacağız.
 
@@ -50,14 +49,16 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       NetworkImage('https://image.tmdb.org/t/p/w500${widget.movie.posterPath}'),
     );
 
-    setState(() {
-      dominantColor = paletteGenerator.darkMutedColor?.color ?? Colors.black;
-    });
+    if (mounted) {
+      setState(() {
+        dominantColor = paletteGenerator.darkMutedColor?.color ?? Colors.black;
+      });
+    }
   }
 
   Future<void> getDirector() async {
     final dir = await ActorService.getDirector(widget.movie.id);
-    if (_mounted) {
+    if (mounted) {
       setState(() {
         director = dir;
       });
@@ -67,7 +68,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   Future<void> fetchWatchProviders() async {
     final providers =
         await MovieService().getWatchProviders(int.parse(widget.movie.id));
-    if (_mounted) {
+    if (mounted) {
       setState(() {
         watchProvidersWithIcons = providers;
       });
@@ -102,6 +103,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           isQuote: doc["isQuote"] ?? false,
           rating: (doc["rating"] ?? 0).toDouble(),
           timestamp: doc['timestamp'] as Timestamp,
+          isSpoiler: doc['isSpoiler'] ?? false,
         ));
       }
       return posts;
@@ -116,7 +118,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       _selectedIndex = index;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {

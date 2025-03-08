@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MoviePost {
+  final bool isSpoiler;
   final String postId;
   final String userId;
   final String username;
@@ -21,6 +22,7 @@ class MoviePost {
   final Timestamp timestamp;
   MoviePost({
     this.documentSnapshot,
+    required this.isSpoiler,
     required this.postId,
     required this.userId,
     required this.username,
@@ -40,6 +42,7 @@ class MoviePost {
   factory MoviePost.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return MoviePost(
+      isSpoiler: data['isSpoiler'] as bool? ?? false,
       postId: data['postId'] as String,
       userId: data['userId'] as String,
       username: data['username'] as String,
@@ -84,6 +87,8 @@ class MoviePost {
 
   factory MoviePost.fromMap(Map<String, dynamic> map) {
     return MoviePost(
+      isSpoiler: map['isSpoiler'] as bool? ?? false,
+
       postId: map['postId'] as String,
       userId: map['userId'] as String, //
       username: map['username'] as String, //
@@ -106,6 +111,7 @@ class MoviePost {
   factory MoviePost.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return MoviePost(
+        isSpoiler: data['isSpoiler'] as bool? ?? false,
         postId: doc.id,
         userId: data['userId'] as String,
         username: data['username'] as String,
