@@ -25,6 +25,7 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
     _loadInitialSavedPosts();
   }
 
+  // **📌 İlk Kaydedilen Postları Yükle**
   Future<void> _loadInitialSavedPosts() async {
     if (!mounted) return;
 
@@ -32,15 +33,15 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
 
     final kaydedilenler = await _kaydetServices.getKaydedilenler();
 
-    _kaydedilenler = kaydedilenler;
-    lastDocument =
-        kaydedilenler.isNotEmpty ? kaydedilenler.last.documentSnapshot : null;
-
-
     if (!mounted) return;
-    setState(() => isLoading = false);
+    setState(() {
+      _kaydedilenler = kaydedilenler;
+      lastDocument = kaydedilenler.isNotEmpty ? kaydedilenler.last.documentSnapshot : null;
+      isLoading = false;
+    });
   }
 
+  // **📌 Daha Fazla Kaydedilen Post Yükle**
   Future<void> _loadMoreSavedPosts() async {
     if (isLoading || lastDocument == null) return;
 
@@ -55,51 +56,59 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
         .limit(_postLimit);
 
     var snapshot = await query.get();
-    var newPosts =
-        snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
-
-    if (newPosts.isNotEmpty) {
-      _kaydedilenler.addAll(newPosts);
-      lastDocument = snapshot.docs.last;
-    } else {
-      lastDocument = null;
-
-    }
-
+    var newPosts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
 
     if (!mounted) return;
-    setState(() => isLoading = false);
+    setState(() {
+      if (newPosts.isNotEmpty) {
+        _kaydedilenler.addAll(newPosts);
+        lastDocument = snapshot.docs.last;
+      } else {
+        lastDocument = null;
+      }
+      isLoading = false;
+    });
+  }
 
+  // **📌 Sayfayı Aşağı Çekerek Yenileme**
+  Future<void> _refreshSavedPosts() async {
+    setState(() {
+      _kaydedilenler.clear(); // Eski verileri temizle
+      lastDocument = null; // Son dokümanı sıfırla
+    });
+    await _loadInitialSavedPosts(); // Yeniden yükle
   }
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (scrollNotification) {
-        if (scrollNotification.metrics.pixels >=
-            scrollNotification.metrics.maxScrollExtent - 300) {
-          _loadMoreSavedPosts();
-        }
-        return false;
-      },
-      child: CustomScrollView(
-        slivers: [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index == _kaydedilenler.length) {
-                  return isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : const SizedBox.shrink();
-                }
-                return MoviePostCard(
-                  moviePost: _kaydedilenler[index],
-                );
-              },
-              childCount: _kaydedilenler.length + (isLoading ? 1 : 0),
+    return RefreshIndicator(
+      onRefresh: _refreshSavedPosts, // 🛠 Sayfa yenilendiğinde çalışacak fonksiyon
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification.metrics.pixels >= scrollNotification.metrics.maxScrollExtent - 300) {
+            _loadMoreSavedPosts();
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index == _kaydedilenler.length) {
+                    return isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink();
+                  }
+                  return MoviePostCard(
+                    moviePost: _kaydedilenler[index],
+                  );
+                },
+                childCount: _kaydedilenler.length + (isLoading ? 1 : 0),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

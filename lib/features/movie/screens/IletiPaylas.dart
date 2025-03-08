@@ -159,7 +159,7 @@ class _IletipaylasState extends State<Iletipaylas> {
             AutoSizeTextField(
               controller: _textEditingController,
               minFontSize: 16,
-              maxLines: 6,
+              maxLines: 10,
               style: const TextStyle(fontSize: 20),
               decoration: InputDecoration(
                 hintText: "Filmi nasıl buldunuz?",

@@ -23,6 +23,8 @@ class _BegeniListesiState extends State<BegeniListesi> {
     super.initState();
     _loadInitialLikedPosts();
   }
+
+  // **📌 İlk Beğenilen Postları Yükle**
   Future<void> _loadInitialLikedPosts() async {
     if (!mounted) return;
 
@@ -39,13 +41,16 @@ class _BegeniListesiState extends State<BegeniListesi> {
 
     List<MoviePost> yeniBegenilenler = await _fetchLikedPosts(snapshot);
 
-    _begenilenler.addAll(yeniBegenilenler);
-    lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-
     if (!mounted) return;
-    setState(() => isLoading = false);
+    setState(() {
+      _begenilenler.clear();
+      _begenilenler.addAll(yeniBegenilenler);
+      lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+      isLoading = false;
+    });
   }
 
+  // **📌 Daha Fazla Beğenilen Post Yükle**
   Future<void> _loadMoreLikedPosts() async {
     if (isLoading || lastDocument == null) return;
 
@@ -62,16 +67,16 @@ class _BegeniListesiState extends State<BegeniListesi> {
     var snapshot = await query.get();
     List<MoviePost> yeniBegenilenler = await _fetchLikedPosts(snapshot);
 
-    if (yeniBegenilenler.isNotEmpty) {
-      _begenilenler.addAll(yeniBegenilenler);
-      lastDocument = snapshot.docs.last;
-    } else {
-      lastDocument = null;
-
-    }
-
     if (!mounted) return;
-    setState(() => isLoading = false);
+    setState(() {
+      if (yeniBegenilenler.isNotEmpty) {
+        _begenilenler.addAll(yeniBegenilenler);
+        lastDocument = snapshot.docs.last;
+      } else {
+        lastDocument = null;
+      }
+      isLoading = false;
+    });
   }
 
   // **📌 Beğenilen postları getir**
@@ -95,37 +100,48 @@ class _BegeniListesiState extends State<BegeniListesi> {
       }
     }
     return yeniBegenilenler;
+  }
 
+  // **📌 Sayfayı Aşağı Çekerek Yenileme**
+  Future<void> _refreshLikedPosts() async {
+    setState(() {
+      _begenilenler.clear(); // Eski verileri temizle
+      lastDocument = null; // Son dokümanı sıfırla
+    });
+    await _loadInitialLikedPosts(); // Yeniden yükle
   }
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (scrollNotification) {
-        if (scrollNotification.metrics.pixels >=
-            scrollNotification.metrics.maxScrollExtent - 300) {
-          _loadMoreLikedPosts();
-        }
-        return false;
-      },
-      child: CustomScrollView(
-        slivers: [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index == _begenilenler.length) {
-                  return isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : const SizedBox.shrink();
-                }
-                return MoviePostCard(
-                  moviePost: _begenilenler[index],
-                );
-              },
-              childCount: _begenilenler.length + (isLoading ? 1 : 0),
+    return RefreshIndicator(
+      onRefresh: _refreshLikedPosts, // 🔄 Sayfa aşağı çekildiğinde yenileme
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification.metrics.pixels >=
+              scrollNotification.metrics.maxScrollExtent - 300) {
+            _loadMoreLikedPosts();
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index == _begenilenler.length) {
+                    return isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink();
+                  }
+                  return MoviePostCard(
+                    moviePost: _begenilenler[index],
+                  );
+                },
+                childCount: _begenilenler.length + (isLoading ? 1 : 0),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
