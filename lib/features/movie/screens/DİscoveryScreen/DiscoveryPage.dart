@@ -265,6 +265,8 @@ class DiscoveryPage extends StatelessWidget {
                       "Romantik Filmler",
                       provider.romanceMovies,
                     ),
+                    _buildMovieSection(
+                        context, "Netflix populer", provider.netflixMovies),
 
                     const SizedBox(height: 30),
                   ],

@@ -2,7 +2,6 @@ import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
-import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
@@ -25,11 +24,6 @@ class _IletipaylasState extends State<Iletipaylas> {
   final TextEditingController _textEditingController = TextEditingController();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Future<void> submitForm() async {
     final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
 
@@ -42,7 +36,6 @@ class _IletipaylasState extends State<Iletipaylas> {
 
     String filmId = widget.movie.id.toString();
     if (filmId.isEmpty || filmId == "null") {
-      print("⚠️ HATA: filmId boş veya geçersiz!");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Geçersiz film kimliği!')),
       );
@@ -50,7 +43,8 @@ class _IletipaylasState extends State<Iletipaylas> {
     }
 
     DocumentReference filmRef = firestore.collection("films").doc(filmId);
-    DocumentReference userDoc = firestore.collection("users").doc(currentUser.uid);
+    DocumentReference userDoc =
+        firestore.collection("users").doc(currentUser.uid);
 
     DocumentSnapshot userSnapshot = await userDoc.get();
     if (!userSnapshot.exists) {
@@ -76,13 +70,6 @@ class _IletipaylasState extends State<Iletipaylas> {
     }
 
     String postId = firestore.collection('posts').doc().id;
-    if (postId.isEmpty || postId == "null") {
-      print("⚠️ HATA: postId boş veya geçersiz!");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gönderi oluşturulamadı!')),
-      );
-      return;
-    }
 
     Map<String, dynamic> postData = {
       "postId": postId,
@@ -115,24 +102,17 @@ class _IletipaylasState extends State<Iletipaylas> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
         centerTitle: true,
-        title: RatingBar.builder(
-          initialRating: _rating,
-          minRating: 1,
-          direction: Axis.horizontal,
-          allowHalfRating: true,
-          itemCount: 5,
-          itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
-          onRatingUpdate: (rating) {
-            setState(() {
-              _rating = rating;
-            });
-          },
+        title: const Text(
+          "İleti Paylaş",
+          style: TextStyle(color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
@@ -141,47 +121,98 @@ class _IletipaylasState extends State<Iletipaylas> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FilmBilgiWidget(movieId: widget.movie.id),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Checkbox(
-                  value: _isSpoiler,
-                  onChanged: (value) {
-                    setState(() {
-                      _isSpoiler = value!;
-                    });
-                  },
-                ),
-                const Text("Spoiler içeriyor mu?", style: TextStyle(fontSize: 16)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            AutoSizeTextField(
-              controller: _textEditingController,
-              minFontSize: 16,
-              maxLines: 10,
-              style: const TextStyle(fontSize: 20),
-              decoration: InputDecoration(
-                hintText: "Filmi nasıl buldunuz?",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                contentPadding: const EdgeInsets.all(12),
+            const SizedBox(height: 15),
+            SwitchListTile(
+              title: const Text(
+                "Spoiler içeriyor mu?",
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
+              value: _isSpoiler,
+              activeColor: Colors.red,
+              onChanged: (value) {
+                setState(() {
+                  _isSpoiler = value;
+                });
+              },
             ),
             const SizedBox(height: 20),
             Center(
-              child: TextButton(
-                onPressed: () async {
+              child: RatingBar.builder(
+                initialRating: _rating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemBuilder: (context, _) =>
+                    const Icon(Icons.star, color: Colors.amber),
+                onRatingUpdate: (rating) {
+                  setState(() {
+                    _rating = rating;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(
+                height:
+                    30), // Yıldız ile görüş alanı arasına daha fazla boşluk eklendi
+            TextField(
+              controller: _textEditingController,
+              maxLines: 6,
+              style: const TextStyle(fontSize: 18, color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Filmi nasıl buldunuz?",
+                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                filled: true,
+                fillColor: Colors.grey.shade900,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white70),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 25),
+            Center(
+              child: GestureDetector(
+                onTap: () async {
                   if (_rating > 0 && _textEditingController.text.isNotEmpty) {
                     await submitForm();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Lütfen tüm alanları doldurun!')),
+                      const SnackBar(
+                          content: Text('Lütfen tüm alanları doldurun!')),
                     );
                   }
                 },
-                child: const Text('Paylaş'),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.redAccent, Colors.red],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.4),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    "Paylaş",
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ),
           ],
