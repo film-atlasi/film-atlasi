@@ -15,8 +15,8 @@ class PersonSearchResults extends StatelessWidget {
         itemCount: searchResults.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2, // 2 sütunlu grid
-          crossAxisSpacing: 8, // Yatay boşluk azaldı
-          mainAxisSpacing: 12, // Dikey boşluk ayarlandı
+          crossAxisSpacing: 4, // Yatay boşluk azaldı
+          mainAxisSpacing: 6, // Dikey boşluk ayarlandı
           childAspectRatio: 0.6, // Daha uzun dikdörtgen görünüm için oran değiştirildi
         ),
         itemBuilder: (context, index) => buildPersonCard(context, searchResults[index]),

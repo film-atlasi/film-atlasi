@@ -16,11 +16,10 @@ class SearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    if (searchResults.isEmpty) {
+    if (searchResults.isEmpty && mode == "search") {
       return const Center(
-          child: Text('Sonuç bulunamadı',
-              style: TextStyle(color: Colors.white70)));
+        child: Text('Sonuç bulunamadı',
+          style: TextStyle(color: Colors.white70)));
     }
 
     // Film ve kullanıcı sonuçlarını ayır

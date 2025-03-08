@@ -44,16 +44,6 @@ class _MoviePostCardState extends State<MoviePostCard> {
     final AppConstants appConstants = AppConstants(context);
     return Container(
       child: GestureDetector(
-        onLongPress: () {
-          if (widget.isOwnPost) {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                content: PostSilmeDuzenleme(moviePost: widget.moviePost),
-              ),
-            );
-          }
-        },
         child: Column(
           children: [
             Card(
@@ -68,6 +58,11 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       profilePhotoUrl: widget.moviePost.userPhotoUrl,
                       subtitle: widget.moviePost.username,
                       userId: widget.moviePost.userId,
+                      trailing: widget.isOwnPost
+                          ? PostSilmeDuzenleme(
+                              moviePost: widget.moviePost,
+                              filmId: widget.moviePost.filmId)
+                          : null,
                     ),
 
                     const SizedBox(height: 10),
