@@ -29,6 +29,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: '',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.chat),
+          label: '',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.explore),
           label: '',
         ),

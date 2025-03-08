@@ -303,4 +303,34 @@ class MovieService {
           '$startYear-$endYear yılları arasındaki filmler alınamadı');
     }
   }
+
+  Future<List<Movie>> fetchFilteredMovies({
+    required double minImdb,
+    required String genre,
+    required String country,
+    required int year,
+    required int minDuration,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/discover/movie?api_key=$apiKey'
+        '&language=tr-TR'
+        '&vote_average.gte=$minImdb'
+        '&with_genres=$genre'
+        '&primary_release_year=$year'
+        '&with_runtime.gte=$minDuration'
+        '&region=$country'
+        '&sort_by=popularity.desc',
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Filtrelenmiş filmler alınamadı');
+    }
+  }
 }
