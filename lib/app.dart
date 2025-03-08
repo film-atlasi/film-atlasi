@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/screens/FilmAsistani.dart/widget/MovieIntroPage.dart';
 import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
 import 'package:film_atlasi/features/movie/screens/DiscoverPage.dart';
@@ -18,8 +19,9 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
   final User? currentUser = FirebaseAuth.instance.currentUser;
   List<Widget> get _screens => [
         _selectedIndex == 0 ? Anasayfa() : Container(),
-        _selectedIndex == 1 ? DiscoverPage() : Container(),
-        _selectedIndex == 2
+        _selectedIndex == 1 ? MovieIntroPage() : Container(),
+        _selectedIndex == 2 ? DiscoverPage() : Container(),
+        _selectedIndex == 3
             ? UserPage(
                 userUid: currentUser!.uid,
                 fromProfile: true,

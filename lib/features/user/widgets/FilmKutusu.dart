@@ -14,7 +14,7 @@ class FilmKutusu extends StatefulWidget {
 
 class _FilmKutusuState extends State<FilmKutusu> {
   bool isCurrentUser = false;
-  List<dynamic> posts = [];
+  List<MoviePost> posts = [];
   bool isLoading = false;
   DocumentSnapshot? lastDocument;
   static const int _postLimit = 5;
@@ -26,10 +26,15 @@ class _FilmKutusuState extends State<FilmKutusu> {
     _loadInitialPosts();
   }
 
-  Future<void> _loadInitialPosts() async {
+  /// **🔥 İlk Postları Yükler**
+  Future<void> _loadInitialPosts({bool isRefresh = false}) async {
     if (!mounted) return;
-
     setState(() => isLoading = true);
+
+    if (isRefresh) {
+      posts.clear();
+      lastDocument = null;
+    }
 
     var query = FirebaseFirestore.instance
         .collection("users")
@@ -39,17 +44,18 @@ class _FilmKutusuState extends State<FilmKutusu> {
         .limit(_postLimit);
 
     var snapshot = await query.get();
+    List<MoviePost> newPosts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
 
-    posts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
-    lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-
-    if (!mounted) return;
-    setState(() => isLoading = false);
+    setState(() {
+      posts = newPosts;
+      lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+      isLoading = false;
+    });
   }
 
+  /// **🔥 Daha Fazla Post Yükler (Sayfalama)**
   Future<void> _loadMorePosts() async {
     if (isLoading || lastDocument == null) return;
-
     setState(() => isLoading = true);
 
     var query = FirebaseFirestore.instance
@@ -61,46 +67,51 @@ class _FilmKutusuState extends State<FilmKutusu> {
         .limit(_postLimit);
 
     var snapshot = await query.get();
-    var newPosts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
+    List<MoviePost> newPosts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
 
-    if (newPosts.isNotEmpty) {
-      posts.addAll(newPosts);
-      lastDocument = snapshot.docs.last;
-    } else {
-      lastDocument = null;
-    }
-
-    if (!mounted) return;
-    setState(() => isLoading = false);
+    setState(() {
+      if (newPosts.isNotEmpty) {
+        posts.addAll(newPosts);
+        lastDocument = snapshot.docs.last;
+      } else {
+        lastDocument = null;
+      }
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (scrollNotification) {
-        if (scrollNotification.metrics.pixels >= scrollNotification.metrics.maxScrollExtent - 300) {
-          _loadMorePosts();
-        }
-        return false;
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _loadInitialPosts(isRefresh: true);
       },
-      child: CustomScrollView(
-        slivers: [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index == posts.length) {
-                  return isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : const SizedBox.shrink();
-                }
-                return MoviePostCard(
-                  moviePost: posts[index],
-                );
-              },
-              childCount: posts.length + (isLoading ? 1 : 0),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification.metrics.pixels >= scrollNotification.metrics.maxScrollExtent - 300) {
+            _loadMorePosts();
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index == posts.length) {
+                    return isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink();
+                  }
+                  return MoviePostCard(
+                    moviePost: posts[index],
+                  );
+                },
+                childCount: posts.length + (isLoading ? 1 : 0),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

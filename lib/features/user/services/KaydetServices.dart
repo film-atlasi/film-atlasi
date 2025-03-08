@@ -81,7 +81,7 @@ class KaydetServices {
   }
 
   Future<List<MoviePost>> getKaydedilenler(
-      {DocumentSnapshot? lastDoc, int limit = 10}) async {
+      {DocumentSnapshot? lastDoc, int limit = 4}) async {
     Query query = _firestore
         .collection("users")
         .doc(currentUserId)
@@ -99,17 +99,21 @@ class KaydetServices {
     if (snapshot.docs.isEmpty) return kaydedilenler;
 
     for (final DocumentSnapshot doc in snapshot.docs) {
-      final DocumentSnapshot filmDoc = await _firestore
-          .collection("films")
-          .doc(doc["filmId"])
-          .collection("posts")
-          .doc(doc["postId"])
-          .get();
+      try {
+        final DocumentSnapshot filmDoc = await _firestore
+            .collection("films")
+            .doc(doc["filmId"])
+            .collection("posts")
+            .doc(doc["postId"])
+            .get();
 
-      final movie = PostServices.getPostByUid(doc["postId"]);
+        PostServices.getPostByUid(doc["postId"]);
 
-      final MoviePost film = MoviePost.fromDocument(filmDoc);
-      kaydedilenler.add(film);
+        final MoviePost film = MoviePost.fromDocument(filmDoc);
+        kaydedilenler.add(film);
+      } catch (e) {
+        // TODO
+      }
     }
 
     return kaydedilenler;

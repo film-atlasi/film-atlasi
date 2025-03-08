@@ -95,8 +95,8 @@ class AppTheme {
             padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Colors.white),
             ),
+            textStyle: const TextStyle(color: Colors.white),
           ),
         ),
         textButtonTheme: TextButtonThemeData(

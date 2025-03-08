@@ -1,3 +1,4 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
 import 'package:film_atlasi/features/movie/screens/FollowingFeedPage.dart';
 import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
@@ -33,11 +34,13 @@ class AnasayfaState extends State<Anasayfa>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer:  CustomDrawer(), // Drawer bileşeni burada çağrıldı.
+      drawer: CustomDrawer(), // Drawer bileşeni burada çağrıldı.
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
+              title: Text("Film Atlası".toUpperCase()),
+              centerTitle: true,
               actions: [
                 IconButton(
                   icon: const Icon(Icons.search),

@@ -99,7 +99,6 @@ class _UserPageState extends State<UserPage>
       final postSnapshot = await postsRef.get();
       return postSnapshot.docs.length; // 🔥 Mevcut postları sayıyoruz
     } catch (e) {
-      print("Post sayısı alınırken hata oluştu: $e");
       return 0; // Eğer hata olursa 0 döndür
     }
   }
@@ -118,7 +117,6 @@ class _UserPageState extends State<UserPage>
         isLoading = false;
       });
     } catch (e) {
-      print("Kullanıcı verisi çekilirken hata oluştu: $e");
       setState(() => isLoading = false);
     }
   }
@@ -209,8 +207,10 @@ class _UserPageState extends State<UserPage>
                 FilmKutusu(userUid: widget.userUid),
                 FilmListProfile(userUid: widget.userUid),
                 isCurrentUser
-                    ? const Kaydedilenler()
-                     : BegeniListesi(userUid: widget.userUid),
+                    ? Kaydedilenler(
+                        userUid: widget.userUid,
+                      )
+                    : BegeniListesi(userUid: widget.userUid),
               ],
             ),
     );
@@ -289,8 +289,7 @@ class _UserPageState extends State<UserPage>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildStatItem(
-                userData!.posts.toString(), "Gönderi", appConstants),
+            _buildStatItem(userData!.posts.toString(), "Gönderi", appConstants),
             _buildStatItem(
                 userData!.following.toString(), "Takip Edilen", appConstants),
             _buildStatItem(
@@ -385,8 +384,4 @@ class _UserPageState extends State<UserPage>
       },
     );
   }
-
-  
-
-
 }

@@ -5,7 +5,8 @@ import 'package:film_atlasi/features/user/services/KaydetServices.dart';
 import 'package:flutter/material.dart';
 
 class Kaydedilenler extends StatefulWidget {
-  const Kaydedilenler({super.key});
+  final String userUid;
+  const Kaydedilenler({super.key, required this.userUid});
 
   @override
   State<Kaydedilenler> createState() => _KaydedilenlerState();
@@ -13,66 +14,102 @@ class Kaydedilenler extends StatefulWidget {
 
 class _KaydedilenlerState extends State<Kaydedilenler> {
   final KaydetServices _kaydetServices = KaydetServices();
-  final ScrollController _scrollController = ScrollController();
   List<MoviePost> _kaydedilenler = [];
-  DocumentSnapshot? _lastDoc;
-  bool _isLoading = false;
-  bool _hasMore = true;
+  bool isLoading = false;
+  DocumentSnapshot? lastDocument;
+  static const int _postLimit = 5;
 
   @override
   void initState() {
     super.initState();
-    _fetchKaydedilenler();
-    _scrollController.addListener(_onScroll);
+    _loadInitialSavedPosts();
   }
 
-  Future<void> _fetchKaydedilenler() async {
-    if (_isLoading || !_hasMore) return;
-    setState(() {
-      _isLoading = true;
-    });
+  // **📌 İlk Kaydedilen Postları Yükle**
+  Future<void> _loadInitialSavedPosts() async {
+    if (!mounted) return;
 
-    final List<MoviePost> newKaydedilenler =
-        await _kaydetServices.getKaydedilenler(
-      lastDoc: _lastDoc,
-    );
+    setState(() => isLoading = true);
 
+    final kaydedilenler = await _kaydetServices.getKaydedilenler();
+
+    if (!mounted) return;
     setState(() {
-      _kaydedilenler.addAll(newKaydedilenler);
-      _lastDoc = newKaydedilenler.isNotEmpty
-          ? newKaydedilenler.last.documentSnapshot
-          : null;
-      _isLoading = false;
-      _hasMore = newKaydedilenler.length == 5;
+      _kaydedilenler = kaydedilenler;
+      lastDocument = kaydedilenler.isNotEmpty ? kaydedilenler.last.documentSnapshot : null;
+      isLoading = false;
     });
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      _fetchKaydedilenler();
-    }
+  // **📌 Daha Fazla Kaydedilen Post Yükle**
+  Future<void> _loadMoreSavedPosts() async {
+    if (isLoading || lastDocument == null) return;
+
+    setState(() => isLoading = true);
+
+    var query = FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget.userUid)
+        .collection("saved_posts") // 🔥 Kaydedilen postlar koleksiyonu
+        .orderBy("timestamp", descending: true)
+        .startAfterDocument(lastDocument!)
+        .limit(_postLimit);
+
+    var snapshot = await query.get();
+    var newPosts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
+
+    if (!mounted) return;
+    setState(() {
+      if (newPosts.isNotEmpty) {
+        _kaydedilenler.addAll(newPosts);
+        lastDocument = snapshot.docs.last;
+      } else {
+        lastDocument = null;
+      }
+      isLoading = false;
+    });
+  }
+
+  // **📌 Sayfayı Aşağı Çekerek Yenileme**
+  Future<void> _refreshSavedPosts() async {
+    setState(() {
+      _kaydedilenler.clear(); // Eski verileri temizle
+      lastDocument = null; // Son dokümanı sıfırla
+    });
+    await _loadInitialSavedPosts(); // Yeniden yükle
   }
 
   @override
   Widget build(BuildContext context) {
-    return _kaydedilenler.isEmpty && _isLoading
-        ? Center(child: CircularProgressIndicator())
-        : ListView.builder(
-            controller: _scrollController,
-            itemCount: _kaydedilenler.length + (_hasMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == _kaydedilenler.length) {
-                return Center(child: CircularProgressIndicator());
-              }
-              return MoviePostCard(moviePost: _kaydedilenler[index]);
-            },
-          );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+    return RefreshIndicator(
+      onRefresh: _refreshSavedPosts, // 🛠 Sayfa yenilendiğinde çalışacak fonksiyon
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (scrollNotification) {
+          if (scrollNotification.metrics.pixels >= scrollNotification.metrics.maxScrollExtent - 300) {
+            _loadMoreSavedPosts();
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index == _kaydedilenler.length) {
+                    return isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : const SizedBox.shrink();
+                  }
+                  return MoviePostCard(
+                    moviePost: _kaydedilenler[index],
+                  );
+                },
+                childCount: _kaydedilenler.length + (isLoading ? 1 : 0),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
