@@ -12,7 +12,9 @@ class NotificationService {
       String? postId = "",
       String? photo = ""}) async {
     try {
-      print("object");
+
+      if(toUserId == fromUserId) return;
+
       await _firestore
           .collection("users")
           .doc(toUserId) // Kullanıcının UID’si (Bildirim alacak kişi)
