@@ -1,6 +1,8 @@
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FilmListProfile extends StatefulWidget {
   final String userUid;
@@ -16,7 +18,6 @@ class _FilmListProfileState extends State<FilmListProfile> {
   List<Map<String, dynamic>> _userFilmLists = [];
   final Map<String, List<Map<String, dynamic>>?> _moviesMap = {};
   final Map<String, bool> _loadingStatus = {};
-
   bool isLoading = true;
 
   @override
@@ -25,7 +26,18 @@ class _FilmListProfileState extends State<FilmListProfile> {
     fetchUserFilmLists();
   }
 
-  void fetchUserFilmLists() async {
+  /// **🔥 Kullanıcının film listelerini getirir**
+  Future<void> fetchUserFilmLists({bool isRefresh = false}) async {
+    if (isRefresh) {
+      setState(() {
+        _userFilmLists.clear();
+        _moviesMap.clear();
+        _loadingStatus.clear();
+      });
+    }
+
+    setState(() => isLoading = true);
+
     QuerySnapshot snapshot = await firestore
         .collection("film_listeleri")
         .where('userId', isEqualTo: widget.userUid)
@@ -37,7 +49,7 @@ class _FilmListProfileState extends State<FilmListProfile> {
         "name": doc["name"],
         "lastFourMovies": doc["movies"].length > 4
             ? doc["movies"].sublist(0, 4)
-            : doc["movies"], // Son 4 filmi al
+            : doc["movies"],
       };
     }).toList();
 
@@ -47,6 +59,7 @@ class _FilmListProfileState extends State<FilmListProfile> {
     });
   }
 
+  /// **🔥 Belirli bir listeye ait filmleri getirir**
   void fetchMoviesForList(String listId) async {
     if (_moviesMap[listId] != null) return;
 
@@ -72,123 +85,128 @@ class _FilmListProfileState extends State<FilmListProfile> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Colors.redAccent))
-          : _userFilmLists.isEmpty
-              ? const Center(
-                  child: Text(
-                    "Henüz hiç film listesi oluşturulmadı.",
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: _userFilmLists.length,
-                  itemBuilder: (context, index) {
-                    Map<String, dynamic> filmList = _userFilmLists[index];
-                    String listId = filmList["id"];
-                    List<dynamic>? lastFourMovies = filmList["lastFourMovies"];
+    return RefreshIndicator(
+      onRefresh: () async {
+        await fetchUserFilmLists(isRefresh: true);
+      },
+      child: Scaffold(
+        body: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Colors.redAccent))
+            : _userFilmLists.isEmpty
+                ? const Center(
+                    child: Text(
+                      "Henüz hiç film listesi oluşturulmadı.",
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _userFilmLists.length,
+                    itemBuilder: (context, index) {
+                      Map<String, dynamic> filmList = _userFilmLists[index];
+                      String listId = filmList["id"];
+                      List<dynamic>? lastFourMovies = filmList["lastFourMovies"];
 
-                    return Card(
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 16),
-                      child: ExpansionTile(
-                        title: Text(
-                          filmList["name"].toString().toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 21,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      return Card(
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        subtitle: Row(
-                          children: [
-                            if (lastFourMovies != null)
-                              ...lastFourMovies.map((movie) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 6.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: movie["posterPath"] != null &&
-                                            movie["posterPath"].isNotEmpty
-                                        ? Image.network(
-                                            "https://image.tmdb.org/t/p/w200${movie["posterPath"]}",
-                                            width: 20,
-                                            height: 30,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                              return Container(
-                                                width: 50,
-                                                height: 70,
-                                                color: Colors.grey.shade800,
-                                                child: const Icon(
-                                                  Icons.movie,
-                                                  color: Colors.white70,
-                                                  size: 30,
-                                                ),
-                                              );
-                                            },
-                                          )
-                                        : Container(
-                                            width: 50,
-                                            height: 70,
-                                            color: Colors.grey.shade800,
-                                            child: const Icon(
-                                              Icons.movie,
-                                              color: Colors.white70,
-                                              size: 30,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 16),
+                        child: ExpansionTile(
+                          title: Text(
+                            filmList["name"].toString().toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Row(
+                            children: [
+                              if (lastFourMovies != null)
+                                ...lastFourMovies.map((movie) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 6.0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: movie["posterPath"] != null &&
+                                              movie["posterPath"].isNotEmpty
+                                          ? Image.network(
+                                              "https://image.tmdb.org/t/p/w200${movie["posterPath"]}",
+                                              width: 20,
+                                              height: 30,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return Container(
+                                                  width: 50,
+                                                  height: 70,
+                                                  color: Colors.grey.shade800,
+                                                  child: const Icon(
+                                                    Icons.movie,
+                                                    color: Colors.white70,
+                                                    size: 30,
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Container(
+                                              width: 50,
+                                              height: 70,
+                                              color: Colors.grey.shade800,
+                                              child: const Icon(
+                                                Icons.movie,
+                                                color: Colors.white70,
+                                                size: 30,
+                                              ),
                                             ),
-                                          ),
+                                    ),
+                                  );
+                                }),
+                            ],
+                          ),
+                          onExpansionChanged: (isExpanded) {
+                            if (isExpanded) {
+                              fetchMoviesForList(listId);
+                            }
+                          },
+                          children: [
+                            if (_loadingStatus[listId] == true)
+                              const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                        color: Colors.redAccent)),
+                              )
+                            else if (_moviesMap[listId] == null ||
+                                _moviesMap[listId]!.isEmpty)
+                              const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Center(
+                                  child: Text(
+                                    "Bu listede henüz film yok.",
                                   ),
-                                );
-                              }),
+                                ),
+                              )
+                            else
+                              Column(
+                                children: _moviesMap[listId]!.map((movie) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: FilmBilgiWidget(
+                                      movieId: movie["id"],
+                                      oyuncular: false,
+                                      posterHeight: 100,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                           ],
                         ),
-                        onExpansionChanged: (isExpanded) {
-                          if (isExpanded) {
-                            fetchMoviesForList(listId);
-                          }
-                        },
-                        children: [
-                          if (_loadingStatus[listId] == true)
-                            const Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Center(
-                                  child: CircularProgressIndicator(
-                                      color: Colors.redAccent)),
-                            )
-                          else if (_moviesMap[listId] == null ||
-                              _moviesMap[listId]!.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Center(
-                                child: Text(
-                                  "Bu listede henüz film yok.",
-                                ),
-                              ),
-                            )
-                          else
-                            Column(
-                              children: _moviesMap[listId]!.map((movie) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: FilmBilgiWidget(
-                                    movieId: movie["id"],
-                                    oyuncular: false,
-                                    posterHeight: 100,
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+      ),
     );
   }
 }

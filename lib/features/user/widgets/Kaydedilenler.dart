@@ -36,6 +36,7 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
     lastDocument =
         kaydedilenler.isNotEmpty ? kaydedilenler.last.documentSnapshot : null;
 
+
     if (!mounted) return;
     setState(() => isLoading = false);
   }
@@ -62,10 +63,13 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
       lastDocument = snapshot.docs.last;
     } else {
       lastDocument = null;
+
     }
+
 
     if (!mounted) return;
     setState(() => isLoading = false);
+
   }
 
   @override

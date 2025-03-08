@@ -23,7 +23,6 @@ class _BegeniListesiState extends State<BegeniListesi> {
     super.initState();
     _loadInitialLikedPosts();
   }
-
   Future<void> _loadInitialLikedPosts() async {
     if (!mounted) return;
 
@@ -68,6 +67,7 @@ class _BegeniListesiState extends State<BegeniListesi> {
       lastDocument = snapshot.docs.last;
     } else {
       lastDocument = null;
+
     }
 
     if (!mounted) return;
@@ -95,6 +95,7 @@ class _BegeniListesiState extends State<BegeniListesi> {
       }
     }
     return yeniBegenilenler;
+
   }
 
   @override

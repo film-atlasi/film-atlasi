@@ -1,4 +1,4 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "cmake.sourceDirectory": "C:/Users/celal/Desktop/Github/film2/linux"
+    "cmake.sourceDirectory": "/home/muhammedmert/film-atlasi/linux"
 }
