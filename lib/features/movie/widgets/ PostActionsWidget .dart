@@ -28,6 +28,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late Stream<DocumentSnapshot> _postStream;
   bool _isLiked = false;
+  bool _isLikeLoading = false;
 
   @override
   void initState() {
@@ -70,6 +71,10 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     final user = _auth.currentUser;
     if (user == null) return;
 
+    setState(() {
+      _isLikeLoading = true;
+    });
+
     // Batch işlemi oluştur
     final batch = _firestore.batch();
     final filmRef = _firestore.collection('films').doc(widget.filmId);
@@ -78,13 +83,16 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     final userRef = _firestore.collection('users').doc(user.uid);
     final userDoc = await userRef.get();
 
+    // Kullanıcının beğendiği postları sakladığımız referans
+    final userLikedPostRef = userRef.collection("begenilenler").doc(widget.postId);
+
     try {
-      // Önce mevcut durumu kontrol et
       final likeDoc = await likeRef.get();
 
       if (likeDoc.exists) {
-        // Beğeniyi kaldır
+        // 🔥 Beğeniyi kaldır
         batch.delete(likeRef);
+        batch.delete(userLikedPostRef); // ✅ Kullanıcının beğenilenlerinden de kaldır
         batch.update(postRef, {'likes': FieldValue.increment(-1)});
 
         if (mounted) {
@@ -93,19 +101,27 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
           });
         }
       } else {
-        // Beğeni ekle
+        // 🔥 Beğeni ekle
         batch.set(likeRef, {
           'userId': user.uid,
           'userName': userDoc["userName"] ?? 'Kullanıcı',
           'timestamp': FieldValue.serverTimestamp(),
           'profilePhotoUrl': userDoc["profilePhotoUrl"]
         });
+
         batch.update(postRef, {'likes': FieldValue.increment(1)});
 
-//bildirim ekle begeni
+        // ✅ Beğenilen postu kullanıcının koleksiyonuna ekle
+        batch.set(userLikedPostRef, {
+          'postId': widget.postId,
+          'filmId': widget.filmId,
+          'filmName': postRef.id,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+        // 🔥 Beğeni Bildirimi Gönder
         final postOwner = await postRef.get();
-        final postOwnerId =
-            postOwner.data()?['userId']; // Post sahibinin UID’si
+        final postOwnerId = postOwner.data()?['userId']; // Post sahibinin UID’si
         if (postOwnerId != null) {
           await NotificationService().addNotification(
               toUserId: postOwnerId,
@@ -120,16 +136,17 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
         if (mounted) {
           setState(() {
             _isLiked = true;
+            _isLikeLoading = false;
           });
         }
       }
 
-      // Batch işlemini commit et
       await batch.commit();
     } catch (e) {
-      print('Beğeni işlemi sırasında hata: $e');
+      print('🔥 Beğeni işlemi sırasında hata: $e');
     }
-  }
+}
+
 
   void _navigateToComments() async {
     await showModalBottomSheet(
@@ -204,13 +221,6 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
     );
   }
 
-  void _sharePost() {
-    // Paylaşma mantığı burada
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Paylaşma özelliği yakında!')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final AppConstants appConstants = AppConstants(context);
@@ -233,11 +243,6 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
                     color: appConstants.textLightColor),
               ),
               Text('0', style: TextStyle(color: appConstants.textColor)),
-              SizedBox(width: 20),
-              IconButton(
-                onPressed: null,
-                icon: Icon(Icons.share, color: appConstants.textLightColor),
-              ),
             ],
           );
         }
@@ -250,7 +255,7 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
           children: [
             // Beğeni Butonu
             IconButton(
-              onPressed: _toggleLike,
+              onPressed: !_isLikeLoading ? _toggleLike : null,
               icon: Icon(
                 _isLiked ? Icons.favorite : Icons.favorite_border,
                 color: _isLiked ? Colors.red : appConstants.textColor,
@@ -275,12 +280,6 @@ class _PostActionsWidgetState extends State<PostActionsWidget> {
               style: TextStyle(color: appConstants.textColor),
             ),
             SizedBox(width: 20),
-
-            // Paylaş Butonu
-            IconButton(
-              onPressed: _sharePost,
-              icon: Icon(Icons.share, color: appConstants.textColor),
-            ),
           ],
         );
       },

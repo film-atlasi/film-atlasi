@@ -1,5 +1,6 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
@@ -33,11 +34,15 @@ class _IletipaylasState extends State<Iletipaylas> {
   double _rating = 0.0;
   bool _isSpoiler = false; // Kullanıcının spoiler seçeneğini takip edecek
   final TextEditingController _textEditingController = TextEditingController();
+  bool isLoading = false;
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> submitForm() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       final film = widget.movie;
       final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
 
@@ -273,26 +278,30 @@ class _IletipaylasState extends State<Iletipaylas> {
 
   Center buildPaylasButton(BuildContext context) {
     return Center(
-      child: ElevatedButton(
-        onPressed: () async {
-          if (_rating > 0 && _textEditingController.text.isNotEmpty) {
-            await submitForm();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('İnceleme paylaşıldı!')),
-            );
-            Navigator.of(context)
-                .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Lütfen tüm alanları doldurun!')),
-            );
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-        ),
-        child: const Text('Paylaş'),
-      ),
+      child: isLoading
+          ? TextButton(
+              onPressed: null,
+              child: CircularProgressIndicator(
+                color: AppConstants(context).textColor,
+              ))
+          : TextButton(
+              onPressed: () async {
+                if (_rating > 0 && _textEditingController.text.isNotEmpty) {
+                  await submitForm();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('İnceleme paylaşıldı!')),
+                  );
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Lütfen tüm alanları doldurun!')),
+                  );
+                }
+              },
+              child: const Text('Paylaş'),
+            ),
     );
   }
 }

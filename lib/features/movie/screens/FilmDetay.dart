@@ -14,7 +14,6 @@ import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvata
 import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/PlatformWidget.dart';
 
-import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 import 'package:shimmer/shimmer.dart';
 
 class MovieDetailsPage extends StatefulWidget {
@@ -30,7 +29,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   late Actor director =
       Actor(name: "Yönetmen Bilinmiyor", character: "", id: -1);
   Map<String, String> watchProvidersWithIcons = {};
-  int _selectedIndex = 0;
   bool isLoading = false;
   Color? dominantColor = Colors.black; // 🎨 Renk paletini burada saklayacağız.
 
@@ -111,12 +109,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
       print("🔥 HATA: fetchMoviePosts() içinde hata oluştu: $e");
       return [];
     }
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 
   @override

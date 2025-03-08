@@ -72,7 +72,7 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
       style: TextStyle(color: appConstants.textColor),
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-        hintText: 'Film ara...',
+        hintText: 'Film veya kullanıcı ara...',
         hintStyle: TextStyle(color: appConstants.textLightColor),
         filled: true,
         fillColor: appConstants.bottomColor,

@@ -43,7 +43,7 @@ class _KaydedilenlerState extends State<Kaydedilenler> {
           ? newKaydedilenler.last.documentSnapshot
           : null;
       _isLoading = false;
-      _hasMore = newKaydedilenler.length == 10;
+      _hasMore = newKaydedilenler.length == 5;
     });
   }
 
