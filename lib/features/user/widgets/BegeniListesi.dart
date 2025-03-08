@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 class BegeniListesi extends StatefulWidget {
   final String userUid;
-
   const BegeniListesi({super.key, required this.userUid});
 
   @override
@@ -14,124 +13,120 @@ class BegeniListesi extends StatefulWidget {
 
 class _BegeniListesiState extends State<BegeniListesi> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final ScrollController _scrollController = ScrollController();
-  List<MoviePost> _begenilenler = [];
-  DocumentSnapshot? _lastDoc;
-  bool _isLoading = false;
-  bool _hasMore = true;
+  final List<MoviePost> _begenilenler = [];
+  bool isLoading = false;
+  DocumentSnapshot? lastDocument;
+  static const int _postLimit = 5;
 
   @override
   void initState() {
     super.initState();
-    _fetchBegeniListesi();
-    _scrollController.addListener(_onScroll);
+    _loadInitialLikedPosts();
+  }
+  Future<void> _loadInitialLikedPosts() async {
+    if (!mounted) return;
+
+    setState(() => isLoading = true);
+
+    var query = _firestore
+        .collection("users")
+        .doc(widget.userUid)
+        .collection("begenilenler")
+        .orderBy("timestamp", descending: true)
+        .limit(_postLimit);
+
+    var snapshot = await query.get();
+
+    List<MoviePost> yeniBegenilenler = await _fetchLikedPosts(snapshot);
+
+    _begenilenler.addAll(yeniBegenilenler);
+    lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
-  Future<void> _fetchBegeniListesi({bool isRefresh = false}) async {
-    if (_isLoading) return;
-    setState(() => _isLoading = true);
+  Future<void> _loadMoreLikedPosts() async {
+    if (isLoading || lastDocument == null) return;
 
-    if (isRefresh) {
-      _begenilenler.clear();
-      _lastDoc = null;
-      _hasMore = true;
+    setState(() => isLoading = true);
+
+    var query = _firestore
+        .collection("users")
+        .doc(widget.userUid)
+        .collection("begenilenler")
+        .orderBy("timestamp", descending: true)
+        .startAfterDocument(lastDocument!)
+        .limit(_postLimit);
+
+    var snapshot = await query.get();
+    List<MoviePost> yeniBegenilenler = await _fetchLikedPosts(snapshot);
+
+    if (yeniBegenilenler.isNotEmpty) {
+      _begenilenler.addAll(yeniBegenilenler);
+      lastDocument = snapshot.docs.last;
+    } else {
+      lastDocument = null;
+
     }
 
-    try {
-      Query query = _firestore
-          .collection("users")
-          .doc(widget.userUid)
-          .collection("begenilenler")
-          .orderBy("timestamp", descending: true)
-          .limit(10);
-
-      if (_lastDoc != null && !isRefresh) {
-        query = query.startAfterDocument(_lastDoc!);
-      }
-
-      QuerySnapshot querySnapshot = await query.get();
-
-      List<MoviePost> yeniBegenilenler = [];
-
-      for (var doc in querySnapshot.docs) {
-        String postId = doc['postId'];
-        String filmId = doc['filmId'];
-
-        DocumentSnapshot postSnapshot = await _firestore
-            .collection("films")
-            .doc(filmId)
-            .collection("posts")
-            .doc(postId)
-            .get();
-
-        if (postSnapshot.exists) {
-          var data = postSnapshot.data() as Map<String, dynamic>;
-          yeniBegenilenler.add(MoviePost(
-            postId: postId,
-            userId: data["userId"],
-            firstName: data["firstName"],
-            userPhotoUrl: data["userPhotoUrl"],
-            username: data["username"],
-            filmId: filmId,
-            filmName: data["filmName"] ?? "Film Adı Yok",
-            filmIcerik: data["filmIcerik"] ?? "",
-            content: data["content"],
-            likes: data["likes"] ?? 0,
-            comments: data["comments"] ?? 0,
-            isQuote: data["isQuote"] ?? false,
-            rating: (data["rating"] ?? 0).toDouble(),
-            timestamp: data["timestamp"] as Timestamp,
-            isSpoiler: data["isSpoiler"] ?? false,
-          ));
-        }
-      }
-
-      setState(() {
-        if (isRefresh) {
-          _begenilenler = yeniBegenilenler;
-        } else {
-          _begenilenler.addAll(yeniBegenilenler);
-        }
-        _lastDoc = querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
-        _isLoading = false;
-        _hasMore = yeniBegenilenler.length == 10;
-      });
-    } catch (e) {
-      print("🔥 Hata: Beğenilen postlar çekilemedi: $e");
-      setState(() => _isLoading = false);
-    }
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-      _fetchBegeniListesi();
+  // **📌 Beğenilen postları getir**
+  Future<List<MoviePost>> _fetchLikedPosts(QuerySnapshot snapshot) async {
+    List<MoviePost> yeniBegenilenler = [];
+
+    for (var doc in snapshot.docs) {
+      String postId = doc['postId'];
+      String filmId = doc['filmId'];
+
+      // 🎯 Firestore'dan beğenilen postu getir
+      DocumentSnapshot postSnapshot = await _firestore
+          .collection("films")
+          .doc(filmId)
+          .collection("posts")
+          .doc(postId)
+          .get();
+
+      if (postSnapshot.exists) {
+        yeniBegenilenler.add(MoviePost.fromDocument(postSnapshot));
+      }
     }
+    return yeniBegenilenler;
+
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        await _fetchBegeniListesi(isRefresh: true);
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollNotification) {
+        if (scrollNotification.metrics.pixels >=
+            scrollNotification.metrics.maxScrollExtent - 300) {
+          _loadMoreLikedPosts();
+        }
+        return false;
       },
-      child: _begenilenler.isEmpty && _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              controller: _scrollController,
-              itemCount: _begenilenler.length + (_hasMore ? 1 : 0),
-              itemBuilder: (context, index) {
+      child: CustomScrollView(
+        slivers: [
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
                 if (index == _begenilenler.length) {
-                  return const Center(child: CircularProgressIndicator());
+                  return isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : const SizedBox.shrink();
                 }
-                return MoviePostCard(moviePost: _begenilenler[index]);
+                return MoviePostCard(
+                  moviePost: _begenilenler[index],
+                );
               },
+              childCount: _begenilenler.length + (isLoading ? 1 : 0),
             ),
+          ),
+        ],
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }

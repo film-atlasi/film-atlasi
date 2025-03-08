@@ -1,4 +1,6 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:flutter/material.dart';
 

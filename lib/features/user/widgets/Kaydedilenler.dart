@@ -5,7 +5,8 @@ import 'package:film_atlasi/features/user/services/KaydetServices.dart';
 import 'package:flutter/material.dart';
 
 class Kaydedilenler extends StatefulWidget {
-  const Kaydedilenler({super.key});
+  final String userUid;
+  const Kaydedilenler({super.key, required this.userUid});
 
   @override
   State<Kaydedilenler> createState() => _KaydedilenlerState();
@@ -13,78 +14,93 @@ class Kaydedilenler extends StatefulWidget {
 
 class _KaydedilenlerState extends State<Kaydedilenler> {
   final KaydetServices _kaydetServices = KaydetServices();
-  final ScrollController _scrollController = ScrollController();
   List<MoviePost> _kaydedilenler = [];
-  DocumentSnapshot? _lastDoc;
-  bool _isLoading = false;
-  bool _hasMore = true;
+  bool isLoading = false;
+  DocumentSnapshot? lastDocument;
+  static const int _postLimit = 5;
 
   @override
   void initState() {
     super.initState();
-    _fetchKaydedilenler();
-    _scrollController.addListener(_onScroll);
+    _loadInitialSavedPosts();
   }
 
-  /// **🔥 Kaydedilen postları getirir**
-  Future<void> _fetchKaydedilenler({bool isRefresh = false}) async {
-    if (_isLoading || (!_hasMore && !isRefresh)) return;
+  Future<void> _loadInitialSavedPosts() async {
+    if (!mounted) return;
 
-    if (isRefresh) {
-      setState(() {
-        _kaydedilenler.clear();
-        _lastDoc = null;
-        _hasMore = true;
-      });
-    }
+    setState(() => isLoading = true);
 
-    setState(() => _isLoading = true);
+    final kaydedilenler = await _kaydetServices.getKaydedilenler();
 
-    final List<MoviePost> newKaydedilenler =
-        await _kaydetServices.getKaydedilenler(lastDoc: _lastDoc);
+    _kaydedilenler = kaydedilenler;
+    lastDocument =
+        kaydedilenler.isNotEmpty ? kaydedilenler.last.documentSnapshot : null;
 
-    setState(() {
-      _kaydedilenler.addAll(newKaydedilenler);
-      _lastDoc = newKaydedilenler.isNotEmpty
-          ? newKaydedilenler.last.documentSnapshot
-          : null;
-      _isLoading = false;
-      _hasMore = newKaydedilenler.length == 5;
-    });
+
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
 
-  /// **🔥 Sonsuz kaydırma için ek veri yükleme**
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 100) {
-      _fetchKaydedilenler();
+  Future<void> _loadMoreSavedPosts() async {
+    if (isLoading || lastDocument == null) return;
+
+    setState(() => isLoading = true);
+
+    var query = FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget.userUid)
+        .collection("saved_posts") // 🔥 Kaydedilen postlar koleksiyonu
+        .orderBy("timestamp", descending: true)
+        .startAfterDocument(lastDocument!)
+        .limit(_postLimit);
+
+    var snapshot = await query.get();
+    var newPosts =
+        snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
+
+    if (newPosts.isNotEmpty) {
+      _kaydedilenler.addAll(newPosts);
+      lastDocument = snapshot.docs.last;
+    } else {
+      lastDocument = null;
+
     }
+
+
+    if (!mounted) return;
+    setState(() => isLoading = false);
+
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        await _fetchKaydedilenler(isRefresh: true);
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollNotification) {
+        if (scrollNotification.metrics.pixels >=
+            scrollNotification.metrics.maxScrollExtent - 300) {
+          _loadMoreSavedPosts();
+        }
+        return false;
       },
-      child: _kaydedilenler.isEmpty && _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              controller: _scrollController,
-              itemCount: _kaydedilenler.length + (_hasMore ? 1 : 0),
-              itemBuilder: (context, index) {
+      child: CustomScrollView(
+        slivers: [
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
                 if (index == _kaydedilenler.length) {
-                  return const Center(child: CircularProgressIndicator());
+                  return isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : const SizedBox.shrink();
                 }
-                return MoviePostCard(moviePost: _kaydedilenler[index]);
+                return MoviePostCard(
+                  moviePost: _kaydedilenler[index],
+                );
               },
+              childCount: _kaydedilenler.length + (isLoading ? 1 : 0),
             ),
+          ),
+        ],
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }
