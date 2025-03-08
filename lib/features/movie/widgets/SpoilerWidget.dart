@@ -1,4 +1,6 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class SpoilerWidget extends StatefulWidget {
   final String content;
@@ -14,36 +16,60 @@ class _SpoilerWidgetState extends State<SpoilerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return GestureDetector(
       onTap: () => setState(() => isRevealed = true),
       child: Container(
-        width: double.infinity, // ✅ Ekran genişliğine göre ayarla
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width *
-              0.85, // ✅ Maksimum genişliği ekranın %85'i kadar yap
-        ),
-        padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isRevealed ? Colors.transparent : Colors.grey.shade800,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: isRevealed
-            ? Text(widget.content, style: const TextStyle(color: Colors.white))
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.visibility_off, color: Colors.white70),
-                  SizedBox(width: 8),
-                  Expanded(
-                    // ✅ Taşmayı engellemek için eklendi
-                    child: Text(
-                      'Spoiler İçerik – Görmek için dokunun',
-                      style: TextStyle(color: Colors.white70),
-                      overflow: TextOverflow.ellipsis, // ✅ Taşmayı engelle
+            border: isRevealed
+                ? null
+                : Border.all(color: appConstants.backgroundColor),
+            borderRadius: BorderRadius.circular(18)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.85,
+                ),
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  isRevealed
+                      ? widget.content
+                      : 'Spoiler İçerik ${widget.content} – Görmek için dokunun ${widget.content}',
+                  maxLines: isRevealed ? 5 : 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!isRevealed)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.visibility_off),
+                            SizedBox(width: 8),
+                            Text(
+                              'Spoiler İçerik – Görmek için dokunun',
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

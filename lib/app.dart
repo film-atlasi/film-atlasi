@@ -45,6 +45,7 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
         onTap: _onItemTapped,
       ),
       floatingActionButton: FloatingActionButton(
+        foregroundColor: Colors.white,
         onPressed: () {
           showModalBottomSheet(
             context: context,

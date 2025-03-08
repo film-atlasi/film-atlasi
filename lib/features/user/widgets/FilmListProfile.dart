@@ -1,5 +1,5 @@
-import 'package:film_atlasi/features/movie/models/Movie.dart';
-import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -15,6 +15,9 @@ class FilmListProfile extends StatefulWidget {
 class _FilmListProfileState extends State<FilmListProfile> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<Map<String, dynamic>> _userFilmLists = [];
+  final Map<String, List<Map<String, dynamic>>?> _moviesMap = {};
+  final Map<String, bool> _loadingStatus = {};
+
   bool isLoading = true;
 
   @override
@@ -31,14 +34,11 @@ class _FilmListProfileState extends State<FilmListProfile> {
 
     List<Map<String, dynamic>> firebaseLists = snapshot.docs.map((doc) {
       return {
+        "id": doc.id,
         "name": doc["name"],
-        "movies": (doc["movies"] as List)
-            .map((m) => {
-                  "id": m["id"],
-                  "title": m["title"],
-                  "posterPath": m["posterPath"],
-                })
-            .toList(),
+        "lastFourMovies": doc["movies"].length > 4
+            ? doc["movies"].sublist(0, 4)
+            : doc["movies"], // Son 4 filmi al
       };
     }).toList();
 
@@ -48,66 +48,148 @@ class _FilmListProfileState extends State<FilmListProfile> {
     });
   }
 
+  void fetchMoviesForList(String listId) async {
+    if (_moviesMap[listId] != null) return;
+
+    setState(() {
+      _loadingStatus[listId] = true;
+    });
+
+    DocumentSnapshot doc =
+        await firestore.collection("film_listeleri").doc(listId).get();
+    List<Map<String, dynamic>> movies = (doc["movies"] as List).map((m) {
+      return {
+        "id": m["id"],
+        "title": m["title"],
+        "posterPath": m["posterPath"],
+      };
+    }).toList();
+
+    setState(() {
+      _moviesMap[listId] = movies;
+      _loadingStatus[listId] = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? Center(child: CircularProgressIndicator(color: Colors.white))
-        : _userFilmLists.isEmpty
-            ? Center(
-                child: Text(
-                  "Henüz hiç film listesi oluşturulmadı.",
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
+    return Scaffold(
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.redAccent))
+          : _userFilmLists.isEmpty
+              ? const Center(
+                  child: Text(
+                    "Henüz hiç film listesi oluşturulmadı.",
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _userFilmLists.length,
+                  itemBuilder: (context, index) {
+                    Map<String, dynamic> filmList = _userFilmLists[index];
+                    String listId = filmList["id"];
+                    List<dynamic>? lastFourMovies = filmList["lastFourMovies"];
+
+                    return Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
+                      child: ExpansionTile(
+                        title: Text(
+                          filmList["name"].toString().toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 21,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Row(
+                          children: [
+                            if (lastFourMovies != null)
+                              ...lastFourMovies.map((movie) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 6.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: movie["posterPath"] != null &&
+                                            movie["posterPath"].isNotEmpty
+                                        ? Image.network(
+                                            "https://image.tmdb.org/t/p/w200${movie["posterPath"]}",
+                                            width: 20,
+                                            height: 30,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Container(
+                                                width: 50,
+                                                height: 70,
+                                                color: Colors.grey.shade800,
+                                                child: const Icon(
+                                                  Icons.movie,
+                                                  color: Colors.white70,
+                                                  size: 30,
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        : Container(
+                                            width: 50,
+                                            height: 70,
+                                            color: Colors.grey.shade800,
+                                            child: const Icon(
+                                              Icons.movie,
+                                              color: Colors.white70,
+                                              size: 30,
+                                            ),
+                                          ),
+                                  ),
+                                );
+                              }),
+                          ],
+                        ),
+                        onExpansionChanged: (isExpanded) {
+                          if (isExpanded) {
+                            fetchMoviesForList(listId);
+                          }
+                        },
+                        children: [
+                          if (_loadingStatus[listId] == true)
+                            const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                      color: Colors.redAccent)),
+                            )
+                          else if (_moviesMap[listId] == null ||
+                              _moviesMap[listId]!.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(
+                                child: Text(
+                                  "Bu listede henüz film yok.",
+                                ),
+                              ),
+                            )
+                          else
+                            Column(
+                              children: _moviesMap[listId]!.map((movie) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: FilmBilgiWidget(
+                                    movieId: movie["id"],
+                                    oyuncular: false,
+                                    posterHeight: 100,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              )
-            : ListView(
-                children: _userFilmLists.map((list) {
-                  return Card(
-                    color: Colors.grey[900],
-                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: ExpansionTile(
-                      title: Text(list["name"],
-                          style: TextStyle(color: Colors.white, fontSize: 18)),
-                children: [
-  ...list["movies"].map<Widget>((movie) => ListTile(
-        leading: movie["posterPath"] != null &&
-                movie["posterPath"].isNotEmpty
-            ? Image.network(
-                "https://image.tmdb.org/t/p/w92${movie["posterPath"]}",
-                width: 50,
-                errorBuilder: (_, __, ___) => const Icon(
-                    Icons.movie,
-                    color: Colors.white),
-              )
-            : const Icon(Icons.movie, color: Colors.white),
-        title: Text(
-          movie["title"],
-          style: const TextStyle(color: Colors.white),
-        ),
- onTap: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => MovieDetailsPage(
-        movie: Movie(
-
-          //BURAYA BAKILACAK
-          id: movie["id"],
-          title: movie["title"],
-          posterPath: movie["posterPath"],
-          overview: movie["overview"] ?? '',
-          voteAverage: movie["voteAverage"] ?? 0.0,
-        ),
-      ),
-    ),
-  );
-},
-
-      )),
-],
-
-                    ),
-                  );
-                }).toList(),
-              );
+    );
   }
 }
