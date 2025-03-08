@@ -13,6 +13,7 @@ class DiscoverProvider extends ChangeNotifier {
   List<Movie> horrorMovies = [];
   List<Movie> classicMovies = [];
   List<Movie> lgbtqMovies = [];
+  List<Movie> netflixMovies = []; // New list for Netflix movies
 
   // Filtrelenmiş filmleri tutacak liste
   List<Movie> filteredMovies = [];
@@ -23,13 +24,13 @@ class DiscoverProvider extends ChangeNotifier {
     'Romantik',
     'Korku',
     'Klasik',
-    'LGBTQ+'
+    'LGBTQ+',
+    'Netflix' // New category for Netflix movies
   ];
 
   DiscoverProvider() {
     fetchAllData();
   }
-
 
   Future<void> fetchAllData() async {
     try {
@@ -43,6 +44,7 @@ class DiscoverProvider extends ChangeNotifier {
         movieService.getHorrorMovies(),
         movieService.getClassicMovies(),
         movieService.getLGBTQMovies(),
+        movieService.getPopularMoviesOnNetflix(),
       ]);
 
       featuredMovies = results[0].take(5).toList();
@@ -52,6 +54,7 @@ class DiscoverProvider extends ChangeNotifier {
       horrorMovies = results[3];
       classicMovies = results[4];
       lgbtqMovies = results[5];
+      netflixMovies = results[6]; // Store Netflix movies
 
       filteredMovies = trendingMovies; // Başlangıçta tüm filmler
 
@@ -83,6 +86,9 @@ class DiscoverProvider extends ChangeNotifier {
         break;
       case 4: // LGBTQ+
         filteredMovies = lgbtqMovies;
+        break;
+      case 5: // Netflix
+        filteredMovies = netflixMovies;
         break;
       default:
         filteredMovies = trendingMovies;

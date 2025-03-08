@@ -333,4 +333,20 @@ class MovieService {
       throw Exception('Filtrelenmiş filmler alınamadı');
     }
   }
+
+  Future<List<Movie>> getPopularMoviesOnNetflix() async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/discover/movie?api_key=$apiKey&language=tr-TR&with_watch_providers=8&watch_region=TR&sort_by=popularity.desc'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Netflix\'te popüler filmler alınamadı');
+    }
+  }
 }
