@@ -41,7 +41,7 @@ class HeaderWidget extends StatelessWidget {
             }
 
             final userData = snapshot.data!.data() as Map<String, dynamic>?;
-            final userName = userData?['firstName'] as String? ?? 'Kullanıcı';
+            final userName = (userData?['firstName'] as String? ?? 'Kullanıcı').toUpperCase();
             final photoUrl = userData?['photoUrl'] as String?;
 
             return Row(

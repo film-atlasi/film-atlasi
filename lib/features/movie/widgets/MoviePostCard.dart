@@ -98,7 +98,7 @@ class _MoviePostCardState extends State<MoviePostCard> {
                       widget.moviePost.isSpoiler
                           ? SpoilerWidget(content: widget.moviePost.content)
                           : Text(widget.moviePost.content,
-                              style: TextStyle(color: AppConstants.textColor)),
+                              style: TextStyle(color: appConstants.textColor)),
 
                       const SizedBox(height: 10),
                       FilmBilgiWidget(
