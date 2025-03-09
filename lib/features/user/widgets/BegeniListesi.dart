@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
 import 'package:flutter/material.dart';
 
@@ -130,7 +131,7 @@ class _BegeniListesiState extends State<BegeniListesi> {
                 (context, index) {
                   if (index == _begenilenler.length) {
                     return isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? LoadingWidget()
                         : const SizedBox.shrink();
                   }
                   return MoviePostCard(

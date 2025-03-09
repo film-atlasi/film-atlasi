@@ -1,5 +1,6 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/services/search_service.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/search_results.dart';
 import 'package:flutter/material.dart';
 
@@ -52,7 +53,7 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (_isLoading)
-            Center(child: const CircularProgressIndicator())
+            LoadingWidget()
           else
             Expanded(
               child: SearchResults(

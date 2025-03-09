@@ -1,7 +1,7 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 
 class FilmListProfile extends StatefulWidget {
@@ -91,8 +91,7 @@ class _FilmListProfileState extends State<FilmListProfile> {
       },
       child: Scaffold(
         body: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.redAccent))
+            ? LoadingWidget()
             : _userFilmLists.isEmpty
                 ? const Center(
                     child: Text(
@@ -104,7 +103,8 @@ class _FilmListProfileState extends State<FilmListProfile> {
                     itemBuilder: (context, index) {
                       Map<String, dynamic> filmList = _userFilmLists[index];
                       String listId = filmList["id"];
-                      List<dynamic>? lastFourMovies = filmList["lastFourMovies"];
+                      List<dynamic>? lastFourMovies =
+                          filmList["lastFourMovies"];
 
                       return Card(
                         elevation: 5,
@@ -173,11 +173,8 @@ class _FilmListProfileState extends State<FilmListProfile> {
                           children: [
                             if (_loadingStatus[listId] == true)
                               const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Center(
-                                    child: CircularProgressIndicator(
-                                        color: Colors.redAccent)),
-                              )
+                                  padding: EdgeInsets.all(16.0),
+                                  child: LoadingWidget())
                             else if (_moviesMap[listId] == null ||
                                 _moviesMap[listId]!.isEmpty)
                               const Padding(

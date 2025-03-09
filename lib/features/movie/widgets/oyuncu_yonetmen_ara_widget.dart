@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/services/oyuncu_yonetmen_search_service.dart'; // Ensure this file exists or update the path
 import 'package:film_atlasi/features/movie/widgets/person_search_results.dart';
@@ -8,11 +9,13 @@ class OyuncuYonetmenAraWidget extends StatefulWidget {
   const OyuncuYonetmenAraWidget({super.key, required this.mode});
 
   @override
-  State<OyuncuYonetmenAraWidget> createState() => _OyuncuYonetmenAraWidgetState();
+  State<OyuncuYonetmenAraWidget> createState() =>
+      _OyuncuYonetmenAraWidgetState();
 }
 
 class _OyuncuYonetmenAraWidgetState extends State<OyuncuYonetmenAraWidget> {
-  final OyuncuYonetmenSearchService _searchService = OyuncuYonetmenSearchService();
+  final OyuncuYonetmenSearchService _searchService =
+      OyuncuYonetmenSearchService();
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _searchResults = [];
   bool _isLoading = false;
@@ -45,7 +48,7 @@ class _OyuncuYonetmenAraWidgetState extends State<OyuncuYonetmenAraWidget> {
       body: Column(
         children: [
           if (_isLoading)
-            const Center(child: CircularProgressIndicator())
+            LoadingWidget()
           else
             Expanded(
               child: PersonSearchResults(

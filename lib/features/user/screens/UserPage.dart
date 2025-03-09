@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/user/services/FollowServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
@@ -154,7 +155,7 @@ class _UserPageState extends State<UserPage>
           await checkFollowStatus();
         },
         child: isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? LoadingWidget()
             : userData == null
                 ? const Center(child: Text("Kullanıcı bilgileri bulunamadı."))
                 : _buildUserProfile(appConstants),
@@ -200,7 +201,7 @@ class _UserPageState extends State<UserPage>
         ];
       },
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? LoadingWidget()
           : TabBarView(
               controller: _tabController,
               children: [

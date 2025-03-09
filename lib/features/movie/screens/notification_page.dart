@@ -1,6 +1,7 @@
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/screens/PostDetailPage.dart';
 import 'package:film_atlasi/features/movie/services/notification_service..dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/user/screens/UserPage.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return LoadingWidget();
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

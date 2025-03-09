@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
 import 'package:flutter/material.dart';
 
@@ -90,7 +91,7 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                       return _isLoading
                           ? const Padding(
                               padding: EdgeInsets.all(18.0),
-                              child: Center(child: CircularProgressIndicator()),
+                              child: LoadingWidget(),
                             )
                           : const SizedBox();
                     }

@@ -1,4 +1,5 @@
 import 'package:film_atlasi/features/movie/services/FilmListService.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -164,7 +165,7 @@ class _FilmListState extends State<FilmList> {
         title: Text("Listelerim"),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? LoadingWidget()
           : Column(
               children: [
                 Expanded(

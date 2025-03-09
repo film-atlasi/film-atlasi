@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/user/services/FollowServices.dart';
@@ -27,7 +28,7 @@ class FollowListWidget extends StatelessWidget {
                   : followServices.getFollowings(userUid),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: const CircularProgressIndicator());
+                  return LoadingWidget();
                 } else if (snapshot.hasError) {
                   return Text("Hata: ${snapshot.error}");
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

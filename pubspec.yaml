@@ -44,6 +44,8 @@ flutter:
 
   assets:
     - assets/animations/movie_intro.json
+    - assets/animations/loading.json
+    - assets/animations/loadingLight.json
     - assets/images/logo.png
     - assets/images/logo2.png
     - assets/images/image1.jpg

@@ -1,4 +1,5 @@
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
@@ -8,7 +9,8 @@ class ActorMoviesPage extends StatefulWidget {
   final String actorName;
   final int actorId;
 
-  const ActorMoviesPage({super.key, required this.actorName, required this.actorId});
+  const ActorMoviesPage(
+      {super.key, required this.actorName, required this.actorId});
 
   @override
   _ActorMoviesPageState createState() => _ActorMoviesPageState();
@@ -74,7 +76,7 @@ class _ActorMoviesPageState extends State<ActorMoviesPage> {
         title: Text('${widget.actorName} Filmleri'),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? LoadingWidget()
           : movies.isEmpty
               ? Center(
                   child: Text(
@@ -94,7 +96,7 @@ class _ActorMoviesPageState extends State<ActorMoviesPage> {
                         imageUrl: '$baseImageUrl${movie.posterPath}',
                         fit: BoxFit.fitHeight,
                         placeholder: (context, url) =>
-                            CircularProgressIndicator(strokeWidth: 2),
+                            CircularProgressIndicator(),
                         errorWidget: (context, url, error) => CircleAvatar(),
                       ),
                       title: Text(
