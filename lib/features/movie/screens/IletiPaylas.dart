@@ -1,19 +1,18 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_atlasi/features/movie/models/Actor.dart';
-import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
-import 'package:film_atlasi/features/movie/services/ActorService.dart';
-import 'package:film_atlasi/features/movie/widgets/FilmListButton.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
+import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:auto_size_text/auto_size_text.dart'; // AutoSizeText kütüphanesini eklemeyi unutmayın!
 
 class Iletipaylas extends StatefulWidget {
   final Movie movie;
-  const Iletipaylas({super.key, required this.movie});
+  final bool isFromQuote;
+
+  const Iletipaylas({super.key, required this.movie, this.isFromQuote = false});
 
   @override
   State<Iletipaylas> createState() => _IletipaylasState();
@@ -21,229 +20,203 @@ class Iletipaylas extends StatefulWidget {
 
 class _IletipaylasState extends State<Iletipaylas> {
   double _rating = 0.0;
+  bool _isSpoiler = false;
   final TextEditingController _textEditingController = TextEditingController();
-
-  bool? _recommendation;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   Future<void> submitForm() async {
-    try {
-      final film = widget.movie;
-      String film_id = film.id.toString();
-      DocumentReference filmRef = firestore.collection("films").doc(film_id);
-      final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
+    final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
 
-      DocumentSnapshot filmSnapshot = await filmRef.get();
-
-      if (!filmSnapshot.exists) {
-        //eğer film yoksa
-        final filmData = film;
-        await filmRef.set({
-          'id': film_id,
-          "title": filmData.title,
-          "posterPath": filmData.posterPath,
-          "overview": filmData.overview,
-          "voteAverage": filmData.voteAverage,
-          "genre_ids": filmData.genreIds,
-          "release_date": filmData.releaseDate,
-          "vote_average": filmData.voteAverage
-        });
-      }
-
-      await firestore.collection("posts").add({
-        "user": currentUser!.uid,
-        "movie": film_id,
-        "likes": 0,
-        "comments": 0,
-        "content": _textEditingController.text,
-        "timestamp": FieldValue.serverTimestamp(), // Server zamanı
-      });
-    } catch (e) {
-      print("Hata oluştu: $e"); // Hata detayını konsola yazdırır
+    if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Bir hata oluştu: $e')),
+        const SnackBar(content: Text('Lütfen önce giriş yapın!')),
       );
+      return;
     }
+
+    String filmId = widget.movie.id.toString();
+    if (filmId.isEmpty || filmId == "null") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Geçersiz film kimliği!')),
+      );
+      return;
+    }
+
+    DocumentReference filmRef = firestore.collection("films").doc(filmId);
+    DocumentReference userDoc =
+        firestore.collection("users").doc(currentUser.uid);
+
+    DocumentSnapshot userSnapshot = await userDoc.get();
+    if (!userSnapshot.exists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kullanıcı bilgileri bulunamadı!')),
+      );
+      return;
+    }
+
+    User user = User.fromFirestore(userSnapshot);
+    DocumentSnapshot filmSnapshot = await filmRef.get();
+
+    if (!filmSnapshot.exists) {
+      await filmRef.set({
+        'id': filmId,
+        "title": widget.movie.title,
+        "posterPath": widget.movie.posterPath,
+        "overview": widget.movie.overview,
+        "voteAverage": widget.movie.voteAverage,
+        "genre_ids": widget.movie.genreIds,
+        "release_date": widget.movie.releaseDate,
+      });
+    }
+
+    String postId = firestore.collection('posts').doc().id;
+
+    Map<String, dynamic> postData = {
+      "postId": postId,
+      "userId": user.uid,
+      "filmName": widget.movie.title,
+      "filmId": filmId,
+      "filmIcerik": widget.movie.overview,
+      "firstName": user.firstName,
+      "username": user.userName,
+      "userPhotoUrl": user.profilePhotoUrl,
+      "content": _textEditingController.text,
+      "isQuote": widget.isFromQuote,
+      "likes": 0,
+      "comments": 0,
+      "rating": _rating,
+      "timestamp": FieldValue.serverTimestamp(),
+      "isSpoiler": _isSpoiler,
+    };
+
+    await filmRef.collection("posts").doc(postId).set(postData);
+    await userDoc.collection("posts").doc(postId).set(postData);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('İnceleme paylaşıldı!')),
+    );
+
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: buildDetaylar(context),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        centerTitle: true,
+        title: const Text(
+          "İleti Paylaş",
+          style: TextStyle(color: Colors.white),
         ),
       ),
-    );
-  }
-
-  List<Widget> buildDetaylar(BuildContext context) {
-    final TextTheme _textTheme = Theme.of(context).textTheme;
-
-    return [
-      if (widget.movie.posterPath.isNotEmpty)
-        Stack(
-          children: [
-            Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.5,
-              child: Image.network(
-                'https://image.tmdb.org/t/p/w500${widget.movie.posterPath}',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.error, size: 100, color: Colors.red),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.5,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      Padding(
-        padding: const EdgeInsets.all(20.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
-            Text(
-              widget.movie.title,
-              style: _textTheme.titleLarge,
-            ),
-            AddVerticalSpace(context, 0.015),
-            Text(
-              '5 üzerinden kaç verdiniz?',
-              style: _textTheme.bodyMedium,
-            ),
-            AddVerticalSpace(context, 0.005),
-            RatingBar.builder(
-              initialRating: _rating,
-              minRating: 1,
-              direction: Axis.horizontal,
-              allowHalfRating: true,
-              itemCount: 5,
-              itemBuilder: (context, _) => const Icon(
-                Icons.star,
-                color: Colors.amber,
+            FilmBilgiWidget(movieId: widget.movie.id),
+            const SizedBox(height: 15),
+            SwitchListTile(
+              title: const Text(
+                "Spoiler içeriyor mu?",
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
-              onRatingUpdate: (rating) {
+              value: _isSpoiler,
+              activeColor: Colors.red,
+              onChanged: (value) {
                 setState(() {
-                  _rating = rating;
+                  _isSpoiler = value;
                 });
               },
             ),
-            SizedBox(height: 10),
-            AddVerticalSpace(context, 0.01),
-            const Divider(color: Color.fromARGB(255, 102, 102, 102)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FutureBuilder<List<Actor>>(
-                  future: ActorService.fetchTopThreeActors(
-                      int.parse(widget.movie.id), 3),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('Bir hata oluştu.');
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text('Oyuncu bilgisi bulunamadı.');
-                    } else {
-                      final actors = snapshot.data!;
-                      return Row(
-                        children: actors.map((actor) {
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Column(
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage: actor.profilePhotoUrl != null
-                                      ? NetworkImage(actor.profilePhotoUrl!)
-                                      : null,
-                                  backgroundColor: Colors.grey,
-                                  radius: 30,
-                                  child: actor.profilePhotoUrl == null
-                                      ? Icon(Icons.person, color: Colors.white)
-                                      : null,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  actor.name,
-                                  style: const TextStyle(fontSize: 12),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-            AddVerticalSpace(context, 0.01),
-            Text(
-              'Film hakkındaki düşünceleriniz:',
-              style: _textTheme.bodyMedium,
-            ),
-            AddVerticalSpace(context, 0.01),
-            AutoSizeTextField(
-              controller: _textEditingController,
-              minFontSize: 20,
-              maxLines: 7,
-              style: const TextStyle(fontSize: 30),
-              decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  isDense: true,
-                  contentPadding: const EdgeInsets.all(20)),
-            ),
-            AddVerticalSpace(context, 0.03),
-            const SizedBox(height: 10),
-            AddToMyListButton(),
             const SizedBox(height: 20),
-            buildPaylasButton(context),
+            Center(
+              child: RatingBar.builder(
+                initialRating: _rating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemBuilder: (context, _) =>
+                    const Icon(Icons.star, color: Colors.amber),
+                onRatingUpdate: (rating) {
+                  setState(() {
+                    _rating = rating;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(
+                height:
+                    30), // Yıldız ile görüş alanı arasına daha fazla boşluk eklendi
+            TextField(
+              controller: _textEditingController,
+              maxLines: 6,
+              style: const TextStyle(fontSize: 18, color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Filmi nasıl buldunuz?",
+                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                filled: true,
+                fillColor: Colors.grey.shade900,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white70),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 25),
+            Center(
+              child: GestureDetector(
+                onTap: () async {
+                  if (_rating > 0 && _textEditingController.text.isNotEmpty) {
+                    await submitForm();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Lütfen tüm alanları doldurun!')),
+                    );
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.redAccent, Colors.red],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.4),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    "Paylaş",
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-      ),
-    ];
-  }
-
-  Center buildPaylasButton(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () async {
-          if (_rating > 0 && _textEditingController.text.isNotEmpty) {
-            await submitForm();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('İnceleme paylaşıldı!')),
-            );
-            Navigator.of(context)
-                .pushNamedAndRemoveUntil('/anasayfa', (route) => false);
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Lütfen tüm alanları doldurun!')),
-            );
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-        ),
-        child: const Text('Paylaş'),
       ),
     );
   }

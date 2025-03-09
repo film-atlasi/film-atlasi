@@ -1,136 +1,72 @@
-import 'dart:convert';
-import 'package:film_atlasi/features/movie/models/Actor.dart';
-import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
-import 'package:film_atlasi/features/movie/services/ActorService.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-// Film Post ve Kullanıcı Modeli
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/widgets/%20PostActionsWidget%20.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/PostSilmeDuzenle.dart';
+import 'package:film_atlasi/features/movie/widgets/RatingDisplayWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/SpoilerWidget.dart';
+import 'package:film_atlasi/features/user/services/KaydetServices.dart';
+import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MoviePostCard extends StatefulWidget {
   final MoviePost moviePost;
 
-  MoviePostCard({required this.moviePost});
+  const MoviePostCard({super.key, required this.moviePost});
 
   @override
   _MoviePostCardState createState() => _MoviePostCardState();
 }
 
 class _MoviePostCardState extends State<MoviePostCard> {
-  final String apiKey = 'YOUR_API_KEY';
-  final String baseImageUrl = 'https://image.tmdb.org/t/p/w500';
-  List<Map<String, dynamic>> cast = []; // Başrol oyuncuları listesi
-  List<Map<dynamic, dynamic>> allCast = []; // Başrol oyuncuları listesi
-
+  bool isOwnPost = false;
   @override
   void initState() {
     super.initState();
-    fetchCast();
+    if (widget.moviePost.userId == FirebaseAuth.instance.currentUser!.uid) {
+      isOwnPost = true;
+    }
   }
 
-  // TMDb API'den başrol oyuncularını çekme
-  Future<void> fetchCast() async {
-    final movieId = widget.moviePost.movie.id; // Filmin ID'si
-    final response = await http.get(Uri.parse(
-        'https://api.themoviedb.org/3/movie/$movieId/credits?api_key=$apiKey'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        // İlk 3 başrol oyuncusunu alıyoruz
-        allCast = (data['cast'] as List<Map<dynamic, dynamic>>).toList();
-        cast = (data['cast'] as List)
-            .take(3)
-            .map((actor) => {
-                  'name': actor['name'],
-                  'profile_path': actor['profile_path'],
-                })
-            .toList();
-      });
-    }
+  Stream<DocumentSnapshot> isKaydedildi(String postId) {
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection("kaydedilenler")
+        .doc(postId)
+        .snapshots();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.black,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Divider(
-              color: Colors.white54,
-              thickness: 1, // İsim üzerindeki çizgi
-            ),
-            Row(
-              children: [
-                // Kullanıcı Profil Fotoğrafı
-                CircleAvatar(
-                  backgroundImage: widget.moviePost.user.profilePhotoUrl != null
-                      ? NetworkImage(widget.moviePost.user.profilePhotoUrl!)
-                      : null,
-                  backgroundColor: Colors.white,
-                  radius: 20,
-                ),
+    final KaydetServices kaydetServices = KaydetServices();
+    final AppConstants appConstants = AppConstants(context);
 
-                const SizedBox(width: 12),
-                // Kullanıcı Adı
-                Text(
-                  '${widget.moviePost.user.firstName ?? ''} ${widget.moviePost.user.userName ?? ''}',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            // İçerik Kısmı
-            SizedBox(height: 10),
-            Text(
-              widget.moviePost.content,
-              style: TextStyle(
-                color: Color.fromARGB(255, 161, 1, 182),
-              ),
-            ),
-            SizedBox(height: 10),
-            const SizedBox(height: 8),
-            // Film Posteri, Başlık ve Konu
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Film Posteri
-                GestureDetector(
-                  onTap: () {
-                    // FilmDetay sayfasına yönlendirme
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MovieDetailsPage(
-                          movie: widget.moviePost.movie,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 120,
-                    height: 180,
-                    color: Colors.red,
-                    child: widget.moviePost.movie.posterPath.isNotEmpty
-                        ? Image.network(
-                            '$baseImageUrl${widget.moviePost.movie.posterPath}',
-                            fit: BoxFit.cover,
-                          )
-                        : Center(
-                            child: Text(
-                              'Poster Yok',
-                              style: TextStyle(color: Colors.black54),
-                            ),
-                          ),
+    return GestureDetector(
+      child: Column(
+        children: [
+          Card(
+            color: appConstants.dialogColor,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UserProfileRouter(
+                    title: widget.moviePost.firstName,
+                    profilePhotoUrl: widget.moviePost.userPhotoUrl,
+                    subtitle: widget.moviePost.username,
+                    userId: widget.moviePost.userId,
+                    trailing: isOwnPost
+                        ? PostSilmeDuzenleme(
+                            moviePost: widget.moviePost,
+                            filmId: widget.moviePost.filmId)
+                        : null,
                   ),
-                ),
+                );
                 const SizedBox(width: 16), // Mesafe eklemek için SizedBox
                 // Film Adı ve Konu
                 Expanded(
@@ -267,53 +203,128 @@ class _MoviePostCardState extends State<MoviePostCard> {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
+            );
 
-            const SizedBox(height: 18),
-            // Beğeni, Yorum, Kaydet İkonları
-            Row(
-              children: [
-                // Beğeni ve Yorum İkonları Grubu
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        // Beğeni aksiyonu
-                      },
-                      icon: const Icon(Icons.favorite_border,
-                          color: Colors.white),
+                  const SizedBox(height: 10);
+
+                  // ⭐️ Kullanıcının verdiği puanı gösteriyoruz
+
+                  // 🔥 Eğer alıntı postuysa, sadece kullanıcı yorumu ve film adı gösterilecek
+                  if (widget.moviePost.isQuote) ...[
+                    Text(
+                      '"${widget.moviePost.content}"',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: appConstants.textColor,
+                        fontSize: 16,
+                      ),
                     ),
-                    const SizedBox(width: 20), // İkonlar arası boşluk
-                    IconButton(
-                      onPressed: () {
-                        // Paylaş aksiyonu
-                      },
-                      icon: const Icon(Icons.share, color: Colors.white),
+                    SizedBox(height: 5),
+                    Text(
+                      "- ${widget.moviePost.filmName}",
+                      style: TextStyle(
+                          color: appConstants.textLightColor, fontSize: 14),
                     ),
-                    const SizedBox(width: 20), // İkonlar arası boşluk
-                    IconButton(
-                      onPressed: () {
-                        // Yorum aksiyonu
-                      },
-                      icon: const Icon(Icons.comment_outlined,
-                          color: Colors.white),
+                  ] else ...[
+                    RatingDisplayWidget(rating: widget.moviePost.rating),
+
+                    const SizedBox(height: 10),
+                    // Eğer normal post ise, film posteri ve
+                    widget.moviePost.isSpoiler
+                        ? SpoilerWidget(content: widget.moviePost.content)
+                        : Text(widget.moviePost.content,
+                            style: TextStyle(color: appConstants.textColor)),
+
+                    const SizedBox(height: 10),
+                    FilmBilgiWidget(
+                      movieId: widget.moviePost.filmId,
                     ),
                   ],
-                ),
-                const Spacer(), // İkonları sağa ve sola ayırmak için boşluk
-                // Kaydet İkonu
-                IconButton(
-                  onPressed: () {
-                    // Kaydet aksiyonu
-                  },
-                  icon: const Icon(Icons.bookmark_border, color: Colors.white),
-                ),
-              ],
+                  AddVerticalSpace(context, 0.01),
+                  // 🔥 Beğeni, Yorum, Kaydet İkonları
+                  Row(
+                    children: [
+                      PostActionsWidget(
+                        filmId: widget.moviePost.filmId,
+                        postId:
+                            widget.moviePost.postId, // Firestore'daki post ID
+                        initialLikes:
+                            widget.moviePost.likes, // Mevcut beğeni sayısı
+                        initialComments:
+                            widget.moviePost.comments, // Mevcut yorum sayısı
+                      ),
+                      const Spacer(),
+                      StreamBuilder(
+                        stream: isKaydedildi(widget.moviePost.postId),
+                        builder: (context, snapshot) {
+                          final bool kaydedildi =
+                              snapshot.hasData && snapshot.data!.exists;
+                          return IconButton(
+                            onPressed: () async {
+                              if (kaydedildi) {
+                                await kaydetServices.postKaydetKaldir(
+                                    widget.moviePost.postId, context);
+                              } else {
+                                await kaydetServices.postKaydet(
+                                    widget.moviePost.postId,
+                                    widget.moviePost.filmId,
+                                    context);
+                              }
+                            },
+                            icon: Icon(
+                              kaydedildi
+                                  ? Icons.bookmark
+                                  : Icons.bookmark_border,
+                              color: kaydedildi
+                                  ? appConstants.textColor
+                                  : appConstants.textLightColor,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // 🔥 Zaman damgasını beğeni & yorum butonlarının ALTINA ekledik
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 6.0), // Hafif boşluk ekledik
+                    child: Text(
+                      _formatTimestamp(
+                          widget.moviePost.timestamp), // Tarih bilgisi
+                      style: TextStyle(
+                          color: appConstants.textLightColor, fontSize: 12),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+  }
+
+  // 🔥 Timestamp'i "x dakika önce" formatına çeviren fonksiyon
+  String _formatTimestamp(Timestamp timestamp) {
+    DateTime postTime = timestamp.toDate();
+    Duration difference = DateTime.now().difference(postTime);
+
+    if (difference.inSeconds < 60) {
+      return "${difference.inSeconds} saniye";
+    } else if (difference.inMinutes < 60) {
+      return "${difference.inMinutes} dakika";
+    } else if (difference.inHours < 24) {
+      return "${difference.inHours} saat";
+    } else if (difference.inDays < 7) {
+      return "${difference.inDays} gün";
+    } else if (difference.inDays < 30) {
+      return "${(difference.inDays / 7).floor()} hafta";
+    } else if (difference.inDays < 365) {
+      return "${(difference.inDays / 30).floor()} ay";
+    } else {
+      return "${(difference.inDays / 365).floor()} yıl";
+    }
   }
 }

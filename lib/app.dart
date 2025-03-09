@@ -1,7 +1,10 @@
+import 'package:film_atlasi/features/movie/screens/FilmAsistani.dart/widget/MovieIntroPage.dart';
+import 'package:film_atlasi/features/movie/widgets/BottomNavigatorBar.dart';
 import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
 import 'package:film_atlasi/features/movie/screens/DiscoverPage.dart';
-import 'package:film_atlasi/features/user/screens/Profile.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
+import 'package:film_atlasi/features/user/screens/UserPage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class FilmAtlasiApp extends StatefulWidget {
@@ -12,74 +15,52 @@ class FilmAtlasiApp extends StatefulWidget {
 }
 
 class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
-  int pageIndex = 0;
-  final GlobalKey<AnasayfaState> _anasayfaKey = GlobalKey<AnasayfaState>();
+  int _selectedIndex = 0;
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+  List<Widget> get _screens => [
+        _selectedIndex == 0 ? Anasayfa() : Container(),
+        _selectedIndex == 1 ? MovieIntroPage() : Container(),
+        _selectedIndex == 2 ? DiscoverPage() : Container(),
+        _selectedIndex == 3
+            ? UserPage(
+                userUid: currentUser!.uid,
+                fromProfile: true,
+              )
+            : Container(),
+      ];
 
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      Anasayfa(key: _anasayfaKey),
-      DiscoverPage(),
-      ProfileScreen()
-    ];
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[pageIndex],
-      bottomNavigationBar: buildBottomBar(context, pageIndex),
-      floatingActionButton: buildFloatingActionButton(context),
-    );
-  }
-
-  BottomNavigationBar buildBottomBar(BuildContext context, int currentIndex) {
-    return BottomNavigationBar(
-      backgroundColor: Colors.black, // Arka plan siyah
-      selectedItemColor:
-          const Color.fromARGB(255, 110, 5, 5), // Seçilen ikon rengi
-      unselectedItemColor: Colors.grey, // Seçilmemiş ikon rengi
-      showSelectedLabels: false, // Seçilen item etiketlerini gizle
-      showUnselectedLabels: false, // Seçilmemiş item etiketlerini gizle
-      currentIndex: currentIndex, // Seçili olan öğeyi belirler
-      onTap: (value) {
-        setState(() {
-          pageIndex = value;
-        });
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home), // Ana sayfa ikonu
-          label: 'Ana Sayfa',
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+      floatingActionButton: FloatingActionButton(
+        foregroundColor: Colors.white,
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return FilmEkleWidget();
+            },
+          );
+        },
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.explore), // Keşfet ikonu
-          label: 'Keşfet',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person), // Mesaj ikonu
-          label: 'Hesabım',
-        ),
-      ],
-    );
-  }
-
-  FloatingActionButton buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton(
-      heroTag: 'uniqueHeroTag', // Benzersiz bir tag ekleyin
-      shape: CircleBorder(),
-      onPressed: () {
-        showModalBottomSheet(
-          context: context,
-          builder: (BuildContext context) {
-            return FilmEkleWidget();
-          },
-        );
-      },
-      child: Icon(Icons.add),
+        child: Icon(Icons.add),
+      ),
     );
   }
 }

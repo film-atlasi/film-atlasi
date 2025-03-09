@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
-import 'package:film_atlasi/features/movie/services/PostServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 class UserServices {
   static Future<List<User>> searchUsers(String query) async {
@@ -33,28 +36,96 @@ class UserServices {
     }
   }
 
-  static Future<List<MoviePost>> getAllUsersPosts(String userUid) async {
+//takip edilen kullanıcıları al
+  static Future<List<String>> getFollowingUserIds(String userUid) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final postsCollection = firestore.collection('posts');
+      final followingCollection = firestore.collection('following');
 
-      final querySnapshot =
-          await postsCollection.where('user', isEqualTo: userUid).get();
+      // Kullanıcının takip ettiği kişileri al
+      final querySnapshot = await followingCollection.doc(userUid).get();
 
-      final postUids = querySnapshot.docs.map((doc) => doc.id).toList();
+      // Takip edilen kullanıcıların UID'lerini bir liste olarak dönüyoruz
+      Map<String, dynamic>? data = querySnapshot.data();
+      if (data != null && data["following"] is List) {
+        List<dynamic> followingList = data["following"];
+        List<String> followingUserIds =
+            followingList.map((e) => e.toString()).toList();
+        return followingUserIds;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print('Takip edilen kullanıcılar alınamadı: $e');
+      return [];
+    }
+  }
 
-      List<MoviePost> posts = [];
-      for (String postUid in postUids) {
-        final post = await PostServices.getPostByUid(postUid);
-        if (post != null) {
-          posts.add(post);
+  static Future<Map<String, dynamic>> getFollowingUsersPostsLazy({
+    required String userUid,
+    required Map<String, DocumentSnapshot?>
+        lastDocuments, // 🔥 Kullanıcılara özel lastDocument takibi
+    int limit = 10,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      List<String> followingUserIds = await getFollowingUserIds(userUid);
+      List<MoviePost> allPosts = [];
+
+      if (followingUserIds.isEmpty) {
+        return {"posts": [], "lastDocuments": lastDocuments};
+      }
+
+      for (String userId in followingUserIds) {
+        Query query = firestore
+            .collection('users')
+            .doc(userId)
+            .collection('posts')
+            .orderBy('timestamp', descending: true)
+            .limit(limit);
+
+        if (lastDocuments.containsKey(userId) &&
+            lastDocuments[userId] != null) {
+          query = query.startAfterDocument(lastDocuments[userId]!);
+        }
+
+        QuerySnapshot querySnapshot = await query.get();
+        if (querySnapshot.docs.isNotEmpty) {
+          lastDocuments[userId] =
+              querySnapshot.docs.last; // 🔥 Kullanıcıya özel pagination
+          List<MoviePost> userPosts = querySnapshot.docs
+              .map((doc) => MoviePost.fromFirestore(doc))
+              .toList();
+          allPosts.addAll(userPosts);
         }
       }
 
+      return {"posts": allPosts, "lastDocuments": lastDocuments};
+    } catch (e) {
+      throw 'Takip edilen kullanıcıların postları alınamadı: $e';
+    }
+  }
+
+  static Future<List<MoviePost>> getAllUsersPosts(String userUid) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final userDoc = firestore.collection('users').doc(userUid);
+
+      final querySnapshot = await userDoc
+          .collection("posts")
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return [];
+      }
+
+      List<MoviePost> posts =
+          querySnapshot.docs.map((e) => MoviePost.fromFirestore(e)).toList();
       return posts;
     } catch (e) {
       print('Error fetching user posts: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -72,5 +143,105 @@ class UserServices {
       print('Error fetching user by UID: $e');
       return null;
     }
+  }
+
+  static Future<String?> uploadCoverPhoto(String userUid) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Fotoğrafın kalitesini düşürerek optimize ediyoruz
+        maxWidth: 1000, // Maksimum genişlik belirliyoruz
+      );
+
+      if (pickedFile == null) {
+        throw Exception('Fotoğraf seçilmedi');
+      }
+
+      File file = File(pickedFile.path);
+      String fileName = "cover_pictures/$userUid.jpg"; // ✅ Kapak fotoğrafı yolu
+
+      // Firebase Storage referansı oluştur
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+
+      // Upload metadata ekle
+      SettableMetadata metadata = SettableMetadata(
+          contentType: 'image/jpeg', customMetadata: {'userId': userUid});
+
+      UploadTask uploadTask = storageRef.putFile(file, metadata);
+
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Firestore'da kapak fotoğrafını güncelle
+      await FirebaseFirestore.instance.collection('users').doc(userUid).update({
+        'coverPhotoUrl':
+            downloadUrl, // ✅ Firestore'a kapak fotoğrafı URL’sini kaydet
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      return downloadUrl;
+    } on FirebaseException catch (e) {
+      print('Firebase hatası: ${e.message}');
+      throw Exception('Kapak fotoğrafı yüklenemedi: ${e.message}');
+    } catch (e) {
+      print('Genel hata: $e');
+      throw Exception('Beklenmeyen bir hata oluştu');
+    }
+  }
+
+  static Future<String?> uploadProfilePhoto(String userUid) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Resim kalitesini optimize et
+        maxWidth: 600, // Maksimum genişliği sınırla
+      );
+
+      if (pickedFile == null) {
+        throw Exception('Fotoğraf seçilmedi');
+      }
+
+      File file = File(pickedFile.path);
+      String fileName = "profile_pictures/$userUid.jpg";
+
+      // Storage referansı oluştur
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+
+      // Upload metadata ekle
+      SettableMetadata metadata = SettableMetadata(
+          contentType: 'image/jpeg', customMetadata: {'userId': userUid});
+
+      UploadTask uploadTask = storageRef.putFile(file, metadata);
+
+      // Upload progress takibi eklenebilir
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        double progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        print('Upload progress: $progress%');
+      });
+
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('users').doc(userUid).update({
+        'profilePhotoUrl': downloadUrl,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      return downloadUrl;
+    } on FirebaseException catch (e) {
+      print('Firebase hatası: ${e.message}');
+      throw Exception('Fotoğraf yüklenemedi: ${e.message}');
+    } catch (e) {
+      print('Genel hata: $e');
+      throw Exception('Beklenmeyen bir hata oluştu');
+    }
+  }
+
+  static String? get currentUserUid {
+    final user = auth.FirebaseAuth.instance.currentUser;
+    return user?.uid; // Kullanıcı giriş yaptıysa UID'yi döndür, yapmadıysa null
   }
 }

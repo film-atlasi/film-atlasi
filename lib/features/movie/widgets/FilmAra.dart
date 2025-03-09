@@ -1,9 +1,6 @@
-import 'package:film_atlasi/features/movie/services/MovieServices.dart';
-import 'package:film_atlasi/features/movie/models/Movie.dart';
-import 'package:film_atlasi/features/movie/screens/IletiPaylas.dart';
-import 'package:film_atlasi/features/user/models/User.dart';
-import 'package:film_atlasi/features/user/screens/UserPage.dart';
-import 'package:film_atlasi/features/user/services/UserServices.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/features/movie/services/search_service.dart';
+import 'package:film_atlasi/features/movie/widgets/search_results.dart';
 import 'package:flutter/material.dart';
 
 class FilmAraWidget extends StatefulWidget {
@@ -18,7 +15,7 @@ class FilmAraWidget extends StatefulWidget {
 }
 
 class _FilmAraWidgetState extends State<FilmAraWidget> {
-  final MovieService _movieService = MovieService();
+  final SearchService _searchService = SearchService();
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _searchResults = [];
   bool _isLoading = false;
@@ -31,10 +28,9 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
     });
 
     try {
-      final movies = await _movieService.searchMovies(query);
-      final users = await UserServices.searchUsers(query);
+      final results = await _searchService.search(query);
       setState(() {
-        _searchResults = [...users, ...movies];
+        _searchResults = results;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -49,9 +45,10 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
       appBar: AppBar(
-        title: buildSearchTextField(),
+        title: buildSearchTextField(appConstants),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -59,7 +56,13 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
           if (_isLoading)
             Center(child: const CircularProgressIndicator())
           else
-            buildSearchResults()
+            Expanded(
+              child: SearchResults(
+                searchResults: _searchResults,
+                mode:
+                    widget.mode, // Mode bilgisini SearchResults’a gönderiyoruz
+              ),
+            ),
         ],
       ),
     );
@@ -125,18 +128,12 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
         style: const TextStyle(color: Colors.grey),
       ),
       onTap: () {
-        if (widget.onMovieSelected != null) {
-          // Callback sağlanmışsa onu çalıştırıyoruz
-          widget.onMovieSelected!(movie);
-        } else {
-          // Callback yoksa eski davranış: Iletipaylas ekranına yönlendir
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Iletipaylas(movie: movie),
-            ),
-          );
-        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Iletipaylas(movie: movie),
+          ),
+        );
       },
     );
   }
@@ -150,14 +147,11 @@ class _FilmAraWidgetState extends State<FilmAraWidget> {
       subtitle: Text(
         user.firstName ?? "first name",
         style: const TextStyle(color: Colors.grey),
-      ),
-      onTap: () {
+      ),onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => UserPage(
-              userUid: user.uid!,
-            ),
+            builder: (context) => UserPage(userUid: user.uid!,),
           ),
         );
       },

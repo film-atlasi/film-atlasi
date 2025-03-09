@@ -1,119 +1,111 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
-import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
-import 'package:film_atlasi/features/movie/widgets/FilmEkle.dart';
 import 'package:flutter/material.dart';
 
-// ignore: must_be_immutable
 class FilmSeedPage extends StatefulWidget {
-  FilmSeedPage({super.key});
+  const FilmSeedPage({super.key});
 
   @override
   State<FilmSeedPage> createState() => _FilmSeedPageState();
 }
 
 class _FilmSeedPageState extends State<FilmSeedPage> {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  bool _loading = false;
-
-  late List<MoviePost> moviePosts = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final List<MoviePost> _moviePosts = [];
+  bool _isLoading = false;
+  bool _hasMore = true;
+  DocumentSnapshot? _lastDocument;
+  final int _postLimit = 5;
 
   @override
   void initState() {
     super.initState();
-    _loading = true;
-    fetchAllPosts();
-    _loading = false;
+    _fetchPosts();
   }
 
-  Future<void> fetchAllPosts() async {
+  /// **🔥 Firebase'den Lazy Load ile Postları Çekme**
+  Future<void> _fetchPosts() async {
+    if (_isLoading || !_hasMore) return;
+
+    setState(() => _isLoading = true);
+
     try {
-      QuerySnapshot postsSnapshot = await firestore
-          .collection("posts")
+      Query query = _firestore
+          .collectionGroup('posts')
+          .where("source", isEqualTo: "films")
           .orderBy('timestamp', descending: true)
-          .get();
-      List<Map<String, dynamic>> posts = postsSnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-      Set<String> filmIds =
-          posts.map((post) => post['movie'] as String).toSet();
-      QuerySnapshot filmsSnapshot = await firestore
-          .collection('films')
-          .where(FieldPath.documentId, whereIn: filmIds.toList())
-          .get();
-      Map<String, Map<String, dynamic>> films = {
-        for (var doc in filmsSnapshot.docs)
-          doc.id: doc.data() as Map<String, dynamic>
-      };
-      Set<String> userIds = posts.map((post) => post['user'] as String).toSet();
-      QuerySnapshot usersSnapshot = await firestore
-          .collection('users')
-          .where(FieldPath.documentId, whereIn: userIds.toList())
-          .get();
+          .limit(_postLimit);
 
-      Map<String, Map<String, dynamic>> users = {
-        for (var doc in usersSnapshot.docs)
-          doc.id: doc.data() as Map<String, dynamic>
-      };
+      if (_lastDocument != null) {
+        query = query.startAfterDocument(_lastDocument!);
+      }
 
-      setState(() {
-        moviePosts = posts.map((post) {
-          String filmId = post['movie'];
+      QuerySnapshot querySnapshot = await query.get();
 
-          String userId = post['user'];
-          return MoviePost(
-              user: User.fromMap(users[userId] ?? {}),
-              movie: Movie.fromMap(films[filmId] ?? {}),
-              likes: post["likes"],
-              comments: post["comments"],
-              content: post["content"]);
-        }).toList();
-      });
-      print(moviePosts);
+      if (!mounted) return;
+
+      if (querySnapshot.docs.isNotEmpty) {
+        _lastDocument = querySnapshot.docs.last;
+        _moviePosts.addAll(
+            querySnapshot.docs.map((doc) => MoviePost.fromFirestore(doc)));
+      } else {
+        _hasMore = false;
+      }
     } catch (e) {
-      print("sidar $e");
+      print("Hata oluştu: $e");
     }
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
   }
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () => fetchAllPosts(),
-        child: _loading
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                itemCount: moviePosts.length,
-                itemBuilder: (context, index) {
-                  final post = moviePosts[index];
-                  return MoviePostCard(moviePost: post);
-                  // Film postlarını listeliyoruz
-                },
-              ),
-      ),
-      floatingActionButton: buildFloatingActionButton(context),
-    );
-  }
-
-  FloatingActionButton buildFloatingActionButton(BuildContext context) {
-    return FloatingActionButton(
-      shape: CircleBorder(),
-      onPressed: () {
-        showModalBottomSheet(
-          // Modal açılır
-          context: context, // Context
-          builder: (BuildContext context) {
-            // Modal içeriği
-            return FilmEkleWidget(); // Film ekleme widget'ı
+        onRefresh: () async {
+          _moviePosts.clear();
+          _lastDocument = null;
+          _hasMore = true;
+          await _fetchPosts();
+        },
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            if (_hasMore &&
+                !_isLoading &&
+                scrollNotification.metrics.pixels >=
+                    scrollNotification.metrics.maxScrollExtent - 300) {
+              _fetchPosts();
+            }
+            return false;
           },
-        );
-      },
-      child: Icon(Icons.add),
+          child: CustomScrollView(
+            slivers: [
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == _moviePosts.length) {
+                      return _isLoading
+                          ? const Padding(
+                              padding: EdgeInsets.all(18.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          : const SizedBox();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: MoviePostCard(moviePost: _moviePosts[index]),
+                    );
+                  },
+                  childCount: _moviePosts.length + (_isLoading ? 1 : 0),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
