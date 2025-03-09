@@ -1,3 +1,5 @@
+import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
+import 'package:film_atlasi/features/movie/widgets/AddToListButton.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/screens/FilmAsistani.dart/widget/MovieIntroPage.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
@@ -97,30 +99,57 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
           // Önceki ve Sonraki Butonları
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                  onPressed: _previousStep,
-                  child: Text(
-                    "← Önceki Soru",
-                  ),
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  ),
-                  onPressed: _nextStep,
-                  child: Text(
-                    _currentStep < 3 ? "Sonraki Soru →" : "Filmleri Getir",
-                  ),
+                // Şıklar (Seçenekler) buraya zaten eklenmiş olacak
+
+                SizedBox(
+                    height:
+                        30), // Seçenekler ile butonlar arasına boşluk ekledim
+
+                // Önceki ve Sonraki Butonları
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[800], // Butonun rengi
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15), // Boyut büyütüldü
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _previousStep,
+                      child: Text(
+                        "← Önceki Soru",
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white), // Yazı boyutu büyütüldü
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent, // Butonun rengi
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15), // Boyut büyütüldü
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _nextStep,
+                      child: Text(
+                        _currentStep < 3 ? "Sonraki Soru →" : "Filmleri Getir",
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white), // Yazı boyutu büyütüldü
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
+          )
         ],
       ),
     );
@@ -151,7 +180,8 @@ class _MovieFilterFlowState extends State<MovieFilterFlow> {
         "28": "Aksiyon/Macera",
         "35": "Komedi",
         "18": "Drama",
-        "27": "Gerilim/Korku"
+        "27": "Gerilim/Korku",
+        "14": "Fantastik" // Yeni eklenen seçenek
       },
       onSelect: (value) {
         selectedGenre = value;
@@ -247,6 +277,28 @@ class MovieResultsPage extends StatelessWidget {
   final List<Movie> movies;
   MovieResultsPage({required this.movies});
 
+  static final Map<int, String> genreMap = {
+    28: "Aksiyon",
+    12: "Macera",
+    16: "Animasyon",
+    35: "Komedi",
+    80: "Suç",
+    99: "Belgesel",
+    18: "Dram",
+    10751: "Aile",
+    14: "Fantastik",
+    36: "Tarih",
+    27: "Korku",
+    10402: "Müzik",
+    9648: "Gizem",
+    10749: "Romantik",
+    878: "Bilim Kurgu",
+    10770: "TV Filmi",
+    53: "Gerilim",
+    10752: "Savaş",
+    37: "Western",
+  };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,6 +311,13 @@ class MovieResultsPage extends StatelessWidget {
         itemCount: movies.length,
         itemBuilder: (context, index) {
           final movie = movies[index];
+
+          // Film türlerini ID'den metne çeviriyoruz
+          String genreText = movie.genreIds != null
+              ? movie.genreIds!
+                  .map((id) => genreMap[id] ?? "Bilinmiyor")
+                  .join(", ")
+              : "Tür bilinmiyor";
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
@@ -282,58 +341,82 @@ class MovieResultsPage extends StatelessWidget {
 
                   SizedBox(width: 12), // Boşluk
 
-                  // Film Bilgileri
+                  // Film Bilgileri ve Listeye Ekleme Butonu
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            movie.title,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          // Film Bilgileri
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                // 🎯 Filme tıklandığında detay sayfasına yönlendirme
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MovieDetailsPage(movie: movie),
+                                  ),
+                                );
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    movie.title,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
 
-                          SizedBox(height: 5),
+                                  SizedBox(height: 5),
 
-                          // Tür & Yıl
-                          Text(
-                            "Dizi • ${movie.genreIds?.join(", ")} • ${movie.releaseDate?.split("-")[0] ?? 'Bilinmiyor'}",
-                            style: TextStyle(color: Colors.grey[400]),
-                          ),
+                                  // Tür & Yıl - Güncellenmiş kısım
+                                  Text(
+                                    "$genreText • ${movie.releaseDate?.split("-")[0] ?? 'Bilinmiyor'}",
+                                    style: TextStyle(color: Colors.grey[400]),
+                                  ),
 
-                          SizedBox(height: 5),
+                                  SizedBox(height: 5),
 
-                          // IMDb Puanı
-                          Row(
-                            children: [
-                              Icon(Icons.star, color: Colors.yellow, size: 18),
-                              SizedBox(width: 5),
-                              Text(
-                                "${movie.voteAverage}/10",
-                                style: TextStyle(
-                                  color: Colors.yellow,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                  // IMDb Puanı
+                                  Row(
+                                    children: [
+                                      Icon(Icons.star,
+                                          color: Colors.yellow, size: 18),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "${movie.voteAverage}/10",
+                                        style: TextStyle(
+                                          color: Colors.yellow,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  SizedBox(height: 5),
+
+                                  // Açıklama
+                                  Text(
+                                    movie.overview,
+                                    style: TextStyle(color: Colors.grey[400]),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
 
-                          SizedBox(height: 5),
-
-                          // Açıklama
-                          Text(
-                            movie.overview,
-                            style: TextStyle(color: Colors.grey[400]),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          // 📌 Sağ en tarafa Listeye Ekleme Butonu (AddToListButton)
+                          AddToListButton(movie: movie),
                         ],
                       ),
                     ),
