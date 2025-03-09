@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/core/provider/ThemeProvider.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/movie/screens/IletiPaylas.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/%20UserCommentsWidget.dart';
 import 'package:flutter/material.dart';
@@ -122,8 +123,21 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           overflow: TextOverflow.ellipsis,
         ),
         centerTitle: true,
-        actions: const [
-          Icon(Icons.more_vert, color: Colors.white),
+
+        // 🔥 Sağ üst köşeye "+" butonu ekliyoruz
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add,
+                color: Colors.white, size: 28), // "+" İkonu
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Iletipaylas(movie: widget.movie),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(

@@ -142,11 +142,7 @@ class _UserPageState extends State<UserPage>
   Widget build(BuildContext context) {
     final AppConstants appConstants = AppConstants(context);
     return Scaffold(
-      appBar: !widget.fromProfile
-          ? AppBar(
-              title: Text(userData?.userName ?? ""),
-            )
-          : null,
+      appBar: !widget.fromProfile ? AppBar() : null,
       body: RefreshIndicator(
         // 🔥 AŞAĞI KAYDIRINCA SAYFA YENİLENECEK
         onRefresh: () async {
@@ -173,7 +169,7 @@ class _UserPageState extends State<UserPage>
             floating: true,
             leading: SizedBox(),
             flexibleSpace: FlexibleSpaceBar(
-              background: _buildCoverPhoto(appConstants),
+              background: _buildProfilePhoto(appConstants),
             ),
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(50),
@@ -216,7 +212,7 @@ class _UserPageState extends State<UserPage>
     );
   }
 
-  Widget _buildCoverPhoto(AppConstants appConstants) {
+  Widget _buildProfilePhoto(AppConstants appConstants) {
     return Container(
       color: appConstants.appBarColor,
       child: Column(
@@ -240,27 +236,30 @@ class _UserPageState extends State<UserPage>
                 bottom: MediaQuery.of(context).size.height * -0.03,
                 left: 0,
                 right: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: appConstants.appBarColor,
-                      width: 5,
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: GestureDetector(
-                    onTap: _updateProfilePhoto,
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: appConstants.textColor,
-                      // ignore: unnecessary_null_comparison
-                      backgroundImage: userData!.profilePhotoUrl! != null
-                          ? NetworkImage(userData!.profilePhotoUrl!)
-                          : null,
-                      child: userData!.profilePhotoUrl == null
-                          ? Icon(Icons.person,
-                              size: 50, color: appConstants.textLightColor)
-                          : null,
+                child: Center(
+                  child: ClipOval(
+                    child: Container(
+                      width: 100, // Profil fotoğrafı boyutu
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: appConstants.appBarColor,
+                          width: 5,
+                        ),
+                      ),
+                      child: userData!.profilePhotoUrl != null &&
+                              userData!.profilePhotoUrl!.isNotEmpty
+                          ? Image.network(
+                              userData!.profilePhotoUrl!,
+                              fit: BoxFit
+                                  .cover, // 🔥 Fotoğrafın tam oturmasını sağlar
+                            )
+                          : Container(
+                              color: Colors.grey.shade800,
+                              child: const Icon(Icons.person,
+                                  size: 50, color: Colors.white),
+                            ),
                     ),
                   ),
                 ),
