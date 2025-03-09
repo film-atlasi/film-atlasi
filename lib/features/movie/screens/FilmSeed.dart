@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
+import 'package:film_atlasi/features/movie/widgets/Skeletons/FilmSeedSkeleton.dart';
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 class FilmSeedPage extends StatefulWidget {
   const FilmSeedPage({super.key});
@@ -65,12 +67,24 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
+      body: SmartRefresher(
+        enablePullDown: true,
+        enablePullUp: false,
+        controller: RefreshController(),
+        header: CustomHeader(
+          builder: (context, mode) {
+            return Container(
+                height: 55.0,
+                alignment: Alignment.center,
+                child: LoadingWidget());
+          },
+        ),
         onRefresh: () async {
           _moviePosts.clear();
           _lastDocument = null;
           _hasMore = true;
           await _fetchPosts();
+          RefreshController().refreshCompleted();
         },
         child: NotificationListener<ScrollNotification>(
           onNotification: (scrollNotification) {
@@ -88,12 +102,17 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     if (index == _moviePosts.length) {
-                      return _isLoading
-                          ? const Padding(
-                              padding: EdgeInsets.all(18.0),
-                              child: LoadingWidget(),
-                            )
-                          : const SizedBox();
+                      if (_isLoading) {
+                        return Column(
+                          children: [
+                            MoviePostSkeleton(),
+                            AlintiSkeleton(),
+                            MoviePostSkeleton(),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
                     }
                     return Padding(
                       padding: const EdgeInsets.all(8.0),

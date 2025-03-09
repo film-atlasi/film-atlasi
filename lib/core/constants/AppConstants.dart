@@ -24,6 +24,14 @@ class AppConstants {
 
   static Color get black => Colors.black;
 
+  double getHeight(double height) {
+    return MediaQuery.of(context).size.height * height;
+  }
+
+  double getWidth(double width) {
+    return MediaQuery.of(context).size.width * width;
+  }
+
   ///
   ///
   ///
