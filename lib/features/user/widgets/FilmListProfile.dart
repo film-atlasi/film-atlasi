@@ -1,7 +1,8 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/features/movie/models/Movie.dart';
 
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
+import 'package:film_atlasi/features/user/widgets/EditFilmListBottomSheet.dart';
 import 'package:flutter/material.dart';
 
 class FilmListProfile extends StatefulWidget {
@@ -104,7 +105,8 @@ class _FilmListProfileState extends State<FilmListProfile> {
                     itemBuilder: (context, index) {
                       Map<String, dynamic> filmList = _userFilmLists[index];
                       String listId = filmList["id"];
-                      List<dynamic>? lastFourMovies = filmList["lastFourMovies"];
+                      List<dynamic>? lastFourMovies =
+                          filmList["lastFourMovies"];
 
                       return Card(
                         elevation: 5,
@@ -114,55 +116,91 @@ class _FilmListProfileState extends State<FilmListProfile> {
                         margin: const EdgeInsets.symmetric(
                             vertical: 10, horizontal: 16),
                         child: ExpansionTile(
-                          title: Text(
-                            filmList["name"].toString().toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Row(
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (lastFourMovies != null)
-                                ...lastFourMovies.map((movie) {
+                              Text(
+                                filmList["name"].toString().toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: (filmList["lastFourMovies"]
+                                        as List<dynamic>)
+                                    .map((movie) {
                                   return Padding(
-                                    padding: const EdgeInsets.only(right: 6.0),
+                                    padding: const EdgeInsets.only(right: 4.0),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(6),
                                       child: movie["posterPath"] != null &&
                                               movie["posterPath"].isNotEmpty
                                           ? Image.network(
-                                              "https://image.tmdb.org/t/p/w200${movie["posterPath"]}",
-                                              width: 20,
-                                              height: 30,
+                                              "https://image.tmdb.org/t/p/w92${movie["posterPath"]}",
+                                              width: 35,
+                                              height: 50,
                                               fit: BoxFit.cover,
                                               errorBuilder:
                                                   (context, error, stackTrace) {
                                                 return Container(
-                                                  width: 50,
-                                                  height: 70,
+                                                  width: 35,
+                                                  height: 50,
                                                   color: Colors.grey.shade800,
-                                                  child: const Icon(
-                                                    Icons.movie,
-                                                    color: Colors.white70,
-                                                    size: 30,
-                                                  ),
+                                                  child: const Icon(Icons.movie,
+                                                      color: Colors.white70,
+                                                      size: 20),
                                                 );
                                               },
                                             )
                                           : Container(
-                                              width: 50,
-                                              height: 70,
+                                              width: 35,
+                                              height: 50,
                                               color: Colors.grey.shade800,
-                                              child: const Icon(
-                                                Icons.movie,
-                                                color: Colors.white70,
-                                                size: 30,
-                                              ),
+                                              child: const Icon(Icons.movie,
+                                                  color: Colors.white70,
+                                                  size: 20),
                                             ),
                                     ),
                                   );
-                                }),
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == "edit") {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (context) => EditFilmListBottomSheet(
+                                    listId: filmList["id"],
+                                    initialListName: filmList["name"],
+                                    initialMovies: filmList["lastFourMovies"]
+                                        .map<Movie>((movie) {
+                                      return Movie(
+                                        id: movie["id"],
+                                        title: movie["title"],
+                                        posterPath: movie["posterPath"] ?? "",
+                                        overview: "",
+                                        voteAverage: 0.0,
+                                      );
+                                    }).toList(),
+                                    onSave: () {
+                                      setState(() {
+                                        fetchUserFilmLists(isRefresh: true);
+                                      });
+                                    },
+                                  ),
+                                );
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: "edit",
+                                child: Text("Düzenle"),
+                              ),
                             ],
                           ),
                           onExpansionChanged: (isExpanded) {
@@ -175,8 +213,9 @@ class _FilmListProfileState extends State<FilmListProfile> {
                               const Padding(
                                 padding: EdgeInsets.all(16.0),
                                 child: Center(
-                                    child: CircularProgressIndicator(
-                                        color: Colors.redAccent)),
+                                  child: CircularProgressIndicator(
+                                      color: Colors.redAccent),
+                                ),
                               )
                             else if (_moviesMap[listId] == null ||
                                 _moviesMap[listId]!.isEmpty)
