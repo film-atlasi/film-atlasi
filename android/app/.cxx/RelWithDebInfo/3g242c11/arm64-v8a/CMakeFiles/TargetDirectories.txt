@@ -1,0 +1,2 @@
+/home/sidar/Desktop/film-atlasi/android/app/.cxx/RelWithDebInfo/3g242c11/arm64-v8a/CMakeFiles/edit_cache.dir
+/home/sidar/Desktop/film-atlasi/android/app/.cxx/RelWithDebInfo/3g242c11/arm64-v8a/CMakeFiles/rebuild_cache.dir

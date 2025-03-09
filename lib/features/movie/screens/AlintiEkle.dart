@@ -6,7 +6,7 @@ import 'dart:convert';
 class AlintiEkle extends StatefulWidget {
   final int movieId; // Dinamik olarak film ID'sini alacak
 
-  AlintiEkle({required this.movieId});
+  const AlintiEkle({super.key, required this.movieId});
 
   @override
   _AlintiEkleState createState() => _AlintiEkleState();

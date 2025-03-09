@@ -1,6 +1,11 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
+import 'package:film_atlasi/features/movie/screens/FollowingFeedPage.dart';
+import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
+import 'package:film_atlasi/features/movie/widgets/CustomDrawer.dart';
+import 'package:film_atlasi/features/movie/widgets/CustomTabBar.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
+import 'package:film_atlasi/features/movie/widgets/Notifications/notificationButton.dart';
 import 'package:flutter/material.dart';
 
 class Anasayfa extends StatefulWidget {
@@ -12,7 +17,6 @@ class Anasayfa extends StatefulWidget {
 
 class AnasayfaState extends State<Anasayfa>
     with SingleTickerProviderStateMixin {
-  final ScrollController _scrollController = ScrollController();
   late TabController tabController;
 
   @override
@@ -24,114 +28,50 @@ class AnasayfaState extends State<Anasayfa>
   @override
   void dispose() {
     tabController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppConstants.AppName.toUpperCase(),
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(color: AppConstants.red),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FilmAraWidget(mode: "film_incele")),
+      drawer: CustomDrawer(), // Drawer bileşeni burada çağrıldı.
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              title: Text("Film Atlası".toUpperCase()),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const FilmAraWidget(mode: "film_incele")),
+                  ),
+                ),
+                NotificationsButton(),
+              ],
+              pinned: true, // Kaydırınca tamamen kaybolmasını sağlıyor
+              floating: true, // Aşağı kaydırınca tekrar görünmesini sağlar
+              snap: true, // Aşağı kaydırıldığında hızlıca geri gelmesini sağlar
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(50),
+                child: CustomTabBar(tabController: tabController),
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {
-              // Bildirim işlemi
-              print('Bildirimler tıklandı.');
-            },
-          ),
-        ],
-        bottom: TabBar(
+          ];
+        },
+        body: TabBarView(
           controller: tabController,
-          tabs: const [
-            Tab(text: 'Akış'),
-            Tab(text: 'Takipler'),
-           Tab(text: 'Popüler'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: tabController,
-        children: [
-          FilmSeedPage(),
-          const Center(child: Text('Takipler İçeriği')),
-         const Center(child: Text('Popüler İçeriği')),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 110, 5, 5),
-              ),
-              child: Text(
-                'Menü',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            _buildDrawerItem(
-              icon: Icons.settings,
-              title: 'Ayarlar',
-              onTap: () {
-                // Ayarlar işlemi
-              },
-            ),
-            _buildDrawerItem(
-              icon: Icons.lock,
-              title: 'Gizlilik',
-              onTap: () {
-                // Gizlilik işlemi
-              },
-            ),
-            _buildDrawerItem(
-              icon: Icons.palette,
-              title: 'Tema',
-              onTap: () {
-                // Tema işlemi
-              },
-            ),
-            _buildDrawerItem(
-              icon: Icons.exit_to_app,
-              title: 'Çıkış Yap',
-              onTap: () {
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/giris',
-                  (Route<dynamic> route) => false,
-                );
-              },
-            ),
+            FilmSeedPage(),
+            FollowingFeedPage(),
+            NewsScreen(),
           ],
         ),
       ),
-    );
-  }
-
-  ListTile _buildDrawerItem(
-      {required IconData icon,
-      required String title,
-      required VoidCallback onTap}) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: onTap,
     );
   }
 }

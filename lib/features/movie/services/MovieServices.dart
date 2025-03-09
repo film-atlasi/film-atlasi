@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
-import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:http/http.dart' as http;
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 
@@ -21,6 +20,64 @@ class MovieService {
     } else {
       throw Exception('Film arama başarısız oldu');
     }
+  }
+
+  Future<Movie?> getMovieFromFireStore(String id) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final postsCollection = firestore.collection('films');
+      final docSnapshot = await postsCollection.doc(id).get();
+      if (docSnapshot.exists) {
+        return Movie.fromFirebase(docSnapshot);
+      } else {
+        throw Exception('Film bulunamadı');
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<String?> getMovieTrailer(int movieId) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.themoviedb.org/3/movie/$movieId/videos?api_key=$apiKey&language=tr-TR'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final results = data['results'] as List<dynamic>;
+
+      if (results.isNotEmpty) {
+        final trailer = results.firstWhere(
+          (video) => video['type'] == 'Trailer' && video['site'] == 'YouTube',
+          orElse: () => results.isNotEmpty ? results.first : null,
+        );
+
+        if (trailer != null) {
+          return 'https://www.youtube.com/watch?v=${trailer['key']}';
+        }
+      }
+    }
+
+    // Eğer TMDB'de fragman yoksa, IMDB'ye yönlendirebiliriz
+    final imdbUrl = await getIMDBTrailer(movieId);
+    return imdbUrl;
+  }
+
+  /// IMDB sayfasına yönlendirme için bir fonksiyon
+  Future<String?> getIMDBTrailer(int movieId) async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.themoviedb.org/3/movie/$movieId/external_ids?api_key=$apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['imdb_id'] != null) {
+        return 'https://www.imdb.com/title/${data['imdb_id']}/';
+      }
+    }
+    return null;
   }
 
   Future<Map<String, String>> getWatchProviders(int movieId) async {
@@ -182,6 +239,114 @@ class MovieService {
     } catch (e) {
       print("İstek sırasında hata oluştu: $e");
       return [];
+    }
+  }
+
+  Future<List<Movie>> getUpcomingMovies() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/movie/upcoming?api_key=$apiKey&language=tr-TR'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Yakında çıkacak filmler alınamadı');
+    }
+  }
+
+  Future<List<Movie>> getHorrorMovies() async {
+    return await fetchMoviesByGenre(27); // 27 korku filmleri için genre ID
+  }
+
+  Future<List<Movie>> getClassicMovies() async {
+    // Klasik filmler için 1950-1980 arası filmler
+    return await fetchMoviesByYear(1950, 1980);
+  }
+
+  Future<List<Movie>> getLGBTQMovies() async {
+    // LGBTQ+ filmler için anahtar kelime araması
+    return await searchMovies("lgbtq");
+  }
+
+  Future<List<Movie>> fetchMoviesByGenre(int genreId) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/discover/movie?api_key=$apiKey&language=tr-TR&with_genres=$genreId&sort_by=popularity.desc'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Genre ID: $genreId için filmler alınamadı');
+    }
+  }
+
+  Future<List<Movie>> fetchMoviesByYear(int startYear, int endYear) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/discover/movie?api_key=$apiKey&language=tr-TR&primary_release_date.gte=$startYear-01-01&primary_release_date.lte=$endYear-12-31&sort_by=vote_average.desc'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception(
+          '$startYear-$endYear yılları arasındaki filmler alınamadı');
+    }
+  }
+
+  Future<List<Movie>> fetchFilteredMovies({
+    required double minImdb,
+    required String genre,
+    required String country,
+    required int year,
+    required int minDuration,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/discover/movie?api_key=$apiKey'
+        '&language=tr-TR'
+        '&vote_average.gte=$minImdb'
+        '&with_genres=$genre'
+        '&primary_release_year=$year'
+        '&with_runtime.gte=$minDuration'
+        '&region=$country'
+        '&sort_by=popularity.desc',
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Filtrelenmiş filmler alınamadı');
+    }
+  }
+
+  Future<List<Movie>> getPopularMoviesOnNetflix() async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/discover/movie?api_key=$apiKey&language=tr-TR&with_watch_providers=8&watch_region=TR&sort_by=popularity.desc'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList();
+    } else {
+      throw Exception('Netflix\'te popüler filmler alınamadı');
     }
   }
 }

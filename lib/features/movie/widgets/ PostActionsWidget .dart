@@ -1,213 +1,288 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/features/movie/services/notification_service..dart';
 import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
+import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class PostActionsWidget extends StatefulWidget {
-  final String postId; // Firestore'daki postun gerçek ID'si
+  final String postId;
+  final String filmId;
   final int initialLikes;
   final int initialComments;
 
-  const PostActionsWidget({
-    Key? key,
-    required this.postId,
-    required this.initialLikes,
-    required this.initialComments,
-  }) : super(key: key);
+  const PostActionsWidget(
+      {super.key,
+      required this.postId,
+      required this.initialLikes,
+      required this.initialComments,
+      required this.filmId});
 
   @override
   _PostActionsWidgetState createState() => _PostActionsWidgetState();
 }
 
 class _PostActionsWidgetState extends State<PostActionsWidget> {
-  int likes = 0;
-  int comments = 0;
-  bool isLiked = false;
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late Stream<DocumentSnapshot> _postStream;
+  bool _isLiked = false;
+  bool _isLikeLoading = false;
 
   @override
   void initState() {
     super.initState();
-    likes = widget.initialLikes;
-    comments = widget.initialComments;
-    checkIfUserLiked();
+    // _postStream değişkenini başlat
+    _postStream = _firestore
+        .collection("films")
+        .doc(widget.filmId)
+        .collection('posts')
+        .doc(widget.postId)
+        .snapshots();
+    _checkIfUserLiked();
   }
 
-  /// **Beğeni durumunu kontrol et**
-  Future<void> checkIfUserLiked() async {
-    final user = auth.currentUser;
-    if (user == null) {
-      print("DEBUG: Kullanıcı giriş yapmamış.");
-      return;
-    }
-
-    try {
-      print(
-          "DEBUG: Firestore'dan post verisi çekiliyor... Post ID: ${widget.postId}");
-      final postRef = firestore.collection('posts').doc(widget.postId);
-      final postSnapshot = await postRef.get();
-
-      if (!postSnapshot.exists) {
-        print("HATA: Bu post Firestore'da bulunamadı! ID: ${widget.postId}");
-        return;
-      }
-
-      if (!postSnapshot.data()!.containsKey('likedUsers')) {
-        print("HATA: Firestore dokümanında 'likedUsers' alanı bulunmuyor!");
-        return;
-      }
-
-      final likedUsers =
-          List<String>.from(postSnapshot.get('likedUsers') ?? []);
-
-      setState(() {
-        isLiked = likedUsers.contains(user.uid);
-      });
-
-      print("DEBUG: Beğeni kontrolü tamamlandı. Beğenildi mi? $isLiked");
-    } catch (e) {
-      print("HATA: Firestore'dan post verisi çekerken hata oluştu -> $e");
-    }
-  }
-
-  Future<void> toggleLike() async {
-    final user = auth.currentUser;
+  Future<void> _checkIfUserLiked() async {
+    final user = _auth.currentUser;
     if (user == null) return;
 
-    final postRef = firestore.collection('posts').doc(widget.postId);
-    final likesRef = postRef.collection('likes').doc(user.uid);
+    try {
+      final likesSnapshot = await _firestore
+          .collection("films")
+          .doc(widget.filmId)
+          .collection('posts')
+          .doc(widget.postId)
+          .collection('likes')
+          .doc(user.uid)
+          .get();
 
-    final likeSnapshot = await likesRef.get();
-
-    if (likeSnapshot.exists) {
-      // Eğer kullanıcı zaten beğenmişse, beğeniyi kaldır
-      await likesRef.delete();
-      await postRef
-          .set({'likes': FieldValue.increment(-1)}, SetOptions(merge: true));
-      setState(() {
-        isLiked = false;
-        likes--;
-      });
-    } else {
-      // Eğer beğenmemişse, beğeni ekle
-      await likesRef
-          .set({'userId': user.uid, 'timestamp': FieldValue.serverTimestamp()});
-      await postRef
-          .set({'likes': FieldValue.increment(1)}, SetOptions(merge: true));
-      setState(() {
-        isLiked = true;
-        likes++;
-      });
+      if (mounted) {
+        setState(() {
+          _isLiked = likesSnapshot.exists;
+        });
+      }
+    } catch (e) {
+      print('Beğeni durumu kontrol edilirken hata: $e');
     }
+  }
+
+  Future<void> _toggleLike() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    setState(() {
+      _isLikeLoading = true;
+    });
+
+    // Batch işlemi oluştur
+    final batch = _firestore.batch();
+    final filmRef = _firestore.collection('films').doc(widget.filmId);
+    final postRef = filmRef.collection('posts').doc(widget.postId);
+    final likeRef = postRef.collection('likes').doc(user.uid);
+    final userRef = _firestore.collection('users').doc(user.uid);
+    final userDoc = await userRef.get();
+
+    // Kullanıcının beğendiği postları sakladığımız referans
+    final userLikedPostRef = userRef.collection("begenilenler").doc(widget.postId);
+
+    try {
+      final likeDoc = await likeRef.get();
+
+      if (likeDoc.exists) {
+        // 🔥 Beğeniyi kaldır
+        batch.delete(likeRef);
+        batch.delete(userLikedPostRef); // ✅ Kullanıcının beğenilenlerinden de kaldır
+        batch.update(postRef, {'likes': FieldValue.increment(-1)});
+
+        if (mounted) {
+          setState(() {
+            _isLiked = false;
+          });
+        }
+      } else {
+        // 🔥 Beğeni ekle
+        batch.set(likeRef, {
+          'userId': user.uid,
+          'userName': userDoc["userName"] ?? 'Kullanıcı',
+          'timestamp': FieldValue.serverTimestamp(),
+          'profilePhotoUrl': userDoc["profilePhotoUrl"]
+        });
+
+        batch.update(postRef, {'likes': FieldValue.increment(1)});
+
+        // ✅ Beğenilen postu kullanıcının koleksiyonuna ekle
+        batch.set(userLikedPostRef, {
+          'postId': widget.postId,
+          'filmId': widget.filmId,
+          'filmName': postRef.id,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+        // 🔥 Beğeni Bildirimi Gönder
+        final postOwner = await postRef.get();
+        final postOwnerId = postOwner.data()?['userId']; // Post sahibinin UID’si
+        if (postOwnerId != null) {
+          await NotificationService().addNotification(
+              toUserId: postOwnerId,
+              fromUserId: user.uid,
+              fromUsername: userDoc["userName"] ?? "Bilinmeyen Kullanıcı",
+              eventType: "like",
+              postId: widget.postId,
+              filmId: widget.filmId,
+              photo: userDoc["profilePhotoUrl"]);
+        }
+
+        if (mounted) {
+          setState(() {
+            _isLiked = true;
+            _isLikeLoading = false;
+          });
+        }
+      }
+
+      await batch.commit();
+    } catch (e) {
+      print('🔥 Beğeni işlemi sırasında hata: $e');
+    }
+}
+
+
+  void _navigateToComments() async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
+      builder: (context) {
+        return Container(
+            padding: EdgeInsets.all(16.0),
+            child: CommentPage(
+              postId: widget.postId,
+              filmId: widget.filmId,
+            ));
+      },
+    );
+
+    // CommentPage'den döndükten sonra, eğer yeni yorum eklendiyse
+    // yorum sayısı otomatik olarak StreamBuilder ile güncellenecek
   }
 
   void _showLikers() async {
-    var likesRef =
-        firestore.collection('posts').doc(widget.postId).collection('likes');
-    var snapshot = await likesRef.get();
-
-    List<String> likers = snapshot.docs.map((doc) => doc.id).toList();
-
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Beğenenler"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: likers
-                .map((userId) => FutureBuilder<DocumentSnapshot>(
-                      future: firestore.collection('users').doc(userId).get(),
-                      builder: (context, userSnapshot) {
-                        if (!userSnapshot.hasData)
-                          return CircularProgressIndicator();
-                        String userName =
-                            userSnapshot.data!.get('userName') ?? 'Bilinmiyor';
-                        return ListTile(title: Text(userName));
-                      },
-                    ))
-                .toList(),
+          title: Text('Beğenenler'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore
+                  .collection("films")
+                  .doc(widget.filmId)
+                  .collection('posts')
+                  .doc(widget.postId)
+                  .collection('likes')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('Henüz beğeni yok'));
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    var likeData = snapshot.data!.docs[index].data()
+                        as Map<String, dynamic>;
+                    return UserProfileRouter(
+                        userId: likeData['userId'],
+                        title: likeData["userName"],
+                        profilePhotoUrl: likeData["profilePhotoUrl"]);
+                  },
+                );
+              },
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Kapat"),
-            )
+              child: Text('Kapat'),
+            ),
           ],
         );
       },
     );
   }
 
-  /// **Yorum sayısını artırma**
-  Future<void> addComment() async {
-    final postRef = firestore.collection('posts').doc(widget.postId);
-    await postRef.update({'comments': FieldValue.increment(1)});
-
-    setState(() {
-      comments++;
-    });
-  }
-
-  /// **Paylaş butonu (Henüz Firebase ile entegre değil)**
-  void sharePost() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Paylaşma özelliği yakında!")),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // **Beğeni Butonu**
-        IconButton(
-          onPressed: toggleLike,
-          icon: Icon(
-            isLiked ? Icons.favorite : Icons.favorite_border,
-            color: isLiked ? Colors.red : Colors.white,
-          ),
-        ),
-        StreamBuilder<DocumentSnapshot>(
-          stream: firestore.collection('posts').doc(widget.postId).snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || !snapshot.data!.exists) {
-              return Text("0", style: TextStyle(color: Colors.white));
-            }
-
-            int likeCount = snapshot.data!.get('likes') ?? 0;
-            return GestureDetector(
-              onTap: _showLikers,
-              child: Text(likeCount.toString(),
-                  style: TextStyle(color: Colors.white)),
-            );
-          },
-        ),
-        const SizedBox(width: 20),
-
-        // **Yorum Butonu**
-        IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CommentPage(postId: widget.postId),
+    final AppConstants appConstants = AppConstants(context);
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _postStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Row(
+            children: [
+              IconButton(
+                onPressed: null,
+                icon: Icon(Icons.favorite_border,
+                    color: appConstants.textLightColor),
               ),
-            );
-          },
-          icon: const Icon(Icons.comment_outlined, color: Colors.white),
-        ),
-        Text(comments.toString(), style: TextStyle(color: Colors.white)),
+              Text('0', style: TextStyle(color: appConstants.textColor)),
+              SizedBox(width: 20),
+              IconButton(
+                onPressed: null,
+                icon: Icon(Icons.comment_outlined,
+                    color: appConstants.textLightColor),
+              ),
+              Text('0', style: TextStyle(color: appConstants.textColor)),
+            ],
+          );
+        }
 
-        const SizedBox(width: 20),
+        final postData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+        final int likeCount = postData['likes'] ?? 0;
+        final int commentCount = postData['comments'] ?? 0;
 
-        // **Paylaş Butonu**
-        IconButton(
-          onPressed: sharePost,
-          icon: const Icon(Icons.share, color: Colors.white),
-        ),
-      ],
+        return Row(
+          children: [
+            // Beğeni Butonu
+            IconButton(
+              onPressed: !_isLikeLoading ? _toggleLike : null,
+              icon: Icon(
+                _isLiked ? Icons.favorite : Icons.favorite_border,
+                color: _isLiked ? Colors.red : appConstants.textColor,
+              ),
+            ),
+            GestureDetector(
+              onTap: likeCount > 0 ? _showLikers : null,
+              child: Text(
+                '$likeCount',
+                style: TextStyle(color: appConstants.textColor),
+              ),
+            ),
+            SizedBox(width: 20),
+
+            // Yorum Butonu
+            IconButton(
+              onPressed: _navigateToComments,
+              icon: Icon(Icons.comment_outlined, color: appConstants.textColor),
+            ),
+            Text(
+              '$commentCount',
+              style: TextStyle(color: appConstants.textColor),
+            ),
+            SizedBox(width: 20),
+          ],
+        );
+      },
     );
   }
 }

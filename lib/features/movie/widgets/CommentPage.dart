@@ -1,11 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/services/CommentServices.dart';
+import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+// Add this import for date formatting
 
 class CommentPage extends StatefulWidget {
   final String postId;
-
-  const CommentPage({Key? key, required this.postId}) : super(key: key);
+  final String filmId;
+  final bool isAppBar;
+  const CommentPage(
+      {super.key,
+      required this.postId,
+      required this.filmId,
+      this.isAppBar = true});
 
   @override
   _CommentPageState createState() => _CommentPageState();
@@ -16,138 +26,28 @@ class _CommentPageState extends State<CommentPage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  /// **Yorumları Firestore'dan çek**
-  Stream<QuerySnapshot> getCommentsStream() {
-    return firestore
-        .collection('posts')
-        .doc(widget.postId)
-        .collection('comments')
-        .orderBy('timestamp', descending: true)
-        .snapshots();
-  }
-
-  Future<void> _updateComment(String commentId, String newContent) async {
-    if (newContent.isEmpty) return;
-
-    try {
-      await firestore
-          .collection('posts')
-          .doc(widget.postId)
-          .collection('comments')
-          .doc(commentId)
-          .update({"content": newContent});
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Yorum güncellendi!")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Hata: $e")),
-      );
-    }
-  }
-
-  void _showEditDialog(String commentId, String currentText) {
-    TextEditingController _editController =
-        TextEditingController(text: currentText);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Yorumu Düzenle"),
-          content: TextField(
-            controller: _editController,
-            decoration: const InputDecoration(hintText: "Yeni yorumu yazın..."),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("İptal"),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _updateComment(commentId, _editController.text.trim());
-                Navigator.pop(context);
-              },
-              child: const Text("Kaydet"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _deleteComment(String commentId) async {
-    try {
-      await firestore
-          .collection('posts')
-          .doc(widget.postId)
-          .collection('comments')
-          .doc(commentId)
-          .delete();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Yorum silindi!")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Hata: $e")),
-      );
-    }
-  }
-
-  Future<void> addComment() async {
-    final user = auth.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Lütfen önce giriş yapın!")),
-      );
-      return;
-    }
-
-    if (_commentController.text.trim().isEmpty) return;
-
-    final userDoc = await firestore.collection('users').doc(user.uid).get();
-    String userName =
-        userDoc.exists ? userDoc['userName'] ?? "Anonim" : "Anonim";
-    String profilePhotoUrl = userDoc.exists
-        ? userDoc['profilePhotoUrl'] ?? ""
-        : ""; // 🔥 Profil fotoğrafını ekledik
-
-    DocumentReference commentRef = firestore
-        .collection('posts')
-        .doc(widget.postId)
-        .collection('comments')
-        .doc();
-
-    await commentRef.set({
-      "commentId": commentRef.id,
-      "userId": user.uid,
-      "userName": userName,
-      "profilePhotoUrl":
-          profilePhotoUrl, // 🔥 Kullanıcının profil fotoğrafını Firestore’a kaydediyoruz
-      "content": _commentController.text.trim(),
-      "timestamp": FieldValue.serverTimestamp(),
-    });
-
-    // **🔥 Firestore'daki "comments" alanını 1 artır**
-    await firestore.collection('posts').doc(widget.postId).update({
-      "comments": FieldValue.increment(1),
-    });
-
-    _commentController.clear();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
+    final CommentServices commentServices = CommentServices(
+      filmId: widget.filmId,
+      postId: widget.postId,
+      context: context,
+      commentController: _commentController,
+      user: auth.currentUser,
+    );
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Yorumlar")),
+      appBar: widget.isAppBar
+          ? AppBar(
+              title: const Text("Yorumlar"),
+            )
+          : null,
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: getCommentsStream(),
+              stream: commentServices.getCommentsStream(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -160,48 +60,53 @@ class _CommentPageState extends State<CommentPage> {
                   itemBuilder: (context, index) {
                     var commentData =
                         comments[index].data() as Map<String, dynamic>;
+                    var timestamp = commentData["timestamp"] as Timestamp?;
+                    var formattedTime = timestamp != null
+                        ? Helpers.formatTimestamp(timestamp)
+                        : "Zaman bilgisi yok";
 
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: commentData['profilePhotoUrl'] !=
-                                    null &&
-                                commentData['profilePhotoUrl'].isNotEmpty
-                            ? NetworkImage(commentData[
-                                'profilePhotoUrl']) // 🔥 Profil fotoğrafını gösteriyoruz
-                            : null,
-                        child: commentData['profilePhotoUrl'] == null ||
-                                commentData['profilePhotoUrl'].isEmpty
-                            ? Text(commentData['userName'][0]
-                                .toUpperCase()) // Eğer profil fotoğrafı yoksa baş harfi göster
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: UserProfileRouter(
+                        extraWidget: Padding(
+                          padding: const EdgeInsets.only(bottom: 7),
+                          child: Text(
+                            formattedTime,
+                            style: TextStyle(
+                              color: appConstants.textLightColor,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                        userId: commentData["userId"],
+                        title: commentData["userName"],
+                        profilePhotoUrl: commentData["profilePhotoUrl"],
+                        subtitle: commentData["content"],
+                        trailing: commentData["userId"] == auth.currentUser?.uid
+                            ? PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    commentServices.showEditDialog(
+                                        commentData["commentId"],
+                                        commentData["content"]);
+                                  } else if (value == 'delete') {
+                                    commentServices.deleteComment(
+                                        commentData["commentId"]);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text('Düzenle'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('Sil'),
+                                  ),
+                                ],
+                              )
                             : null,
                       ),
-                      title: Text(
-                        commentData['userName'] ?? 'Anonim',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(commentData['content']),
-                      trailing: commentData['userId'] == auth.currentUser?.uid
-                          ? PopupMenuButton<String>(
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _showEditDialog(commentData['commentId'],
-                                      commentData['content']);
-                                } else if (value == 'delete') {
-                                  _deleteComment(commentData['commentId']);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('Düzenle'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Sil'),
-                                ),
-                              ],
-                            )
-                          : null, // Eğer yorum kullanıcının değilse, düzenleme/silme butonu göstermiyoruz.
                     );
                   },
                 );
@@ -222,7 +127,7 @@ class _CommentPageState extends State<CommentPage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: addComment,
+                  onPressed: commentServices.addComment,
                 ),
               ],
             ),

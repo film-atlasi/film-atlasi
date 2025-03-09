@@ -10,7 +10,7 @@ class User {
   final String? lastName;
   final String? surname;
   final String? userName;
-  final String? profilePhotoUrl;
+  String? profilePhotoUrl;
   final String? coverPhotoUrl;
   final String? job;
   final Movie? currentlyWatchingMovie;
@@ -25,9 +25,11 @@ class User {
   final String? city;
   final Timestamp? createdAt;
   final String? email;
+  int? posts;
 
   User(
       {this.uid,
+      this.posts,
       this.firstName,
       this.surname,
       this.userName,
@@ -102,17 +104,20 @@ class User {
   factory User.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return User(
-        uid: doc.id,
-        userName: data['userName'] ?? '',
-        firstName: data['firstName'] ?? '',
-        email: data['email'] ?? '',
-        city: data['city'] ?? '',
-        createdAt: data['createdAt'] ?? Timestamp.now(),
-        age: data['age'] ?? 0,
-        job: data['job'] ?? '',
-        followers: data['followers'] ?? 0,
-        following: data['following'] ?? 0,
-        lastName: data['lastName'] ?? "");
+      uid: doc.id,
+      posts: data['posts'] ?? 0,
+      userName: data['userName'].toString().toLowerCase(),
+      firstName: data['firstName'] ?? '',
+      email: data['email'] ?? '',
+      city: data['city'] ?? '',
+      createdAt: data['createdAt'] ?? Timestamp.now(),
+      age: data['age'] ?? 0,
+      job: data['job'] ?? '',
+      followers: data['followers'] ?? 0,
+      following: data['following'] ?? 0,
+      lastName: data['lastName'] ?? "",
+      profilePhotoUrl: data['profilePhotoUrl'] ?? "", // ✅ EKLENDİ!
+    );
   }
 
   String toJson() => json.encode(toMap());
