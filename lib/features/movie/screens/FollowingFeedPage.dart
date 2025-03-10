@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/Skeletons/FilmSeedSkeleton.dart';
@@ -19,9 +20,10 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
   final ScrollController _scrollController = ScrollController();
   final List<MoviePost> _moviePosts = [];
   Map<String, DocumentSnapshot?> _lastDocuments = {};
+  RefreshController _refreshController = RefreshController();
   bool _isLoading = false;
   bool _hasMore = true;
-  final int _postLimit = 5;
+  final int _postLimit = 4;
 
   @override
   void initState() {
@@ -102,26 +104,22 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SmartRefresher(
-        controller: RefreshController(),
+        controller: _refreshController,
         enablePullDown: true,
+        enablePullUp: true,
         onRefresh: () async {
           _lastDocuments = {};
           _moviePosts.clear();
           _hasMore = true;
           await _fetchFollowingPosts();
-          RefreshController().refreshCompleted();
+          _refreshController.refreshCompleted();
         },
-        header: CustomHeader(
-          builder: (context, mode) {
-            return Container(
-              height: 55.0,
-              alignment: Alignment.center,
-              child: LoadingWidget(),
-            );
-          },
+        header: BezierHeader(
+          bezierColor: AppConstants(context).primaryColor,
+          child: LoadingWidget(),
         ),
         child: ListView.builder(
-          controller: _scrollController,
+          primary: true,
           itemCount: _moviePosts.length + 1,
           itemBuilder: (context, index) {
             if (index == _moviePosts.length) {

@@ -13,9 +13,9 @@ class LoadingWidget extends StatelessWidget {
       child: Lottie.asset(
         themeMode == ThemeMode.dark
             ? 'assets/animations/loading.json'
-            : 'assets/animations/loadingLight.json',
-        width: 100,
-        height: 100,
+            : 'assets/animations/loading.json',
+        width: 70,
+        height: 70,
         fit: BoxFit.cover,
       ),
     );

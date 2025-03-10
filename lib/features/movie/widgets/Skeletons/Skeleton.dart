@@ -1,16 +1,18 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 Widget skeleton(double height, double width, double borderRadius,
-    Color baseColor, Color highlightColor) {
+    BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
   return Shimmer.fromColors(
-    baseColor: baseColor,
-    highlightColor: highlightColor,
+    baseColor: appConstants.textColor,
+    highlightColor: appConstants.textLightColor,
     child: Container(
       height: height,
       width: width,
       decoration: BoxDecoration(
-        color: baseColor,
+        color: appConstants.textColor,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     ),

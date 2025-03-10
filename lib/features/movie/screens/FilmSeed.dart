@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
@@ -21,6 +22,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   DocumentSnapshot? _lastDocument;
   final int _postLimit = 5;
 
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
   @override
   void initState() {
     super.initState();
@@ -28,8 +32,8 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
   }
 
   /// **🔥 Firebase'den Lazy Load ile Postları Çekme**
-  Future<void> _fetchPosts() async {
-    if (_isLoading || !_hasMore) return;
+  Future<void> _fetchPosts({bool isRefresh = false}) async {
+    if (_isLoading || (!_hasMore && !isRefresh)) return;
 
     setState(() => _isLoading = true);
 
@@ -40,13 +44,19 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
           .orderBy('timestamp', descending: true)
           .limit(_postLimit);
 
-      if (_lastDocument != null) {
+      if (!isRefresh && _lastDocument != null) {
         query = query.startAfterDocument(_lastDocument!);
       }
 
       QuerySnapshot querySnapshot = await query.get();
 
       if (!mounted) return;
+
+      if (isRefresh) {
+        _moviePosts.clear();
+        _lastDocument = null;
+        _hasMore = true;
+      }
 
       if (querySnapshot.docs.isNotEmpty) {
         _lastDocument = querySnapshot.docs.last;
@@ -62,69 +72,47 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
     if (!mounted) return;
 
     setState(() => _isLoading = false);
+
+    if (isRefresh) {
+      _refreshController.refreshCompleted();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SmartRefresher(
-        enablePullDown: true,
-        enablePullUp: false,
-        controller: RefreshController(),
-        header: CustomHeader(
-          builder: (context, mode) {
-            return Container(
-                height: 55.0,
-                alignment: Alignment.center,
-                child: LoadingWidget());
-          },
-        ),
-        onRefresh: () async {
-          _moviePosts.clear();
-          _lastDocument = null;
-          _hasMore = true;
-          await _fetchPosts();
-          RefreshController().refreshCompleted();
-        },
-        child: NotificationListener<ScrollNotification>(
-          onNotification: (scrollNotification) {
-            if (_hasMore &&
-                !_isLoading &&
-                scrollNotification.metrics.pixels >=
-                    scrollNotification.metrics.maxScrollExtent - 300) {
-              _fetchPosts();
+    return SmartRefresher(
+      enablePullDown: true,
+      enablePullUp: true,
+      controller: _refreshController,
+      header: BezierHeader(
+        bezierColor: AppConstants(context).primaryColor,
+        child: LoadingWidget(),
+      ),
+      onRefresh: () async {
+        _lastDocument = null;
+        _hasMore = true;
+        _moviePosts.clear();
+        await _fetchPosts(isRefresh: true);
+      },
+      child: ListView.builder(
+        primary: true, // **🔥 NestedScrollView ile uyumlu hale getirildi**
+        itemCount: _moviePosts.length + 1,
+        itemBuilder: (context, index) {
+          if (index == _moviePosts.length) {
+            if (_isLoading) {
+              return Column(
+                children: [
+                  MoviePostSkeleton(),
+                  AlintiSkeleton(),
+                  MoviePostSkeleton(),
+                ],
+              );
+            } else {
+              return const SizedBox();
             }
-            return false;
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index == _moviePosts.length) {
-                      if (_isLoading) {
-                        return Column(
-                          children: [
-                            MoviePostSkeleton(),
-                            AlintiSkeleton(),
-                            MoviePostSkeleton(),
-                          ],
-                        );
-                      } else {
-                        return const SizedBox();
-                      }
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: MoviePostCard(moviePost: _moviePosts[index]),
-                    );
-                  },
-                  childCount: _moviePosts.length + (_isLoading ? 1 : 0),
-                ),
-              ),
-            ],
-          ),
-        ),
+          }
+          return MoviePostCard(moviePost: _moviePosts[index]);
+        },
       ),
     );
   }
