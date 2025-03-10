@@ -106,13 +106,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
           _buildDrawerItem(
             icon: Icons.exit_to_app,
             title: 'Çıkış Yap',
-            onTap: () async {
-              await FirebaseAuth.instance.signOut(); // Çıkış yap
-              Navigator.pushNamedAndRemoveUntil(
+            onTap: () async {              Navigator.pushNamedAndRemoveUntil(
                 context,
                 '/giris',
                 (Route<dynamic> route) => false,
               );
+              await FirebaseAuth.instance.signOut(); // Çıkış yap
+
             },
           ),
         ],

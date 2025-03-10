@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/screens/Message/ChatScreen.dart';
 import 'package:film_atlasi/features/movie/services/CommentServices.dart';
 import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
@@ -106,7 +107,20 @@ class _CommentPageState extends State<CommentPage> {
                                   ),
                                 ],
                               )
-                            : null,
+                            : IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ChatScreen(
+                                          receiverId: commentData["userId"],
+                                          receiverName: commentData["userName"],
+                                          receiverAvatar:
+                                              commentData["profilePhotoUrl"],
+                                        ),
+                                      ));
+                                },
+                                icon: Icon(Icons.send)),
                       ),
                     );
                   },

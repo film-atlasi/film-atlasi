@@ -147,12 +147,16 @@ class FollowServices {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     //mevcut kullanıcıların tüm takip ettikleri
-    DocumentSnapshot doc =
-        await firestore.collection('following').doc(currentUserId).get();
+    try {
+      DocumentSnapshot doc =
+          await firestore.collection('following').doc(currentUserId).get();
 
-    if (doc.exists) {
-      List<String> followingList = List<String>.from(doc['following']);
-      return followingList.contains(targetUserId);
+      if (doc.exists) {
+        List<String> followingList = List<String>.from(doc['following']);
+        return followingList.contains(targetUserId);
+      }
+    } on Exception catch (e) {
+      // TODO
     }
     return false;
   }

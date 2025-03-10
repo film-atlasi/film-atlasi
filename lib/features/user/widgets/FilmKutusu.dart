@@ -37,21 +37,24 @@ class _FilmKutusuState extends State<FilmKutusu> {
       lastDocument = null;
     }
 
-    var query = FirebaseFirestore.instance
-        .collection("users")
-        .doc(widget.userUid)
-        .collection("posts")
-        .orderBy("timestamp", descending: true)
-        .limit(_postLimit);
+    try {
+      var query = FirebaseFirestore.instance
+          .collection("users")
+          .doc(widget.userUid)
+          .collection("posts")
+          .orderBy("timestamp", descending: true)
+          .limit(_postLimit);
 
-    var snapshot = await query.get();
-    List<MoviePost> newPosts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
-
-    setState(() {
-      posts = newPosts;
-      lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-      isLoading = false;
-    });
+      var snapshot = await query.get();
+      List<MoviePost> newPosts =
+          snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
+      setState(() {
+        posts = newPosts;
+        lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+        isLoading = false;
+      });
+    } catch (e) {
+    }
   }
 
   /// **🔥 Daha Fazla Post Yükler (Sayfalama)**
@@ -68,7 +71,8 @@ class _FilmKutusuState extends State<FilmKutusu> {
         .limit(_postLimit);
 
     var snapshot = await query.get();
-    List<MoviePost> newPosts = snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
+    List<MoviePost> newPosts =
+        snapshot.docs.map((doc) => MoviePost.fromDocument(doc)).toList();
 
     setState(() {
       if (newPosts.isNotEmpty) {
@@ -89,7 +93,8 @@ class _FilmKutusuState extends State<FilmKutusu> {
       },
       child: NotificationListener<ScrollNotification>(
         onNotification: (scrollNotification) {
-          if (scrollNotification.metrics.pixels >= scrollNotification.metrics.maxScrollExtent - 300) {
+          if (scrollNotification.metrics.pixels >=
+              scrollNotification.metrics.maxScrollExtent - 300) {
             _loadMorePosts();
           }
           return false;

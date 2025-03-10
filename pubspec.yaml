@@ -32,6 +32,7 @@ dependencies:
   shared_preferences: ^2.5.2
   lottie: ^2.3.0
   pull_to_refresh_flutter3: ^2.0.2
+  grouped_list: ^6.0.0
 
 
   
