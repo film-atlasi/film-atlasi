@@ -92,6 +92,29 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         onSaved: (value) => password = value!,
                       ),
+                      const SizedBox(height: 5),
+
+                      // Şifreni mi unuttun? yazısı
+                      const SizedBox(height: 5),
+
+                      // Şifreni mi unuttun? yazısı (alt çizgisiz)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: () {
+                            // Şifre sıfırlama sayfasına yönlendirme kodu buraya eklenebilir
+                            print("Şifremi unuttum tıklandı.");
+                          },
+                          child: Text(
+                            'Şifreni mi unuttun?',
+                            style: TextStyle(
+                              color: Colors
+                                  .blue, // Mavi renk (link gibi görünmesi için)
+                              // decoration: TextDecoration.underline, // Altı çizgili olan kod kaldırıldı
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () async {
@@ -130,15 +153,28 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text("Hesabın mı yok?"),
-                      GestureDetector(
-                        onTap: () =>
-                            Navigator.pushReplacementNamed(context, '/kaydol'),
-                        child: Text(
-                          '@kaydol',
-                          style: TextStyle(color: appConstants.highlightColor),
-                        ),
+                      const SizedBox(
+                          height: 30), // Daha aşağı almak için boşluk eklendi
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Hesabın mı yok? ",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pushReplacementNamed(
+                                context, '/kaydol'),
+                            child: Text(
+                              "Kaydol",
+                              style: TextStyle(
+                                color: Colors.blue, // Mavi renk
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold, // Kalın font
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

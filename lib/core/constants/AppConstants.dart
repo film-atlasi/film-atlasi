@@ -19,7 +19,7 @@ class AppConstants {
   static Map<String, WidgetBuilder> get routes => {
         '/giris': (context) => const LoginPage(),
         '/anasayfa': (context) => const FilmAtlasiApp(),
-        '/kaydol': (context) => SignUpPage()
+        '/kaydol': (context) => SignUpPage(),
       };
 
   static Color get black => Colors.black;

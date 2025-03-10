@@ -1,5 +1,6 @@
-import 'package:film_atlasi/core/constants/ui_constant.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:film_atlasi/features/movie/providers/DiscoverProvider.dart';
 
 class FiltersWidget extends StatefulWidget {
   const FiltersWidget({super.key});
@@ -20,11 +21,10 @@ class _FiltersWidgetState extends State<FiltersWidget> {
     "Animasyon"
   ];
 
-  int selectedFilterIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final provider = Provider.of<DiscoverProvider>(context);
 
     return SizedBox(
       height: 40,
@@ -33,12 +33,10 @@ class _FiltersWidgetState extends State<FiltersWidget> {
         itemCount: filters.length,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemBuilder: (context, index) {
-          final isSelected = selectedFilterIndex == index;
+          final isSelected = provider.selectedCategoryIndex == index;
           return GestureDetector(
             onTap: () {
-              setState(() {
-                selectedFilterIndex = index;
-              });
+              provider.filterMoviesByCategory(index);
             },
             child: Container(
               margin: const EdgeInsets.only(right: 12),

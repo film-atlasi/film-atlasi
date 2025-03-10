@@ -65,10 +65,7 @@ class DiscoveryPage extends StatelessWidget {
                       child: SearchField(size: size),
                     ),
                     // Filters widget
-                    const Padding(
-                      padding: EdgeInsets.only(top: 20),
-                      child: FiltersWidget(),
-                    ),
+
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
@@ -114,6 +111,10 @@ class DiscoveryPage extends StatelessWidget {
                           ),
                         ),
                       ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: FiltersWidget(),
                     ),
 
                     // Popüler Filmler Bölümü
