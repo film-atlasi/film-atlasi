@@ -3,6 +3,7 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/constants/AppTheme.dart';
 import 'package:film_atlasi/core/provider/PageIndexProvider.dart';
 import 'package:film_atlasi/core/provider/ThemeProvider.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:film_atlasi/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,7 +57,7 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: LoadingWidget(),
           ); // 🔄 Yüklenme animasyonu
         }
 

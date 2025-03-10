@@ -5,8 +5,8 @@ import 'package:film_atlasi/features/movie/models/FilmPost.dart';
 import 'package:film_atlasi/features/movie/screens/IletiPaylas.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/%20UserCommentsWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/services/ActorService.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/DirectorWidget.dart';
@@ -238,7 +238,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               future: fetchMoviePosts(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return LoadingWidget();
                 } else if (snapshot.hasError) {
                   return const Text('Bir hata oluştu.',
                       style: TextStyle(color: Colors.white));

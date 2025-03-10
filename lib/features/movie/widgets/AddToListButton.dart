@@ -140,7 +140,7 @@ class _AddToListButtonState extends State<AddToListButton> {
     return ElevatedButton(
       onPressed: _showListSelectionDialog,
       style: ElevatedButton.styleFrom(
-        backgroundColor: appConstants.highlightColor,
+        backgroundColor: appConstants.primaryColor,
         padding:
             EdgeInsets.all(8), // Küçük padding, etrafındaki alanı küçültüyor
         minimumSize: Size(40, 40), // Butonun minimum boyutunu küçült

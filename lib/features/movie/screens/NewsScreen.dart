@@ -1,5 +1,6 @@
 import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -36,7 +37,7 @@ class _NewsScreenState extends State<NewsScreen> {
           future: futureMovies,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return LoadingWidget();
             } else if (snapshot.hasError) {
               return const Center(child: Text("Filmleri yüklerken hata oluştu"));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

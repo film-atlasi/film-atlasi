@@ -1,4 +1,4 @@
-import 'package:film_atlasi/features/movie/screens/Anasayfa.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:film_atlasi/features/movie/screens/FilmAsistani.dart/MovieFilterFlow.dart';
@@ -6,8 +6,14 @@ import 'package:film_atlasi/features/movie/screens/FilmAsistani.dart/MovieFilter
 class MovieIntroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final AppConstants appConstants = AppConstants(context);
     return Scaffold(
-      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text("Film Asistanı"),
+        centerTitle: true,
+        backgroundColor: appConstants.scaffoldColor,
+        elevation: 0,
+      ),
       body: Stack(
         children: [
           Center(
@@ -34,7 +40,6 @@ class MovieIntroPage extends StatelessWidget {
                     "📽️ Kararsız mısın? Film dünyasına dalmanın zamanı geldi! 🚀\n"
                     "En iyi önerileri senin için hazırladık. Hadi, mükemmel filmi birlikte keşfedelim! 🎬✨",
                     style: TextStyle(
-                      color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                       height: 1.5,
@@ -48,7 +53,7 @@ class MovieIntroPage extends StatelessWidget {
                 // Başla Butonu
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
+                    backgroundColor: appConstants.primaryColor,
                     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -72,29 +77,6 @@ class MovieIntroPage extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-
-          // 📌 Sol üst köşeye geri butonu eklendi
-          Positioned(
-            top: 40, // Yukarıdan boşluk
-            left: 10, // Soldan boşluk
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
-              onPressed: () {
-                // 🎯 Eğer geri gidilecek bir sayfa varsa geri dön, yoksa anasayfaya git
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                } else {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            Anasayfa()), // 🏠 Anasayfaya yönlendirme
-                    (route) => false, // 🔥 Önceki tüm sayfaları temizle
-                  );
-                }
-              },
             ),
           ),
         ],

@@ -7,6 +7,7 @@ import 'package:film_atlasi/features/user/models/User.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 class Iletipaylas extends StatefulWidget {
   final Movie movie;
@@ -23,9 +24,35 @@ class _IletipaylasState extends State<Iletipaylas> {
   bool _isSpoiler = false;
   final TextEditingController _textEditingController = TextEditingController();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Color mutedColorDark = Colors.black;
+  Color mutedColorLight = Colors.grey;
+  final String baseImageUrl = "https://image.tmdb.org/t/p/w500/";
+  bool colorGenerated = false;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDominantColor();
+  }
+
+  Future<void> _fetchDominantColor() async {
+    final PaletteGenerator paletteGenerator =
+        await PaletteGenerator.fromImageProvider(
+      NetworkImage("$baseImageUrl${widget.movie.posterPath}"),
+    );
+    setState(() {
+      mutedColorDark = paletteGenerator.darkMutedColor?.color ?? Colors.black;
+      mutedColorLight = paletteGenerator.lightMutedColor?.color ?? Colors.grey;
+      colorGenerated = true;
+    });
+  }
 
   Future<void> submitForm() async {
     final auth.User? currentUser = auth.FirebaseAuth.instance.currentUser;
+    setState(() {
+      isLoading = true;
+    });
 
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,12 +93,14 @@ class _IletipaylasState extends State<Iletipaylas> {
         "voteAverage": widget.movie.voteAverage,
         "genre_ids": widget.movie.genreIds,
         "release_date": widget.movie.releaseDate,
+        "dominantColorDark": Helpers.colorToInt(mutedColorDark),
+        "dominantColorLight": Helpers.colorToInt(mutedColorLight),
       });
     }
 
     String postId = firestore.collection('posts').doc().id;
 
-    Map<String, dynamic> postData = {
+    Map<String, dynamic> postDataForMovie = {
       "postId": postId,
       "userId": user.uid,
       "filmName": widget.movie.title,
@@ -87,10 +116,30 @@ class _IletipaylasState extends State<Iletipaylas> {
       "rating": _rating,
       "timestamp": FieldValue.serverTimestamp(),
       "isSpoiler": _isSpoiler,
+      "source": "films"
     };
 
-    await filmRef.collection("posts").doc(postId).set(postData);
-    await userDoc.collection("posts").doc(postId).set(postData);
+    Map<String, dynamic> postDataForUser = {
+      "postId": postId,
+      "userId": user.uid,
+      "filmName": widget.movie.title,
+      "filmId": filmId,
+      "filmIcerik": widget.movie.overview,
+      "firstName": user.firstName,
+      "username": user.userName,
+      "userPhotoUrl": user.profilePhotoUrl,
+      "content": _textEditingController.text,
+      "isQuote": widget.isFromQuote,
+      "likes": 0,
+      "comments": 0,
+      "rating": _rating,
+      "timestamp": FieldValue.serverTimestamp(),
+      "isSpoiler": _isSpoiler,
+      "source": "users"
+    };
+
+    await filmRef.collection("posts").doc(postId).set(postDataForMovie);
+    await userDoc.collection("posts").doc(postId).set(postDataForUser);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('İnceleme paylaşıldı!')),
@@ -177,16 +226,19 @@ class _IletipaylasState extends State<Iletipaylas> {
             const SizedBox(height: 25),
             Center(
               child: GestureDetector(
-                onTap: () async {
-                  if (_rating > 0 && _textEditingController.text.isNotEmpty) {
-                    await submitForm();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Lütfen tüm alanları doldurun!')),
-                    );
-                  }
-                },
+                onTap: isLoading && colorGenerated
+                    ? null
+                    : () async {
+                        if (_rating > 0 &&
+                            _textEditingController.text.isNotEmpty) {
+                          await submitForm();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Lütfen tüm alanları doldurun!')),
+                          );
+                        }
+                      },
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
@@ -205,13 +257,18 @@ class _IletipaylasState extends State<Iletipaylas> {
                       ),
                     ],
                   ),
-                  child: const Text(
-                    "Paylaş",
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold),
-                  ),
+                  child: isLoading && colorGenerated
+                      ? CircleAvatar(
+                          radius: 4,
+                          foregroundColor: Colors.white,
+                        )
+                      : const Text(
+                          "Paylaş",
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
             ),

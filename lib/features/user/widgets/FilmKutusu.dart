@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:flutter/material.dart';
@@ -100,7 +101,7 @@ class _FilmKutusuState extends State<FilmKutusu> {
                 (context, index) {
                   if (index == posts.length) {
                     return isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? LoadingWidget()
                         : const SizedBox.shrink();
                   }
                   return MoviePostCard(

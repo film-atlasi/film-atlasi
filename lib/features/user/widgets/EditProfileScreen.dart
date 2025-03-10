@@ -1,3 +1,4 @@
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -93,7 +94,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? LoadingWidget()
           : Padding(
               padding: const EdgeInsets.all(20),
               child: Form(

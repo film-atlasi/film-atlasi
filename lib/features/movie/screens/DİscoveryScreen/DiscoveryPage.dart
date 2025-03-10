@@ -8,6 +8,7 @@ import 'package:film_atlasi/features/movie/screens/DİscoveryScreen/widgets/head
 import 'package:film_atlasi/features/movie/screens/DİscoveryScreen/widgets/movies_cover_widget.dart';
 import 'package:film_atlasi/features/movie/screens/DİscoveryScreen/widgets/search_field_widget.dart';
 import 'package:film_atlasi/features/movie/screens/FilmDetay.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,9 +40,7 @@ class DiscoveryPage extends StatelessWidget {
             builder: (context, provider, _) {
               if (provider.isLoading) {
                 return Center(
-                  child: CircularProgressIndicator(
-                    color: theme.colorScheme.primary,
-                  ),
+                  child: LoadingWidget()
                 );
               }
 

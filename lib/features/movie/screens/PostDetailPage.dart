@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/features/movie/widgets/CommentPage.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
@@ -52,7 +53,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
   backgroundColor: Colors.black,
   elevation: 0,
   leading: IconButton(
-    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    icon: const Icon(Icons.arrow_back),
     onPressed: () {
       Navigator.pop(context);
     },
@@ -87,7 +88,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
             future: _postFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return LoadingWidget();
               }
 
               if (!snapshot.hasData || snapshot.data == null) {

@@ -2,6 +2,7 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/services/MovieServices.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmDetails/OyuncuCircleAvatar.dart';
+import 'package:film_atlasi/features/movie/widgets/Skeletons/FilmBilgiSkeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/models/Actor.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
@@ -58,47 +59,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
   Widget build(BuildContext context) {
     final AppConstants appConstants = AppConstants(context);
     if (isLoading) {
-      return SizedBox(
-        height: widget.posterHeight,
-        child: Row(
-          children: [
-            Expanded(
-                child: Container(
-              color: appConstants.textLightColor,
-            )),
-            Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Container(height: 10, color: appConstants.textLightColor),
-                      AddVerticalSpace(context, 0.02),
-                      Container(height: 5, color: appConstants.textLightColor),
-                      AddVerticalSpace(context, 0.01),
-                      Container(height: 5, color: appConstants.textLightColor),
-                      AddVerticalSpace(context, 0.01),
-                      Container(height: 5, color: appConstants.textLightColor),
-                      widget.oyuncular
-                          ? Row(
-                              children: List.generate(
-                                4,
-                                (index) => Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: CircleAvatar(
-                                    backgroundColor:
-                                        appConstants.textLightColor,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : SizedBox()
-                    ],
-                  ),
-                ))
-          ],
-        ),
-      );
+      return FilmBilgiSkeleton(appConstants, context);
     }
 
     return Row(

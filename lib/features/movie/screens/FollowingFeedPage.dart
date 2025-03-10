@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/models/FilmPost.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/Skeletons/FilmSeedSkeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:film_atlasi/features/movie/widgets/MoviePostCard.dart';
 import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 class FollowingFeedPage extends StatefulWidget {
   const FollowingFeedPage({super.key});
@@ -16,9 +20,10 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
   final ScrollController _scrollController = ScrollController();
   final List<MoviePost> _moviePosts = [];
   Map<String, DocumentSnapshot?> _lastDocuments = {};
+  RefreshController _refreshController = RefreshController();
   bool _isLoading = false;
   bool _hasMore = true;
-  final int _postLimit = 5;
+  final int _postLimit = 4;
 
   @override
   void initState() {
@@ -98,27 +103,37 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
+      body: SmartRefresher(
+        controller: _refreshController,
+        enablePullDown: true,
+        enablePullUp: true,
         onRefresh: () async {
-          if (!mounted) return;
-          setState(() {
-            _moviePosts.clear();
-            _lastDocuments.clear();
-            _hasMore = true;
-          });
+          _lastDocuments = {};
+          _moviePosts.clear();
+          _hasMore = true;
           await _fetchFollowingPosts();
+          _refreshController.refreshCompleted();
         },
+        header: BezierHeader(
+          bezierColor: AppConstants(context).primaryColor,
+          child: LoadingWidget(),
+        ),
         child: ListView.builder(
-          controller: _scrollController,
+          primary: true,
           itemCount: _moviePosts.length + 1,
           itemBuilder: (context, index) {
             if (index == _moviePosts.length) {
-              return _isLoading
-                  ? Padding(
-                      padding: const EdgeInsets.all(18.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : SizedBox();
+              if (_isLoading) {
+                return Column(
+                  children: [
+                    MoviePostSkeleton(),
+                    AlintiSkeleton(),
+                    MoviePostSkeleton(),
+                  ],
+                );
+              } else {
+                return const SizedBox();
+              }
             }
             return MoviePostCard(moviePost: _moviePosts[index]);
           },

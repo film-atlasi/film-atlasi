@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/services/CommentServices.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/user/widgets/UserProfileRouter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +51,7 @@ class _CommentPageState extends State<CommentPage> {
               stream: commentServices.getCommentsStream(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return LoadingWidget();
                 }
 
                 var comments = snapshot.data!.docs;
