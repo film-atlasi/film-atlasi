@@ -106,13 +106,23 @@ class _CustomDrawerState extends State<CustomDrawer> {
           _buildDrawerItem(
             icon: Icons.exit_to_app,
             title: 'Çıkış Yap',
-            onTap: () async {              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/giris',
-                (Route<dynamic> route) => false,
-              );
-              await FirebaseAuth.instance.signOut(); // Çıkış yap
+            onTap: () async {
+              try {
+                await FirebaseAuth.instance.signOut(); // 🔥 Önce çıkışı yap
 
+                if (!mounted) return; // Sayfa kapandıysa yönlendirme yapma
+
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/giris',
+                  (Route<dynamic> route) => false,
+                ); // 🔥 Ardından giriş sayfasına yönlendir
+              } catch (e) {
+                print("Çıkış yaparken hata oluştu: $e");
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Çıkış yaparken bir hata oluştu!")),
+                );
+              }
             },
           ),
         ],

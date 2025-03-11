@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/app.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/utils/helpers.dart';
+import 'package:film_atlasi/features/movie/models/MessageModel.dart';
 import 'package:film_atlasi/features/movie/screens/Message/ChatScreen.dart';
 import 'package:film_atlasi/features/movie/services/MessageServices.dart';
+import 'package:film_atlasi/features/movie/widgets/Skeletons/Skeleton.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,20 +27,15 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            widget.pageController.animateToPage(
-              0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-
-            Provider.of<VisibilityProvider>(context, listen: false)
-                .toggleVisibility();
-          },
-        ),
         title: Text("Sohbetler"),
+        leading: IconButton(
+          onPressed: () {
+            widget.pageController.animateToPage(0,
+                duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+            Provider.of<VisibilityProvider>(context, listen: false).show();
+          },
+          icon: Icon(Icons.arrow_back_ios),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _messageServices.getChatList(currentUserId),
@@ -58,7 +56,7 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
               var participants = List<String>.from(chat['participants']);
               var otherUserId =
                   participants.firstWhere((id) => id != currentUserId);
-              var lastMessage = chat['last_message'];
+              var lastMessage = MessageModel.fromMap(chat['last_message']);
               var timestamp = chat['timestamp'] as Timestamp?;
 
               return FutureBuilder<DocumentSnapshot>(
@@ -68,20 +66,27 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
                     .get(),
                 builder: (context, userSnapshot) {
                   if (!userSnapshot.hasData) {
-                    return ListTile(title: Text("Yükleniyor..."));
+                    return ListTile(
+                      title: skeleton(10, 10, 5, context),
+                      subtitle: skeleton(10, 10, 5, context),
+                      leading: skeleton(30, 30, 30, context),
+                    );
                   }
 
                   var userData = userSnapshot.data!;
                   String otherUserName =
                       userData['userName'] ?? "Bilinmeyen Kullanıcı";
-                  String otherUserAvatar = userData['profilePhotoUrl'];
+                  String otherUserAvatar = userData['profilePhotoUrl'] ??
+                      "https://via.placeholder.com/150";
 
                   return UserMessageTile(
-                      otherUserAvatar: otherUserAvatar,
-                      otherUserName: otherUserName,
-                      lastMessage: lastMessage,
-                      timestamp: timestamp,
-                      otherUserId: otherUserId);
+                    otherUserAvatar: otherUserAvatar,
+                    otherUserName: otherUserName,
+                    lastMessage: lastMessage,
+                    timestamp: timestamp,
+                    otherUserId: otherUserId,
+                    userId: currentUserId,
+                  );
                 },
               );
             },
@@ -92,7 +97,15 @@ class _DirectMessagePageState extends State<DirectMessagePage> {
   }
 }
 
+/// 🔹 **Tek Bir Sohbeti Gösteren ListTile Bileşeni**
 class UserMessageTile extends StatelessWidget {
+  final String otherUserAvatar;
+  final String otherUserName;
+  final MessageModel lastMessage;
+  final Timestamp? timestamp;
+  final String otherUserId;
+  final String userId;
+
   const UserMessageTile({
     super.key,
     required this.otherUserAvatar,
@@ -100,37 +113,59 @@ class UserMessageTile extends StatelessWidget {
     required this.lastMessage,
     required this.timestamp,
     required this.otherUserId,
+    required this.userId,
   });
-
-  final String otherUserAvatar;
-  final String otherUserName;
-  final dynamic lastMessage;
-  final Timestamp? timestamp;
-  final String otherUserId;
 
   @override
   Widget build(BuildContext context) {
+    final MessageServices _messageServices = MessageServices();
+    final chatId = _messageServices.generateChatId(otherUserId, userId);
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: NetworkImage(otherUserAvatar),
       ),
-      title: Container(
-        width: MediaQuery.of(context).size.width,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(otherUserName),
-            timestamp != null
-                ? Text(Helpers.formatTimestamp(timestamp!),
-                    style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.normal,
-                        fontSize: 12))
-                : SizedBox.shrink(),
-          ],
-        ),
+      title: Text(
+        otherUserName,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
       ),
-      subtitle: Text(lastMessage),
+      subtitle:
+          Text(lastMessage.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            Helpers.formatTimestamp(timestamp!),
+            style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.normal),
+          ),
+          StreamBuilder(
+            stream: _messageServices.getUnreadMessagesInChat(chatId, userId),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return SizedBox();
+              }
+              int unreadCount = snapshot.data as int;
+              return unreadCount > 0
+                  ? CircleAvatar(
+                      backgroundColor: AppConstants(context).primaryColor,
+                      radius: 12,
+                      child: Text(
+                        unreadCount.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    )
+                  : SizedBox();
+            },
+          )
+        ],
+      ),
       onTap: () {
         Navigator.push(
           context,

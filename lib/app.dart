@@ -17,6 +17,16 @@ class VisibilityProvider with ChangeNotifier {
     _isVisible = !_isVisible;
     notifyListeners();
   }
+
+  void show() {
+    _isVisible = true;
+    notifyListeners();
+  }
+
+  void hide() {
+    _isVisible = false;
+    notifyListeners();
+  }
 }
 
 class FilmAtlasiApp extends StatefulWidget {

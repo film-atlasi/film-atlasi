@@ -1,12 +1,15 @@
 import 'package:film_atlasi/app.dart';
+import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/features/movie/screens/FilmSeed.dart';
 import 'package:film_atlasi/features/movie/screens/FollowingFeedPage.dart';
 import 'package:film_atlasi/features/movie/screens/Message/DMPage.dart';
 import 'package:film_atlasi/features/movie/screens/NewsScreen.dart';
+import 'package:film_atlasi/features/movie/services/MessageServices.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomDrawer.dart';
 import 'package:film_atlasi/features/movie/widgets/CustomTabBar.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:film_atlasi/features/movie/widgets/Notifications/notificationButton.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,12 +23,20 @@ class Anasayfa extends StatefulWidget {
 class AnasayfaState extends State<Anasayfa>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
-  int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
+    _pageController.addListener(_onPageChanged);
+  }
+
+  void _onPageChanged() {
+    if (_pageController.page?.round() == 0) {
+      Provider.of<VisibilityProvider>(context, listen: false).show();
+    } else {
+      Provider.of<VisibilityProvider>(context, listen: false).hide();
+    }
   }
 
   @override
@@ -35,9 +46,9 @@ class AnasayfaState extends State<Anasayfa>
   }
 
   final PageController _pageController = PageController();
-
   @override
   Widget build(BuildContext context) {
+    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
     return Scaffold(
       body: PageView(
         controller: _pageController,
@@ -72,7 +83,34 @@ class AnasayfaState extends State<Anasayfa>
                                     listen: false)
                                 .toggleVisibility();
                           },
-                          icon: Icon(Icons.send_rounded))
+                          icon: StreamBuilder(
+                            stream: MessageServices()
+                                .getUnreadChatsCount(currentUserId),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Icon(Icons.message);
+                              }
+                              return snapshot.data == 0
+                                  ? Icon(Icons.send_rounded)
+                                  : Stack(children: [
+                                      const Icon(Icons.send_rounded),
+                                      Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: CircleAvatar(
+                                              radius: 10,
+                                              backgroundColor:
+                                                  AppConstants(context)
+                                                      .primaryColor,
+                                              child: Text(
+                                                snapshot.data.toString(),
+                                                style: const TextStyle(
+                                                    fontSize: 12),
+                                              )))
+                                    ]);
+                            },
+                          ))
                     ],
                     pinned: true, // Kaydırınca tamamen kaybolmasını sağlıyor
                     floating:

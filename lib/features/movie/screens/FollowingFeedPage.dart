@@ -116,7 +116,7 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
         },
         header: BezierHeader(
           bezierColor: AppConstants(context).primaryColor,
-          child: LoadingWidget(),
+          child: LoadingWidget(url: "assets/animations/loading.json"),
         ),
         child: ListView.builder(
           primary: true,

@@ -1,8 +1,11 @@
+import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/features/movie/screens/Message/MesajBalonu.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'package:intl/intl.dart'; // Tarih formatlamak için
+import 'package:intl/intl.dart';
+import 'package:film_atlasi/features/movie/services/MessageServices.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverId;
@@ -22,13 +25,41 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController =
+      ScrollController(); // Otomatik kaydırma için
+  final MessageServices _messageServices =
+      MessageServices(); // Firestore servisimiz
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  var lastSender = '';
 
-  String get currentUserId => _auth.currentUser!.uid; // Giriş yapan kullanıcının UID’si
+  String get currentUserId => _auth.currentUser!.uid;
+  String get chatId =>
+      _messageServices.generateChatId(currentUserId, widget.receiverId);
+
+  @override
+  void initState() {
+    super.initState();
+    // 🔹 Sayfa açıldığında en aşağı kaydır
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+    _listenForNewMessages();
+  }
+
+  /// **📌 Yeni mesajları takip edip "görüldü" olarak işaretle**
+  void _listenForNewMessages() {
+    _messageServices
+        .getMessages(currentUserId, widget.receiverId)
+        .listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        _messageServices.markAllMessagesAsRead(chatId, currentUserId);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final AppConstants _appConstants = AppConstants(context);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -43,20 +74,20 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          // 🔹 GERÇEK ZAMANLI MESAJ AKIŞI
-          Expanded(child: _buildMessageList()),
+          // **MESAJ AKIŞI**
+          Expanded(child: _buildMessageList(_appConstants)),
 
-          // 🔹 MESAJ GİRİŞ ALANI
-          _buildMessageInput(),
+          // **MESAJ GİRİŞ ALANI**
+          _buildMessageInput(_appConstants),
         ],
       ),
     );
   }
 
-  /// 🔹 Firestore'dan gerçek zamanlı mesajları çekme
-  Widget _buildMessageList() {
+  /// **📌 Firestore'dan mesajları çekme (`MessageServices` kullanarak)**
+  Widget _buildMessageList(AppConstants appConstants) {
     return StreamBuilder<QuerySnapshot>(
-      stream: _getMessageStream(),
+      stream: _messageServices.getMessages(currentUserId, widget.receiverId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -67,86 +98,51 @@ class _ChatScreenState extends State<ChatScreen> {
 
         List<DocumentSnapshot> messages = snapshot.data!.docs;
 
+        // 🔹 Mesajlar yüklendiğinde en aşağı kaydır
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToBottom();
+        });
+
         return GroupedListView<DocumentSnapshot, String>(
+          controller: _scrollController,
           elements: messages,
+          floatingHeader: true,
           groupBy: (message) {
-            DateTime date = (message['timestamp'] as Timestamp).toDate();
-            return DateFormat('dd MMM yyyy').format(date); // Gruplama tarihi
+            Timestamp? timestamp = message['timestamp'] as Timestamp?;
+            DateTime date =
+                timestamp != null ? timestamp.toDate() : DateTime.now();
+            return DateFormat('dd MMM yyyy').format(date);
           },
           groupSeparatorBuilder: (String date) => Padding(
             padding: const EdgeInsets.all(8.0),
             child: Center(
               child: Text(
                 date,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
           itemBuilder: (context, DocumentSnapshot message) {
-            bool isMe = message['sender_id'] == currentUserId;
-
-            return Align(
-              alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isMe ? Colors.blue : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  message['text'],
-                  style: TextStyle(color: isMe ? Colors.white : Colors.black),
-                ),
-              ),
+            final header = lastSender != message['sender_id'];
+            lastSender = message['sender_id'];
+            return MesajBalonu(
+              message: message,
+              currentUserId: currentUserId,
+              isHeader: header,
             );
           },
-          order: GroupedListOrder.DESC, // En yeni mesaj en altta olacak
+          order: GroupedListOrder
+              .ASC, // 🔥 Eski mesajlar yukarıda, yeni mesajlar aşağıda
         );
       },
     );
   }
 
-  /// 🔹 Firestore'dan gerçek zamanlı mesaj akışı
-  Stream<QuerySnapshot> _getMessageStream() {
-    String chatId = _generateChatId(currentUserId, widget.receiverId);
-
-    return _firestore
-        .collection('messages')
-        .doc(chatId)
-        .collection('messages')
-        .orderBy('timestamp', descending: true)
-        .snapshots();
-  }
-
-  /// 🔹 Mesaj gönderme fonksiyonu
-  Future<void> _sendMessage() async {
-    if (_messageController.text.trim().isEmpty) return;
-
-    String chatId = _generateChatId(currentUserId, widget.receiverId);
-    String messageText = _messageController.text.trim();
-
-    await _firestore.collection('messages').doc(chatId).collection('messages').add({
-      'sender_id': currentUserId,
-      'receiver_id': widget.receiverId,
-      'text': messageText,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-
-    // Son mesaj bilgisi güncelle
-    await _firestore.collection('messages').doc(chatId).set({
-      'participants': [currentUserId, widget.receiverId],
-      'last_message': messageText,
-      'timestamp': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    _messageController.clear();
-  }
-
-  /// 🔹 Kullanıcıdan mesaj girişini almak için UI
-  Widget _buildMessageInput() {
+  /// **📌 Kullanıcıdan mesaj girişini almak için UI**
+  Widget _buildMessageInput(AppConstants appConstants) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       child: Row(
         children: [
           Expanded(
@@ -154,23 +150,55 @@ class _ChatScreenState extends State<ChatScreen> {
               controller: _messageController,
               decoration: const InputDecoration(
                 hintText: "Mesaj yaz...",
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 border: OutlineInputBorder(),
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.send, color: Colors.blue),
-            onPressed: _sendMessage,
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: appConstants.primaryColor.withOpacity(0.8),
+              ),
+              child: IconButton(
+                icon: Icon(Icons.arrow_upward, color: appConstants.iconColor),
+                onPressed: _sendMessage,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  /// 🔹 Chat ID oluşturma (Kullanıcı UID'lerine göre)
-  String _generateChatId(String userId1, String userId2) {
-    return userId1.hashCode <= userId2.hashCode
-        ? "${userId1}_$userId2"
-        : "${userId2}_$userId1";
+  /// **📌 Mesaj gönderme işlemi (MessageServices ile)**
+  Future<void> _sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+
+    String messageText = _messageController.text.trim();
+    _messageController.clear();
+    await _messageServices.sendMessage(
+      senderId: currentUserId,
+      receiverId: widget.receiverId,
+      message: messageText,
+    );
+
+    _scrollToBottom(); // **Mesaj gönderildiğinde en alttaki mesaja kaydır**
+  }
+
+  /// **📌 Yeni mesaj gönderildiğinde en alta kaydır**
+  void _scrollToBottom() {
+    Future.delayed(Duration(milliseconds: 300), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 }

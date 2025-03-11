@@ -3,13 +3,14 @@ import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:film_atlasi/core/constants/AppTheme.dart';
 import 'package:film_atlasi/core/provider/PageIndexProvider.dart';
 import 'package:film_atlasi/core/provider/ThemeProvider.dart';
+import 'package:film_atlasi/features/movie/providers/DiscoverProvider.dart';
 import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
+import 'package:film_atlasi/features/user/screens/SignUpPage.dart';
 import 'package:film_atlasi/features/user/screens/loginpage.dart';
 import 'package:film_atlasi/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_http_request.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -23,6 +24,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => PageIndexProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => DiscoverProvider()),
       ],
       child: const MyApp(),
     ),
@@ -42,6 +44,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: appTheme.lightTheme,
       darkTheme: appTheme.darkTheme,
+      routes: {
+        '/giris': (context) => const LoginPage(),
+        '/anasayfa': (context) => const FilmAtlasiApp(),
+        '/kaydol': (context) => SignUpPage(),
+      },
       themeMode: themeProvider, // Cihazın temasına uyar
       home: const AuthWrapper(), // ✅ Kullanıcı durumuna göre yönlendirme
     );

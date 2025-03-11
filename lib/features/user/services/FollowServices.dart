@@ -160,4 +160,18 @@ class FollowServices {
     }
     return false;
   }
+
+  Stream<bool> isFollowingStream(String currentUserId, String targetUserId) {
+    return FirebaseFirestore.instance
+        .collection('following')
+        .doc(currentUserId)
+        .snapshots()
+        .map((doc) {
+      if (doc.exists) {
+        List<String> followingList = List<String>.from(doc['following']);
+        return followingList.contains(targetUserId);
+      }
+      return false;
+    });
+  }
 }

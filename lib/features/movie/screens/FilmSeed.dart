@@ -86,7 +86,9 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
       controller: _refreshController,
       header: BezierHeader(
         bezierColor: AppConstants(context).primaryColor,
-        child: LoadingWidget(),
+        child: LoadingWidget(
+          url: "assets/animations/loading.json",
+        ),
       ),
       onRefresh: () async {
         _lastDocument = null;

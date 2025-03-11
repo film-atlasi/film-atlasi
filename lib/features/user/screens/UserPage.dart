@@ -4,7 +4,6 @@ import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:film_atlasi/features/user/services/FollowServices.dart';
 import 'package:film_atlasi/features/user/models/User.dart';
-import 'package:film_atlasi/features/user/services/UserServices.dart';
 import 'package:film_atlasi/features/user/widgets/BegeniListesi.dart';
 import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:film_atlasi/features/user/widgets/FilmKutusu.dart';
@@ -28,7 +27,6 @@ class _UserPageState extends State<UserPage>
   late TabController _tabController;
   User? userData;
   bool isLoading = true;
-  bool isFollowingUser = false;
   String? currentUserUid;
   bool followLoading = false;
   bool isCurrentUser = false;
@@ -42,19 +40,19 @@ class _UserPageState extends State<UserPage>
     if (currentUserUid == widget.userUid) {
       isCurrentUser = true;
     }
-    checkFollowStatus();
     _tabController = TabController(length: 3, vsync: this);
     _fetchUserData();
   }
 
-  Future<void> toggleFollow() async {
+  Future<void> toggleFollow(String type) async {
+    if (!mounted) return;
     if (followLoading) {
       return;
     }
     setState(() {
       followLoading = true;
     });
-    if (isFollowingUser) {
+    if (type == "unfollow") {
       //takip ediyorsa takipten çık
       await followServices.unfollowUser(currentUserUid!, widget.userUid);
     } else {
@@ -68,7 +66,6 @@ class _UserPageState extends State<UserPage>
       await followServices.followUser(
           currentUserUid!, widget.userUid, currentUserName, currentUserPhoto);
     }
-    checkFollowStatus();
   }
 
   @override
@@ -77,20 +74,9 @@ class _UserPageState extends State<UserPage>
     super.dispose();
   }
 
-  Future<void> checkFollowStatus() async {
-    setState(() {
-      followLoading = true;
-    });
-    bool following =
-        await followServices.isFollowing(currentUserUid!, widget.userUid);
-    setState(() {
-      isFollowingUser = following;
-      followLoading = false;
-    });
-  }
-
 // kullanıcının postlarını sayıyoruz
   Future<int> getPostCount(String userId) async {
+    if (!mounted) return 0;
     final postsRef = FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -106,6 +92,7 @@ class _UserPageState extends State<UserPage>
 
   Future<void> _fetchUserData() async {
     try {
+      if (!mounted) return;
       final snapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.userUid)
@@ -122,23 +109,6 @@ class _UserPageState extends State<UserPage>
     }
   }
 
-  Future<void> _updateProfilePhoto() async {
-    String? newPhotoUrl = await UserServices.uploadProfilePhoto(widget.userUid);
-
-    if (newPhotoUrl != null) {
-      setState(() {
-        userData!.profilePhotoUrl = newPhotoUrl;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profil fotoğrafı güncellendi!")),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Fotoğraf yüklenirken hata oluştu!")),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final AppConstants appConstants = AppConstants(context);
@@ -148,7 +118,6 @@ class _UserPageState extends State<UserPage>
         // 🔥 AŞAĞI KAYDIRINCA SAYFA YENİLENECEK
         onRefresh: () async {
           await _fetchUserData();
-          await checkFollowStatus();
         },
         child: isLoading
             ? LoadingWidget()
@@ -323,19 +292,21 @@ class _UserPageState extends State<UserPage>
                   ),
                 ),
               )
-            : ElevatedButton(
-                onPressed: toggleFollow,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isFollowingUser
-                      ? appConstants.textLightColor
-                      : appConstants.primaryColor,
-                ),
-                child: followLoading
-                    ? const CircularProgressIndicator()
-                    : Text(
-                        isFollowingUser ? "Takip Ediliyor" : "Takip Et",
-                        style: TextStyle(color: appConstants.textColor),
-                      ),
+            : StreamBuilder(
+                stream: followServices.isFollowingStream(
+                    currentUserUid!, widget.userUid),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return CircularProgressIndicator();
+                  }
+                  bool isFollowingUser = snapshot.data!;
+                  return ElevatedButton(
+                    onPressed: () =>
+                        toggleFollow(isFollowingUser ? "unfollow" : "follow"),
+                    child:
+                        Text(isFollowingUser ? "Takip Ediliyor" : "Takip Et"),
+                  );
+                },
               ),
       ],
     );
