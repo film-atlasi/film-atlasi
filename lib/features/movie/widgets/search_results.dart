@@ -9,13 +9,15 @@ class SearchResults extends StatelessWidget {
   final List<dynamic> searchResults;
   final String mode;
 
-  const SearchResults({super.key, required this.searchResults, required this.mode});
+  const SearchResults(
+      {super.key, required this.searchResults, required this.mode});
 
   @override
   Widget build(BuildContext context) {
     if (searchResults.isEmpty && mode == "search") {
       return const Center(
-          child: Text('Sonuç bulunamadı', style: TextStyle(color: Colors.white70)));
+          child: Text('Sonuç bulunamadı',
+              style: TextStyle(color: Colors.white70)));
     }
 
     List<Movie> movies = [];
@@ -30,7 +32,8 @@ class SearchResults extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width / 25),
+      padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width / 25),
       child: Column(
         children: [
           if (users.isNotEmpty) ...[
@@ -38,7 +41,8 @@ class SearchResults extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: users.length,
-              separatorBuilder: (context, index) => const Divider(color: Colors.grey, height: 1),
+              separatorBuilder: (context, index) =>
+                  const Divider(color: Colors.grey, height: 1),
               itemBuilder: (context, index) {
                 return UserProfileRouter(
                     userId: users[index].uid!,
@@ -97,14 +101,18 @@ class SearchResults extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Iletipaylas(movie: movie, isFromQuote: true),
+                builder: (context) =>
+                    Iletipaylas(movie: movie, isFromQuote: true),
               ),
             );
+          } else if (mode == "message_send") {
+            Navigator.pop(context, movie);
           } else {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Iletipaylas(movie: movie, isFromQuote: false),
+                builder: (context) =>
+                    Iletipaylas(movie: movie, isFromQuote: false),
               ),
             );
           }
@@ -148,7 +156,10 @@ class SearchResults extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   shadows: [
-                    Shadow(offset: Offset(1, 1), blurRadius: 4, color: Colors.black),
+                    Shadow(
+                        offset: Offset(1, 1),
+                        blurRadius: 4,
+                        color: Colors.black),
                   ],
                 ),
                 maxLines: 2,

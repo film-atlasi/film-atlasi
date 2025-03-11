@@ -89,7 +89,7 @@ class AnasayfaState extends State<Anasayfa>
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return const Icon(Icons.message);
+                                return const Icon(Icons.send);
                               }
                               return snapshot.data == 0
                                   ? Icon(Icons.send_rounded)

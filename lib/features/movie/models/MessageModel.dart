@@ -10,16 +10,17 @@ class MessageModel {
   final bool isRead;
   bool fromOtherUser;
   final String? currentUser = FirebaseAuth.instance.currentUser!.uid;
+  final bool isMovie;
 
-  MessageModel({
-    this.id,
-    required this.senderId,
-    required this.receiverId,
-    required this.text,
-    required this.timestamp,
-    required this.isRead,
-    this.fromOtherUser = false,
-  }){
+  MessageModel(
+      {this.id,
+      required this.senderId,
+      required this.receiverId,
+      required this.text,
+      required this.timestamp,
+      required this.isRead,
+      this.fromOtherUser = false,
+      this.isMovie = false}) {
     fromOtherUser = senderId != currentUser;
   }
 
@@ -34,6 +35,7 @@ class MessageModel {
       text: data?['text'] ?? '',
       timestamp: data?['timestamp'] ?? Timestamp.now(),
       isRead: data?['is_read'] ?? false,
+      isMovie: data?['is_movie'] ?? false,
     );
   }
 
@@ -44,6 +46,7 @@ class MessageModel {
       text: data['text'] ?? '',
       timestamp: data['timestamp'] ?? Timestamp.now(),
       isRead: data['is_read'] ?? false,
+      isMovie: data['is_movie'] ?? false,
     );
   }
 
@@ -55,6 +58,7 @@ class MessageModel {
       'text': text,
       'timestamp': timestamp,
       'is_read': isRead,
+      'is_movie': isMovie,
     };
   }
 }

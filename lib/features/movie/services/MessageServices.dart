@@ -31,11 +31,11 @@ class MessageServices {
         .snapshots();
   }
 
-  Future<void> sendMessage({
-    required String senderId,
-    required String receiverId,
-    required String message,
-  }) async {
+  Future<void> sendMessage(
+      {required String senderId,
+      required String receiverId,
+      required String message,
+      bool isMovie = false}) async {
     try {
       String chatId = generateChatId(senderId, receiverId);
 
@@ -43,13 +43,13 @@ class MessageServices {
 
       // 🔹 **MessageModel ile mesajı oluştur**
       MessageModel newMessage = MessageModel(
-        id: '', // Firestore otomatik oluşturacak
-        senderId: senderId,
-        receiverId: receiverId,
-        text: message,
-        timestamp: Timestamp.now(),
-        isRead: false,
-      );
+          id: '', // Firestore otomatik oluşturacak
+          senderId: senderId,
+          receiverId: receiverId,
+          text: message,
+          timestamp: Timestamp.now(),
+          isRead: false,
+          isMovie: isMovie);
 
       // 🔹 **Mesajı Mesajlar Koleksiyonuna Ekle**
       await chatRef.collection('messages').add(newMessage.toMap());
@@ -167,7 +167,7 @@ class MessageServices {
 
   /// 🔹 **Sohbet ID'sini oluştur**
   String generateChatId(String userId1, String userId2) {
-    return userId1.hashCode >= userId2.hashCode
+    return userId1.hashCode <= userId2.hashCode
         ? "${userId1}_$userId2"
         : "${userId2}_$userId1";
   }

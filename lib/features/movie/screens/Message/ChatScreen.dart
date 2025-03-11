@@ -1,5 +1,8 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/features/movie/models/Movie.dart';
 import 'package:film_atlasi/features/movie/screens/Message/MesajBalonu.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
+import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -31,6 +34,40 @@ class _ChatScreenState extends State<ChatScreen> {
       MessageServices(); // Firestore servisimiz
   final FirebaseAuth _auth = FirebaseAuth.instance;
   var lastSender = '';
+  bool isTyping = false;
+  Movie? selectedFilm;
+
+  void setTyping() {
+    setState(() {
+      if (_messageController.text.isNotEmpty) {
+        isTyping = true;
+      } else {
+        isTyping = false;
+      }
+    });
+  }
+
+  Future<void> _filmAraVeSec() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => FilmAraWidget(
+                mode: "message_send",
+              )),
+    );
+
+    if (result != null) {
+      setState(() {
+        selectedFilm = result; // Seçilen filmi kaydet
+      }); // Seçilen filmi gönder
+    }
+  }
+
+  void setSelectedFilmEmpty() {
+    setState(() {
+      selectedFilm = null;
+    });
+  }
 
   String get currentUserId => _auth.currentUser!.uid;
   String get chatId =>
@@ -146,28 +183,61 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _messageController,
-              decoration: const InputDecoration(
-                hintText: "Mesaj yaz...",
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                border: OutlineInputBorder(),
-              ),
-            ),
+            child: selectedFilm != null
+                ? FilmBilgiWidget(movieId: selectedFilm!.id)
+                : TextField(
+                    controller: _messageController,
+                    onChanged: (value) {
+                      setTyping();
+                    },
+                    decoration: const InputDecoration(
+                      hintText: "Mesaj yaz...",
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(30))),
+                    ),
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: appConstants.primaryColor.withOpacity(0.8),
-              ),
-              child: IconButton(
-                icon: Icon(Icons.arrow_upward, color: appConstants.iconColor),
-                onPressed: _sendMessage,
-              ),
-            ),
+            child: selectedFilm != null
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: setSelectedFilmEmpty,
+                      ),
+                      Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: appConstants.primaryColor.withOpacity(0.8),
+                          ),
+                          child: IconButton(
+                            icon: Icon(Icons.arrow_upward,
+                                color: appConstants.iconColor),
+                            onPressed: _sendMovie,
+                          )),
+                    ],
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: appConstants.primaryColor.withOpacity(0.8),
+                    ),
+                    child: !isTyping
+                        ? IconButton(
+                            icon: Icon(Icons.movie,
+                                color: appConstants.iconColor),
+                            onPressed: _filmAraVeSec,
+                          )
+                        : IconButton(
+                            icon: Icon(Icons.arrow_upward,
+                                color: appConstants.iconColor),
+                            onPressed: _sendMessage,
+                          ),
+                  ),
           ),
         ],
       ),
@@ -181,11 +251,24 @@ class _ChatScreenState extends State<ChatScreen> {
     String messageText = _messageController.text.trim();
     _messageController.clear();
     await _messageServices.sendMessage(
-      senderId: currentUserId,
-      receiverId: widget.receiverId,
-      message: messageText,
-    );
+        senderId: currentUserId,
+        receiverId: widget.receiverId,
+        message: messageText,
+        isMovie: false);
 
+    _scrollToBottom(); // **Mesaj gönderildiğinde en alttaki mesaja kaydır**
+  }
+
+  Future<void> _sendMovie() async {
+    if (selectedFilm == null) return;
+
+    await _messageServices.sendMessage(
+        senderId: currentUserId,
+        receiverId: widget.receiverId,
+        message: selectedFilm!.id,
+        isMovie: true);
+
+    setSelectedFilmEmpty();
     _scrollToBottom(); // **Mesaj gönderildiğinde en alttaki mesaja kaydır**
   }
 

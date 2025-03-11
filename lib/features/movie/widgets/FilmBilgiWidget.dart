@@ -13,12 +13,14 @@ class FilmBilgiWidget extends StatefulWidget {
   final String movieId;
   final bool oyuncular;
   final double posterHeight;
+  final Color? titleColor;
 
   const FilmBilgiWidget(
       {super.key,
       required this.movieId,
       this.oyuncular = true,
-      this.posterHeight = 180});
+      this.posterHeight = 180,
+      this.titleColor});
 
   @override
   State<FilmBilgiWidget> createState() => _FilmBilgiWidgetState();
@@ -102,7 +104,7 @@ class _FilmBilgiWidgetState extends State<FilmBilgiWidget> {
               Text(
                 movie!.title,
                 style: TextStyle(
-                    color: appConstants.textColor,
+                    color: widget.titleColor ?? appConstants.textColor,
                     fontSize: 17,
                     fontWeight: FontWeight.bold),
               ),
