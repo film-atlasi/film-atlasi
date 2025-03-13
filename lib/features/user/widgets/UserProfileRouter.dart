@@ -63,7 +63,8 @@ class UserProfileRouter extends StatelessWidget {
                   ],
                 )
               : Text(subtitle!,
-                  style: TextStyle(color: appConstants.textLightColor, fontSize: 12))
+                  style: TextStyle(
+                      color: appConstants.textLightColor, fontSize: 12))
           : null,
       contentPadding: EdgeInsets.all(padding),
       leading: GestureDetector(

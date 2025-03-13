@@ -1,8 +1,9 @@
-import 'package:film_atlasi/features/movie/models/Movie.dart';
-import 'package:film_atlasi/features/movie/services/MovieServices.dart';
+import 'package:film_atlasi/features/movie/screens/newsDetailsScreen.dart';
+import 'package:film_atlasi/features/movie/services/news_services.dart';
 import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../models/news_model.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -12,44 +13,45 @@ class NewsScreen extends StatefulWidget {
 }
 
 class _NewsScreenState extends State<NewsScreen> {
-  Future<List<Movie>>? futureMovies;
+  Future<List<NewsArticle>>? futureNews;
 
   @override
   void initState() {
     super.initState();
-    fetchMovies();
+    fetchNews();
   }
 
-  void fetchMovies() {
+  void fetchNews() {
     setState(() {
-      futureMovies = MovieService().getUpcomingMovies();
+      futureNews = NewsService().fetchNews("movies");
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator( // 🔥 SAYFA AŞAĞI ÇEKİLİNCE YENİLEME
+      body: RefreshIndicator(
         onRefresh: () async {
-          fetchMovies(); // Filmleri yeniden getir
+          fetchNews();
         },
-        child: FutureBuilder<List<Movie>>(
-          future: futureMovies,
+        child: FutureBuilder<List<NewsArticle>>(
+          future: futureNews,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return LoadingWidget();
             } else if (snapshot.hasError) {
-              return const Center(child: Text("Filmleri yüklerken hata oluştu"));
+              return const Center(
+                  child: Text("Haberleri yüklerken hata oluştu"));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text("Yakında çıkacak film bulunamadı"));
+              return const Center(child: Text("Haber bulunamadı"));
             }
 
-            var movieList = snapshot.data!;
+            var newsList = snapshot.data!;
 
             return ListView.builder(
-              itemCount: movieList.length,
+              itemCount: newsList.length,
               itemBuilder: (context, index) {
-                var movie = movieList[index];
+                var article = newsList[index];
                 return Card(
                   margin: const EdgeInsets.all(10),
                   shape: RoundedRectangleBorder(
@@ -58,11 +60,14 @@ class _NewsScreenState extends State<NewsScreen> {
                   child: Column(
                     children: [
                       Image.network(
-                        movie.posterPath.isNotEmpty == true
-                            ? "https://image.tmdb.org/t/p/w500${movie.posterPath}"
+                        article.urlToImage.isNotEmpty &&
+                                Uri.tryParse(article.urlToImage)
+                                        ?.hasAbsolutePath ==
+                                    true
+                            ? article.urlToImage
                             : "https://via.placeholder.com/300x200?text=G%C3%B6rsel+Bulunamad%C4%B1",
                         height: 200,
-                        width: double.infinity, // Genişliği tam kapsar
+                        width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.network(
@@ -73,28 +78,34 @@ class _NewsScreenState extends State<NewsScreen> {
                         },
                       ),
                       ListTile(
-                        title: Text(movie.title ?? "Bilinmeyen Film",
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(article.title,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                                movie.overview.isNotEmpty == true
-                                    ? movie.overview
-                                    : "Açıklama bulunmuyor",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis),
+                              article.description.isNotEmpty
+                                  ? article.description
+                                  : "Açıklama bulunmuyor",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             const SizedBox(height: 5),
                             Text(
-                              "Çıkış Tarihi: ${movie.releaseDate ?? "Bilinmiyor"}",
+                              "Kaynak: ${article.sourceName ?? "Bilinmiyor"}",
                             ),
                           ],
                         ),
                         trailing: const Icon(Icons.arrow_forward),
-                        onTap: () async {
-                          final movieUrl =
-                              "https://www.themoviedb.org/movie/${movie.id}";
-                          await launchUrl(Uri.parse(movieUrl));
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  NewsDetailScreen(article: article),
+                            ),
+                          );
                         },
                       ),
                     ],

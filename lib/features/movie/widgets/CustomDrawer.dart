@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:film_atlasi/core/provider/ThemeProvider.dart';
 import 'package:film_atlasi/features/user/widgets/EditProfileScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,90 +13,43 @@ class CustomDrawer extends StatefulWidget {
 }
 
 class _CustomDrawerState extends State<CustomDrawer> {
-  bool _isSettingsExpanded = false; // 🔥 Ayarlar açık/kapalı kontrolü
+  bool _isSettingsExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     var themeProvider = Provider.of<ThemeProvider>(context);
     bool isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    final AppConstants appConstants = AppConstants(context);
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: appConstants.primaryColor,
-            ),
-            child: Text(
-              'Menü',
-              style: TextStyle(color: appConstants.textColor, fontSize: 24),
-            ),
+          _buildProfileHeader(),
+          _buildDrawerItem(
+            icon: Icons.dashboard,
+            title: 'Dashboard',
+            onTap: () {},
           ),
           _buildDrawerItem(
             icon: Icons.settings,
-            title: 'Ayarlar',
+            title: 'Settings',
             onTap: () {
               setState(() {
-                _isSettingsExpanded = !_isSettingsExpanded; // 🔥 Aç/kapa
+                _isSettingsExpanded = !_isSettingsExpanded;
               });
             },
           ),
-          if (_isSettingsExpanded) // 🔥 Eğer açık ise "Profil Düzenle" seçeneğini göster
+          if (_isSettingsExpanded)
             Padding(
-              padding: const EdgeInsets.only(left: 40.0), // İçeri kaydırma
+              padding: const EdgeInsets.only(left: 20.0),
               child: _buildDrawerItem(
-                fontSize: 12,
                 icon: Icons.person,
-                title: 'Profil Düzenle',
-                onTap: () async {
-                  User? user = FirebaseAuth.instance.currentUser;
-
-                  if (user != null) {
-                    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid)
-                        .get();
-
-                    if (userDoc.exists) {
-                      Map<String, dynamic> userData =
-                          userDoc.data() as Map<String, dynamic>;
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditProfilePage(
-                            userMap:
-                                userData, // ✅ Firestore'dan alınan verileri gönderiyoruz
-                            userId: user
-                                .uid, // ✅ Kullanıcının UID'sini gönderiyoruz
-                          ),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Kullanıcı verileri bulunamadı.")),
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Giriş yapmış kullanıcı bulunamadı!")),
-                    );
-                  }
-                },
+                title: 'Edit Profile',
+                onTap: _editProfile,
               ),
             ),
-          _buildDrawerItem(
-            icon: Icons.lock,
-            title: 'Gizlilik',
-            onTap: () {
-              // Gizlilik işlemi
-            },
-          ),
           SwitchListTile(
-            title: const Text("Koyu Mod"),
+            title: const Text("Dark Mode"),
             value: isDarkMode,
             onChanged: (value) {
               themeProvider.toggleTheme(value);
@@ -105,40 +57,104 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           _buildDrawerItem(
             icon: Icons.exit_to_app,
-            title: 'Çıkış Yap',
-            onTap: () async {
-              try {
-                await FirebaseAuth.instance.signOut(); // 🔥 Önce çıkışı yap
-
-                if (!mounted) return; // Sayfa kapandıysa yönlendirme yapma
-
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/giris',
-                  (Route<dynamic> route) => false,
-                ); // 🔥 Ardından giriş sayfasına yönlendir
-              } catch (e) {
-                print("Çıkış yaparken hata oluştu: $e");
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Çıkış yaparken bir hata oluştu!")),
-                );
-              }
-            },
+            title: 'Logout',
+            onTap: _logout,
           ),
         ],
       ),
     );
   }
 
-  ListTile _buildDrawerItem(
-      {required IconData icon,
-      required String title,
-      double fontSize = 18,
-      required VoidCallback onTap}) {
+  Widget _buildProfileHeader() {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    return FutureBuilder<DocumentSnapshot>(
+      future:
+          FirebaseFirestore.instance.collection('users').doc(user?.uid).get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return const Text("An error occurred.");
+        } else if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Text("User data not found.");
+        } else {
+          Map<String, dynamic> userData =
+              snapshot.data!.data() as Map<String, dynamic>;
+          return UserAccountsDrawerHeader(
+            accountName: Text(userData['name'] ?? "User Name"),
+            accountEmail: Text(userData['email'] ?? "user@example.com"),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Text(userData['name'] != null ? userData['name'][0] : "U"),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  ListTile _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       leading: Icon(icon),
-      title: Text(title, style: TextStyle(fontSize: fontSize)),
+      title: Text(title),
       onTap: onTap,
     );
+  }
+
+  void _editProfile() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditProfilePage(
+              userMap: userData,
+              userId: user.uid,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("User data not found.")),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No logged in user found!")),
+      );
+    }
+  }
+
+  void _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      if (!mounted) return;
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      print("Error during logout: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("An error occurred during logout!")),
+      );
+    }
   }
 }
