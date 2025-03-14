@@ -32,6 +32,7 @@ class AnasayfaState extends State<Anasayfa>
   }
 
   void _onPageChanged() {
+    if (!mounted) return; // 🔥 Widget ağaçtan kaldırıldıysa hata almamak için
     if (_pageController.page?.round() == 0) {
       Provider.of<VisibilityProvider>(context, listen: false).show();
     } else {
@@ -41,6 +42,8 @@ class AnasayfaState extends State<Anasayfa>
 
   @override
   void dispose() {
+    _pageController.removeListener(_onPageChanged); // Listener'ı kaldır
+    _pageController.dispose(); // Bellek sızıntısını önler
     tabController.dispose();
     super.dispose();
   }

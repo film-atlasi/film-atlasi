@@ -1,0 +1,2 @@
+C:/Users/celal/Desktop/Github/film2/android/app/.cxx/RelWithDebInfo/4m28711k/x86/CMakeFiles/edit_cache.dir
+C:/Users/celal/Desktop/Github/film2/android/app/.cxx/RelWithDebInfo/4m28711k/x86/CMakeFiles/rebuild_cache.dir

@@ -9,7 +9,12 @@ class ThemeProvider extends ChangeNotifier {
     _loadTheme(); // Uygulama açıldığında temayı yükle
   }
 
+  // TextStyle sorununu çözen biraz daha yumuşak bir geçiş mekanizması
   void toggleTheme(bool isDarkMode) async {
+    // Tema değişikliğini bir mikrosaniye geciktirerek
+    // TextStyle interpolasyon sorununu hafifletebiliriz
+    await Future.delayed(const Duration(milliseconds: 1));
+
     _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
 

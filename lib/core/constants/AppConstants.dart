@@ -236,4 +236,50 @@ class AppConstants {
         ? successColorDark
         : successColorLight;
   }
+
+  // TextStyle tanımı için yardımcı metotlar
+
+  // Başlık metni stili
+  TextStyle get titleTextStyle {
+    bool isDarkMode =
+        Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark;
+    return TextStyle(
+      color: isDarkMode ? Colors.white : Colors.black,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+      inherit: true, // Tutarlı inherit değeri
+    );
+  }
+
+  // Alt başlık metni stili
+  TextStyle get subtitleTextStyle {
+    bool isDarkMode =
+        Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark;
+    return TextStyle(
+      color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+      fontSize: 14,
+      inherit: true, // Tutarlı inherit değeri
+    );
+  }
+
+  // Normal metin stili
+  TextStyle get bodyTextStyle {
+    bool isDarkMode =
+        Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark;
+    return TextStyle(
+      color: isDarkMode ? Colors.white : Colors.black,
+      fontSize: 16,
+      inherit: true, // Tutarlı inherit değeri
+    );
+  }
+
+  // Vurgu metni stili
+  TextStyle get accentTextStyle {
+    return TextStyle(
+      color: Colors.red,
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+      inherit: true, // Tutarlı inherit değeri
+    );
+  }
 }
