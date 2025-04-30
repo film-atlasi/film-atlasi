@@ -45,11 +45,13 @@ class _FilmAtlasiAppState extends State<FilmAtlasiApp> {
     setState(() {
       _selectedIndex = index;
     });
-    _pageController.animateToPage(
-      0, // Çünkü sadece Anasayfa'nın içinde farklı sekmeler var
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    // PageController'ı kullanmadan direkt olarak IndexedStack ile yönetiyoruz
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override

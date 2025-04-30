@@ -11,7 +11,7 @@ class User {
   final String? surname;
   final String? userName;
   String? profilePhotoUrl;
-  final String? coverPhotoUrl;
+  String? coverPhotoUrl;
   final String? job;
   final Movie? currentlyWatchingMovie;
   final DateTime? birthDate;

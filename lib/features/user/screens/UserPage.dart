@@ -11,7 +11,10 @@ import 'package:film_atlasi/features/user/widgets/FilmListProfile.dart';
 import 'package:film_atlasi/features/user/widgets/FollowListWidget.dart';
 import 'package:film_atlasi/features/user/widgets/Kaydedilenler.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class UserPage extends StatefulWidget {
   final String userUid;
@@ -30,6 +33,10 @@ class _UserPageState extends State<UserPage>
   String? currentUserUid;
   bool followLoading = false;
   bool isCurrentUser = false;
+  final ImagePicker _picker = ImagePicker();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _isUploading = false;
 
   FollowServices followServices = FollowServices();
 
@@ -106,6 +113,51 @@ class _UserPageState extends State<UserPage>
       });
     } catch (e) {
       setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _handleImageSelection(bool isProfilePhoto) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() => _isUploading = true);
+
+        final File imageFile = File(image.path);
+        final String fileName =
+            '${DateTime.now().millisecondsSinceEpoch}_${isProfilePhoto ? "profile" : "cover"}.jpg';
+        final Reference ref = FirebaseStorage.instance.ref().child(
+            'users/${widget.userUid}/${isProfilePhoto ? "profile" : "cover"}/$fileName');
+
+        await ref.putFile(imageFile);
+        final String downloadUrl = await ref.getDownloadURL();
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.userUid)
+            .update({
+          isProfilePhoto ? 'profilePhotoUrl' : 'coverPhotoUrl': downloadUrl,
+        });
+
+        setState(() {
+          if (isProfilePhoto) {
+            userData!.profilePhotoUrl = downloadUrl;
+          } else {
+            userData!.coverPhotoUrl = downloadUrl;
+          }
+          _isUploading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isUploading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Fotoğraf yüklenirken bir hata oluştu: $e')),
+      );
     }
   }
 
@@ -190,50 +242,78 @@ class _UserPageState extends State<UserPage>
           Stack(
             clipBehavior: Clip.none,
             children: [
-              Container(
-                height: MediaQuery.of(context).size.height / 5,
-                decoration: BoxDecoration(
-                  color: appConstants.textLightColor,
-                  image: userData!.coverPhotoUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(userData!.coverPhotoUrl!),
-                          fit: BoxFit.cover,
+              // Kapak Fotoğrafı
+              GestureDetector(
+                onTap: () => _handleImageSelection(false),
+                child: Container(
+                  height: MediaQuery.of(context).size.height / 5,
+                  decoration: BoxDecoration(
+                    color: appConstants.textLightColor,
+                    image: userData!.coverPhotoUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(userData!.coverPhotoUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: userData!.coverPhotoUrl == null
+                      ? Center(
+                          child: Icon(
+                            Icons.add_photo_alternate,
+                            size: 40,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
                         )
                       : null,
                 ),
               ),
+              // Profil Fotoğrafı
               Positioned(
                 bottom: MediaQuery.of(context).size.height * -0.03,
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: ClipOval(
-                    child: Container(
-                      width: 100, // Profil fotoğrafı boyutu
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: appConstants.appBarColor,
-                          width: 5,
+                  child: GestureDetector(
+                    onTap: () => _handleImageSelection(true),
+                    child: ClipOval(
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: appConstants.appBarColor,
+                            width: 5,
+                          ),
                         ),
+                        child: userData!.profilePhotoUrl != null &&
+                                userData!.profilePhotoUrl!.isNotEmpty
+                            ? Image.network(
+                                userData!.profilePhotoUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                color: Colors.grey.shade800,
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
-                      child: userData!.profilePhotoUrl != null &&
-                              userData!.profilePhotoUrl!.isNotEmpty
-                          ? Image.network(
-                              userData!.profilePhotoUrl!,
-                              fit: BoxFit
-                                  .cover, // 🔥 Fotoğrafın tam oturmasını sağlar
-                            )
-                          : Container(
-                              color: Colors.grey.shade800,
-                              child: const Icon(Icons.person,
-                                  size: 50, color: Colors.white),
-                            ),
                     ),
                   ),
                 ),
               ),
+              if (_isUploading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black54,
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                ),
             ],
           ),
           AddVerticalSpace(context, 0.05),
