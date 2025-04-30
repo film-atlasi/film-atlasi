@@ -124,7 +124,6 @@ class MovieService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      print("Gelen JSON: $data"); // Gelen JSON'u konsola yazdır
       return Movie.fromJson(data);
     } else {
       throw Exception('Film detayları alınamadı');

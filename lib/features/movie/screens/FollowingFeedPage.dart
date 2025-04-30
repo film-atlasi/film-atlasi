@@ -114,6 +114,18 @@ class _FollowingFeedPageState extends State<FollowingFeedPage> {
           await _fetchFollowingPosts();
           _refreshController.refreshCompleted();
         },
+        onLoading: () async {
+          await _fetchFollowingPosts();
+        },
+        footer: ClassicFooter(
+          loadingText: _hasMore ? "Yükleniyor..." : " . ",
+          loadingIcon: _hasMore ? LoadingWidget() : null,
+          idleText: _hasMore
+              ? "Daha fazla gönderi yüklemek için aşağı çekin"
+              : "daha fazla gönderi yok",
+          noDataText: "Daha fazla gönderi yok",
+          textStyle: TextStyle(color: AppConstants(context).textColor),
+        ),
         header: BezierHeader(
           bezierColor: AppConstants(context).primaryColor,
           child: LoadingWidget(url: "assets/animations/loading.json"),

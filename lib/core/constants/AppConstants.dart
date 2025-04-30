@@ -32,6 +32,13 @@ class AppConstants {
     return MediaQuery.of(context).size.width * width;
   }
 
+  static const LinearGradient linearGradiant = LinearGradient(
+    colors: [
+      Color(0xFFD81F26), // primaryColor with 0.9 opacity
+      Color(0xFFFF5252), // Colors.redAccent with 0.9 opacity
+    ],
+  );
+
   ///
   ///
   ///

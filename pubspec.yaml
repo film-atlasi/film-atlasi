@@ -52,3 +52,5 @@ flutter:
     - assets/images/logo2.png
     - assets/images/image1.jpg
     - assets/images/image2.jpg
+    - assets/images/chat-bg.jpeg
+    - assets/animations/loginLoading.json

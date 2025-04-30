@@ -2,6 +2,7 @@ import 'package:film_atlasi/app.dart';
 import 'package:film_atlasi/core/constants/AppConstants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -36,17 +37,35 @@ class _LoginPageState extends State<LoginPage> {
             Expanded(
               flex: 1,
               child: Center(
-                child: Text('Film Atlasidir', style: TextStyle(fontSize: 30)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Lottie.asset("assets/animations/loginLoading.json",
+                          fit: BoxFit.contain),
+                    ),
+                    Expanded(
+                      child: Text(
+                        "Film Atlası",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             Expanded(
-              flex: 4,
+              flex: 1,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Form(
                   key: formKey,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       TextFormField(
                         controller: _emailController,
