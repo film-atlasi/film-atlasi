@@ -40,12 +40,7 @@ class MesajBalonu extends StatelessWidget {
             decoration: BoxDecoration(
               color: isMe ? null : Colors.grey[200],
               gradient: isMe
-                  ? LinearGradient(
-                      colors: [
-                        _appConstants.primaryColor.withOpacity(0.9),
-                        Colors.redAccent.withOpacity(0.9),
-                      ],
-                    )
+                  ? AppConstants.linearGradiant
                   : null,
               borderRadius: isMe
                   ? BorderRadius.only(

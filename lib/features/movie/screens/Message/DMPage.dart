@@ -129,8 +129,20 @@ class UserMessageTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         maxLines: 1,
       ),
-      subtitle:
-          Text(lastMessage.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: lastMessage.isMovie
+          ? Container(
+              width: 200,
+              padding: EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                gradient: AppConstants.linearGradiant,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Text(
+                "🎬 F İ L M",
+                style: TextStyle(color: Colors.white),
+              ))
+          : Text(lastMessage.text,
+              maxLines: 1, overflow: TextOverflow.ellipsis),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,

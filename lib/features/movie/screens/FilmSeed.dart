@@ -96,6 +96,19 @@ class _FilmSeedPageState extends State<FilmSeedPage> {
         _moviePosts.clear();
         await _fetchPosts(isRefresh: true);
       },
+      footer: ClassicFooter(
+        loadingText: _hasMore ? "Yükleniyor..." : " . ",
+        loadingIcon: _hasMore ? LoadingWidget() : null,
+        idleText: _hasMore
+            ? "Daha fazla gönderi yüklemek için aşağı çekin"
+            : "daha fazla gönderi yok",
+        noDataText: "Daha fazla gönderi yok",
+        textStyle: TextStyle(color: AppConstants(context).textColor),
+      ),
+      onLoading: () async {
+        await _fetchPosts();
+        _refreshController.loadComplete();
+      },
       child: ListView.builder(
         primary: true, // **🔥 NestedScrollView ile uyumlu hale getirildi**
         itemCount: _moviePosts.length + 1,

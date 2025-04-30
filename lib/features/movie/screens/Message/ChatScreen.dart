@@ -1,8 +1,11 @@
 import 'package:film_atlasi/core/constants/AppConstants.dart';
+import 'package:film_atlasi/core/utils/helpers.dart';
 import 'package:film_atlasi/features/movie/models/Movie.dart';
+import 'package:film_atlasi/features/movie/screens/Message/ChatBackground.dart';
 import 'package:film_atlasi/features/movie/screens/Message/MesajBalonu.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmAra.dart';
 import 'package:film_atlasi/features/movie/widgets/FilmBilgiWidget.dart';
+import 'package:film_atlasi/features/movie/widgets/LoadingWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,16 +40,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isTyping = false;
   Movie? selectedFilm;
 
-  void setTyping() {
-    setState(() {
-      if (_messageController.text.isNotEmpty) {
-        isTyping = true;
-      } else {
-        isTyping = false;
-      }
-    });
-  }
-
   Future<void> _filmAraVeSec() async {
     final result = await Navigator.push(
       context,
@@ -60,6 +53,26 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         selectedFilm = result; // Seçilen filmi kaydet
       }); // Seçilen filmi gönder
+    }
+  }
+
+  Future<void> _filmPosteriGetir() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => FilmAraWidget(
+                mode: "message_send",
+              )),
+    );
+
+    if (result != null) {
+      final movie = result as Movie;
+      _messageServices.setChatBackground(chatId, {
+        'type': 'film',
+        'url': movie.posterPath,
+      });
+    } else {
+      return;
     }
   }
 
@@ -108,16 +121,58 @@ class _ChatScreenState extends State<ChatScreen> {
             Text(widget.receiverName),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          // **MESAJ AKIŞI**
-          Expanded(child: _buildMessageList(_appConstants)),
-
-          // **MESAJ GİRİŞ ALANI**
-          _buildMessageInput(_appConstants),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.color_lens_outlined),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Sohbet temasını Değiştir'),
+                    actionsAlignment: MainAxisAlignment.center,
+                    actionsPadding: const EdgeInsets.symmetric(horizontal: 20),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('Film Posterleri'),
+                        onPressed: () async {
+                          await _filmPosteriGetir();
+                        },
+                      ),
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Temalar')),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ],
       ),
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: _messageServices.getChatThemeData(chatId),
+          builder: (context, snapshot) {
+            final child = Column(
+              children: [
+                // **MESAJ AKIŞI**
+                Expanded(child: _buildMessageList(_appConstants)),
+
+                // **MESAJ GİRİŞ ALANI**
+                _buildMessageInput(_appConstants),
+              ],
+            );
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return LoadingWidget();
+            }
+            final data = snapshot.data!.data();
+            return ChatBG(
+              themeData: data,
+              child: child,
+            );
+          }),
     );
   }
 
@@ -127,7 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
       stream: _messageServices.getMessages(currentUserId, widget.receiverId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const LoadingWidget();
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(child: Text("Henüz mesaj yok"));
@@ -187,9 +242,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 ? FilmBilgiWidget(movieId: selectedFilm!.id)
                 : TextField(
                     controller: _messageController,
-                    onChanged: (value) {
-                      setTyping();
-                    },
                     decoration: const InputDecoration(
                       hintText: "Mesaj yaz...",
                       contentPadding:
@@ -221,22 +273,32 @@ class _ChatScreenState extends State<ChatScreen> {
                           )),
                     ],
                   )
-                : Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: appConstants.primaryColor.withOpacity(0.8),
-                    ),
-                    child: !isTyping
-                        ? IconButton(
-                            icon: Icon(Icons.movie,
-                                color: appConstants.iconColor),
-                            onPressed: _filmAraVeSec,
-                          )
-                        : IconButton(
-                            icon: Icon(Icons.arrow_upward,
-                                color: appConstants.iconColor),
-                            onPressed: _sendMessage,
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: appConstants.primaryColor.withOpacity(0.8),
                           ),
+                          child: IconButton(
+                            icon: Icon(Icons.movie,
+                                color: appConstants.textColor),
+                            onPressed: _filmAraVeSec,
+                          )),
+                      AddHorizontalSpace(context, 0.03),
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: appConstants.primaryColor.withOpacity(0.8),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_upward,
+                              color: appConstants.textColor),
+                          onPressed: _sendMessage,
+                        ),
+                      ),
+                    ],
                   ),
           ),
         ],
@@ -247,8 +309,8 @@ class _ChatScreenState extends State<ChatScreen> {
   /// **📌 Mesaj gönderme işlemi (MessageServices ile)**
   Future<void> _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
-
     String messageText = _messageController.text.trim();
+
     _messageController.clear();
     await _messageServices.sendMessage(
         senderId: currentUserId,

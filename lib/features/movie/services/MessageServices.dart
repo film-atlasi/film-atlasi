@@ -21,6 +21,15 @@ class MessageServices {
     return await query.get();
   }
 
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getChatThemeData(
+      String chatId) {
+    final messages = _firestore.collection('messages').doc(chatId);
+    if (messages == null) {
+      return Stream.error("Chat theme data not found for chatId: $chatId");
+    }
+    return messages.snapshots();
+  }
+
   /// **📌 Anlık mesajları dinleme**
   Stream<QuerySnapshot> getRealTimeMessages(String chatId) {
     return _firestore
@@ -69,12 +78,23 @@ class MessageServices {
     }
   }
 
+  Future<void> setChatBackground(
+      String chatId, Map<String, dynamic> themeData) async {
+    try {
+      await _firestore.collection('messages').doc(chatId).set({
+        'themeData': themeData,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print("❌ Tema ayarlama hatası: $e");
+    }
+  }
+
   /// **📌 Firestore'dan mesajları çek**
   Stream<QuerySnapshot> getMessages(String senderId, String receiverId) {
     String chatId = generateChatId(senderId, receiverId);
-    return _firestore
-        .collection('messages')
-        .doc(chatId)
+    final messages = _firestore.collection('messages');
+    final data = messages.doc(chatId);
+    return data
         .collection('messages')
         .orderBy('timestamp', descending: false)
         .snapshots();
@@ -167,7 +187,7 @@ class MessageServices {
 
   /// 🔹 **Sohbet ID'sini oluştur**
   String generateChatId(String userId1, String userId2) {
-    return userId1.hashCode <= userId2.hashCode
+    return userId1.hashCode >= userId2.hashCode
         ? "${userId1}_$userId2"
         : "${userId2}_$userId1";
   }

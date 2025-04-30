@@ -102,7 +102,7 @@ class AppTheme {
         textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
           alignment: Alignment.center,
-          foregroundColor: appConstants.secondaryColor,
+          foregroundColor: appConstants.textColor,
           backgroundColor: appConstants.primaryColor,
           padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
           shape: RoundedRectangleBorder(
@@ -138,6 +138,17 @@ class AppTheme {
           selectionColor: Colors.black45,
           selectionHandleColor: Colors.black,
         ),
+        textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+          alignment: Alignment.center,
+          foregroundColor: appConstants.textColor,
+          backgroundColor: appConstants.primaryColor,
+          padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+            side: BorderSide(color: appConstants.appBarColor),
+          ),
+        )),
         bottomAppBarTheme: BottomAppBarTheme(
           color: appConstants.bottomColor,
         ),
