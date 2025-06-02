@@ -300,7 +300,7 @@ class _UserPageState extends State<UserPage>
                     return CircularProgressIndicator();
                   }
                   bool isFollowingUser = snapshot.data!;
-                  return ElevatedButton(
+                  return TextButton(
                     onPressed: () =>
                         toggleFollow(isFollowingUser ? "unfollow" : "follow"),
                     child:

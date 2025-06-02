@@ -59,8 +59,7 @@ class AnasayfaState extends State<Anasayfa>
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
                   SliverAppBar(
-                    title: Text("Film Atlası".toUpperCase()),
-                    centerTitle: true,
+                    title: Text("Film Atlası"),
                     actions: [
                       IconButton(
                         icon: const Icon(Icons.search),

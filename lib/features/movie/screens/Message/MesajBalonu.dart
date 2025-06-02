@@ -36,7 +36,7 @@ class MesajBalonu extends StatelessWidget {
           // 🔥 İçeriğe göre genişliği belirler (kısa mesajlar dar olacak)
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 7),
             decoration: BoxDecoration(
               color: isMe ? null : Colors.grey[200],
               gradient: isMe
