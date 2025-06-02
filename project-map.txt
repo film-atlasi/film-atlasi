@@ -1,0 +1,133 @@
+📁 assets
+   ├─ 📁 animations
+   │  ├─ 📄 loading.json
+   │  ├─ 📄 loadingLight.json
+   │  ├─ 📄 loginLoading.json
+   │  └─ 📄 movie_intro.json
+   └─ 📁 images
+      ├─ 📄 chat-bg.jpeg
+      ├─ 📄 image1.jpg
+      ├─ 📄 image2.jpg
+      ├─ 📄 logo.png
+      └─ 📄 logo2.png
+📁 lib
+   ├─ 📄 app.dart
+   ├─ 📁 core
+   │  ├─ 📁 constants
+   │  │  ├─ 📄 AppConstants.dart
+   │  │  ├─ 📄 AppTheme.dart
+   │  │  ├─ 📄 route_animation.dart
+   │  │  ├─ 📄 theme.dart
+   │  │  └─ 📄 ui_constant.dart
+   │  ├─ 📁 provider
+   │  │  ├─ 📄 PageIndexProvider.dart
+   │  │  └─ 📄 ThemeProvider.dart
+   │  └─ 📁 utils
+   │     └─ 📄 helpers.dart
+   ├─ 📁 features
+   │  ├─ 📁 movie
+   │  │  ├─ 📁 models
+   │  │  │  ├─ 📄 Actor.dart
+   │  │  │  ├─ 📄 FilmPost.dart
+   │  │  │  ├─ 📄 MessageModel.dart
+   │  │  │  └─ 📄 Movie.dart
+   │  │  ├─ 📁 providers
+   │  │  │  └─ 📄 DiscoverProvider.dart
+   │  │  ├─ 📁 screens
+   │  │  │  ├─ 📄 ActorMoviesPage.dart
+   │  │  │  ├─ 📄 AlintiEkle.dart
+   │  │  │  ├─ 📄 Anasayfa.dart
+   │  │  │  ├─ 📄 DiscoverPage.dart
+   │  │  │  ├─ 📁 DİscoveryScreen
+   │  │  │  │  ├─ 📄 DiscoveryPage.dart
+   │  │  │  │  ├─ 📄 route_animation.dart
+   │  │  │  │  └─ 📁 widgets
+   │  │  │  │     ├─ 📄 animated_stack.dart
+   │  │  │  │     ├─ 📄 drag_widget.dart
+   │  │  │  │     ├─ 📄 filters_widget.dart
+   │  │  │  │     ├─ 📄 header_widget.dart
+   │  │  │  │     ├─ 📄 movies_cover_widget.dart
+   │  │  │  │     └─ 📄 search_field_widget.dart
+   │  │  │  ├─ 📁 FilmAsistani.dart
+   │  │  │  │  ├─ 📄 MovieFilterFlow.dart
+   │  │  │  │  └─ 📁 widget
+   │  │  │  │     └─ 📄 MovieIntroPage.dart
+   │  │  │  ├─ 📄 FilmDetay.dart
+   │  │  │  ├─ 📄 FilmSeed.dart
+   │  │  │  ├─ 📄 FollowingFeedPage.dart
+   │  │  │  ├─ 📄 IletiPaylas.dart
+   │  │  │  ├─ 📁 Message
+   │  │  │  │  ├─ 📄 ChatBackground.dart
+   │  │  │  │  ├─ 📄 ChatScreen.dart
+   │  │  │  │  ├─ 📄 DMPage.dart
+   │  │  │  │  └─ 📄 MesajBalonu.dart
+   │  │  │  ├─ 📄 NewsScreen.dart
+   │  │  │  ├─ 📄 PostDetailPage.dart
+   │  │  │  ├─ 📄 notification_page.dart
+   │  │  │  └─ 📄 trailer_screen.dart
+   │  │  ├─ 📁 services
+   │  │  │  ├─ 📄 ActorService.dart
+   │  │  │  ├─ 📄 CommentServices.dart
+   │  │  │  ├─ 📄 FilmListService.dart
+   │  │  │  ├─ 📄 MessageServices.dart
+   │  │  │  ├─ 📄 MovieServices.dart
+   │  │  │  ├─ 📄 PostServices.dart
+   │  │  │  ├─ 📄 notification_service..dart
+   │  │  │  ├─ 📄 oyuncu_yonetmen_search_service.dart
+   │  │  │  └─ 📄 search_service.dart
+   │  │  └─ 📁 widgets
+   │  │     ├─ 📄  PostActionsWidget .dart
+   │  │     ├─ 📄 AddToListButton.dart
+   │  │     ├─ 📄 BottomNavigatorBar.dart
+   │  │     ├─ 📄 CommentPage.dart
+   │  │     ├─ 📄 CustomDrawer.dart
+   │  │     ├─ 📄 CustomTabBar.dart
+   │  │     ├─ 📄 FilmAra.dart
+   │  │     ├─ 📄 FilmBilgiWidget.dart
+   │  │     ├─ 📁 FilmDetails
+   │  │     │  ├─ 📄  UserCommentsWidget.dart
+   │  │     │  ├─ 📄 DirectorWidget.dart
+   │  │     │  ├─ 📄 IMDBWidget.dart
+   │  │     │  ├─ 📄 MovieInfoWidget.dart
+   │  │     │  ├─ 📄 OyuncuCircleAvatar.dart
+   │  │     │  └─ 📄 PlatformWidget.dart
+   │  │     ├─ 📄 FilmEkle.dart
+   │  │     ├─ 📄 FilmList.dart
+   │  │     ├─ 📄 LoadingWidget.dart
+   │  │     ├─ 📄 MoviePostCard.dart
+   │  │     ├─ 📁 Notifications
+   │  │     │  └─ 📄 notificationButton.dart
+   │  │     ├─ 📄 PostSilmeDuzenle.dart
+   │  │     ├─ 📄 RatingDisplayWidget.dart
+   │  │     ├─ 📁 Skeletons
+   │  │     │  ├─ 📄 FilmBilgiSkeleton.dart
+   │  │     │  ├─ 📄 FilmSeedSkeleton.dart
+   │  │     │  └─ 📄 Skeleton.dart
+   │  │     ├─ 📄 SpoilerWidget.dart
+   │  │     ├─ 📄 oyuncu_yonetmen_ara_widget.dart
+   │  │     ├─ 📄 person_search_results.dart
+   │  │     └─ 📄 search_results.dart
+   │  └─ 📁 user
+   │     ├─ 📁 models
+   │     │  └─ 📄 User.dart
+   │     ├─ 📁 screens
+   │     │  ├─ 📄 FollowingFeedPage.dart
+   │     │  ├─ 📄 SignUpPage.dart
+   │     │  ├─ 📄 UserPage.dart
+   │     │  └─ 📄 loginpage.dart
+   │     ├─ 📁 services
+   │     │  ├─ 📄 FollowServices.dart
+   │     │  ├─ 📄 KaydetServices.dart
+   │     │  ├─ 📄 LikeService.dart
+   │     │  └─ 📄 UserServices.dart
+   │     └─ 📁 widgets
+   │        ├─ 📄 BegeniListesi.dart
+   │        ├─ 📄 EditFilmListBottomSheet.dart
+   │        ├─ 📄 EditProfileScreen.dart
+   │        ├─ 📄 FilmKutusu.dart
+   │        ├─ 📄 FilmListProfile.dart
+   │        ├─ 📄 FollowListWidget.dart
+   │        ├─ 📄 Kaydedilenler.dart
+   │        └─ 📄 UserProfileRouter.dart
+   ├─ 📄 firebase_options.dart
+   └─ 📄 main.dart

@@ -18,6 +18,7 @@ class AppTheme {
   const AppTheme(this.appConstants);
 
   ThemeData get darkTheme => ThemeData(
+        fontFamily: 'Inter',
         brightness: Brightness.dark,
         primaryColor: appConstants.primaryColor, // Kırmızı
         hintColor: Colors.white,
@@ -123,6 +124,7 @@ class AppTheme {
 
   /// **🌞 Açık Tema**
   ThemeData get lightTheme => ThemeData(
+        fontFamily: 'Inter',
         brightness: Brightness.light,
         primaryColor: appConstants.primaryColor, // Kırmızı
         hintColor: Colors.black,
